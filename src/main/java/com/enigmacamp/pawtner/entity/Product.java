@@ -9,6 +9,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Data
@@ -42,7 +43,7 @@ public class Product {
     @NotNull(message = "Price is required")
     @DecimalMin(value = "0.0", inclusive = false)
     @Digits(integer = 10, fraction = 2)
-    private Double price;
+    private BigDecimal price;
 
     @NotNull(message = "Stock quantity is required")
     @Min(0)

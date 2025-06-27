@@ -10,6 +10,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Data
@@ -64,10 +65,10 @@ public class Business {
     private String address;
 
     @Digits(integer = 9, fraction = 6)
-    private Double latitude;
+    private BigDecimal latitude;
 
     @Digits(integer = 9, fraction = 6)
-    private Double longitude;
+    private BigDecimal longitude;
 
     @Builder.Default
     private Boolean isVerified = false;

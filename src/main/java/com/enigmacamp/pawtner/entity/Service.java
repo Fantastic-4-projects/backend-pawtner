@@ -9,6 +9,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Data
@@ -39,7 +40,7 @@ public class Service {
     @NotNull(message = "Base price is required")
     @DecimalMin(value = "0.0", inclusive = false)
     @Digits(integer = 10, fraction = 2)
-    private Double basePrice;
+    private BigDecimal basePrice;
 
     @Min(0)
     private Integer capacityPerDay;
