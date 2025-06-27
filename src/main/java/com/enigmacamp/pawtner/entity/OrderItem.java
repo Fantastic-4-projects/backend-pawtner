@@ -11,6 +11,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.math.BigDecimal;
+
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
@@ -38,5 +40,5 @@ public class OrderItem {
     @NotNull(message = "Price at purchase is required")
     @DecimalMin(value = "0.0", inclusive = false)
     @Digits(integer = 10, fraction = 2)
-    private Double priceAtPurchase;
+    private BigDecimal priceAtPurchase;
 }

@@ -9,6 +9,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Data
@@ -49,7 +50,7 @@ public class Booking {
     @NotNull(message = "Total price is required")
     @DecimalMin(value = "0.0", inclusive = false)
     @Digits(integer = 10, fraction = 2)
-    private Double totalPrice;
+    private BigDecimal totalPrice;
 
     @Builder.Default
     @NotNull(message = "Status is required")
