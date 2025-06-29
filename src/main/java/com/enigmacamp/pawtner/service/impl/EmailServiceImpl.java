@@ -32,6 +32,7 @@ public class EmailServiceImpl implements EmailService {
             MimeMessage message = mailSender.createMimeMessage();
             MimeMessageHelper helper = new MimeMessageHelper(message, true);
 
+            helper.setFrom("Pawtner <pawtner_no_reply@yahoo.com>");
             helper.setTo(toEmail);
             helper.setSubject("Verifikasi Akun Pawtner Anda.");
             helper.setText(html, true);
