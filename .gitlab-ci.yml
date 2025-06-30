@@ -7,6 +7,8 @@ stages:
 mirror_to_github:
   stage: mirror
   image: bitnami/git:latest
+  before_script:
+    - git remote remove github 2>/dev/null || true
   script:
     - git config --global user.name "GitLab Mirror Bot"
     - git config --global user.email "mirror@example.com"
