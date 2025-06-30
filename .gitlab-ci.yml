@@ -1,5 +1,4 @@
 variables:
-  GIT_STRATEGY: clone
   GIT_DEPTH: "0"
 
 stages:
@@ -9,8 +8,13 @@ mirror_to_github:
   stage: mirror
   image: bitnami/git:latest
   script:
-    - git remote set-url --push origin "https://alrifqidarmawan:${GITHUB_TOKEN}@github.com/Fantastic-4-projects/backend-pawtner.git"
-    - git push --mirror origin
+    - git config --global user.name "GitLab Mirror Bot"
+    - git config --global user.email "mirror@example.com"
+    - git remote add github "https://alrifqidarmawan:${GITHUB_TOKEN}@github.com/Fantastic-4-projects/backend-pawtner.git"
+    # Explicitly push all branches from the GitLab remote to be branches on GitHub
+    - git push github 'refs/remotes/origin/*:refs/heads/*'
+    # Explicitly push all tags
+    - git push github --tags
   tags:
     - github-mirror
   rules:
