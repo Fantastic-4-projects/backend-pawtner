@@ -10,5 +10,7 @@ mirror_to_github:
     - git config --global user.email "mirror@example.com"
     - git remote add github https://alrifqidarmawan:${GITHUB_TOKEN}@github.com/Fantastic-4-projects/backend-pawtner.git
     - git push github HEAD:refs/heads/$CI_COMMIT_REF_NAME
+  tags:
+    - github-mirror
   only:
     - branches
