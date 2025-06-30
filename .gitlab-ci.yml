@@ -3,9 +3,8 @@ stages:
 
 mirror_to_github:
   stage: mirror
-  image: alpine:latest
+  image: bitnami/git:latest
   script:
-    - apk add --no-cache git
     - git config --global user.name "GitLab Mirror Bot"
     - git config --global user.email "mirror@example.com"
     - git remote add github https://alrifqidarmawan:${GITHUB_TOKEN}@github.com/Fantastic-4-projects/backend-pawtner.git
