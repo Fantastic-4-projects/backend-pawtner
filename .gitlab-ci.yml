@@ -1,3 +1,6 @@
+variables:
+  GIT_DEPTH: "0"
+
 stages:
   - mirror
 
@@ -10,8 +13,7 @@ mirror_to_github:
     - git config --global user.name "GitLab Mirror Bot"
     - git config --global user.email "mirror@example.com"
     - git remote add github https://alrifqidarmawan:${GITHUB_TOKEN}@github.com/Fantastic-4-projects/backend-pawtner.git
-    - git push github --all
-    - git push github --tags
+    - git push --mirror github
   tags:
     - github-mirror
   rules:
