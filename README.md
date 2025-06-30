@@ -547,4 +547,4 @@ This section provides a detailed list of all API endpoints with their full, abso
 
 | Method | Full Endpoint | Description | Roles Permitted |
 |---|---|---|---|
-| `GET` | `/api/test/protected` | A simple protected endpoint to verify that a JWT is valid. | Authenticated |
+| `GET` | `/api/test/protected` | A simple protected endpoint to verify that a JWT is valid. | Authenticated |# trigger test
