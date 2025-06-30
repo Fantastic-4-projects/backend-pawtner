@@ -3,12 +3,12 @@ stages:
 
 mirror_to_github:
   stage: mirror
-  image: alpine:latest
+  image: bitnami/git:latest
   script:
-    - apk add --no-cache git
     - git config --global user.name "GitLab Mirror Bot"
     - git config --global user.email "mirror@example.com"
     - git remote add github https://alrifqidarmawan:${GITHUB_TOKEN}@github.com/Fantastic-4-projects/backend-pawtner.git
-    - git push github HEAD:refs/heads/$CI_COMMIT_REF_NAME
-  only:
-    - branches
+    - git push github --all
+    - git push github --tags
+  rules:
+    - if: '$CI_COMMIT_BRANCH'
