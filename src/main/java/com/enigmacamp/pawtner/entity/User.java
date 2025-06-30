@@ -46,7 +46,7 @@ public class User implements UserDetails {
     @Size(max = 255)
     private String passwordHash;
 
-    @Lob
+    @Column(length = 2000)
     private String address;
 
     @Size(max = 255)
