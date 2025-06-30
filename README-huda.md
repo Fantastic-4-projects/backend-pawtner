@@ -6,47 +6,33 @@ This document summarizes the changes made by the Gemini CLI agent related to aut
 
 - **Authentication and Authorization**: Implemented core authentication and authorization functionalities using Spring Security and JWT.
 - **Email Verification**: Added email verification flow for new user registrations.
+- **Admin User Initialization**: Added a mechanism to create an admin user on application startup.
+- **Business Profile Management**: Implemented features for creating and viewing business profiles, with role-based access control.
 
 ## 2. File Changes and Additions
 
 ### New Files:
 
-- `Postman/Pawtner.postman_collection.json`: Postman collection for API testing.
-- `src/main/java/com/enigmacamp/pawtner/config/AuthTokenFilter.java`: JWT authentication filter.
-- `src/main/java/com/enigmacamp/pawtner/config/JwtService.java`: Service for JWT token generation and validation.
-- `src/main/java/com/enigmacamp/pawtner/config/SecurityConfig.java`: Spring Security configuration.
-- `src/main/java/com/enigmacamp/pawtner/controller/AuthController.java`: REST controller for authentication endpoints (register, login, verify, resend-verification).
-- `src/main/java/com/enigmacamp/pawtner/dto/request/LoginRequestDTO.java`: DTO for login requests.
-- `src/main/java/com/enigmacamp/pawtner/dto/request/RegisterRequestDTO.java`: DTO for registration requests.
-- `src/main/java/com/enigmacamp/pawtner/dto/request/ResendVerificationRequestDTO.java`: DTO for resending verification code requests.
-- `src/main/java/com/enigmacamp/pawtner/dto/request/VerificationRequestDTO.java`: DTO for account verification requests.
-- `src/main/java/com/enigmacamp/pawtner/dto/response/CommonResponse.java`: Generic common response DTO.
-- `src/main/java/com/enigmacamp/pawtner/dto/response/LoginResponseDTO.java`: DTO for login responses.
-- `src/main/java/com/enigmacamp/pawtner/dto/response/RegisterResponseDTO.java`: DTO for registration responses.
-- `src/main/java/com/enigmacamp/pawtner/repository/AuthRepository.java`: Repository for user authentication operations.
-- `src/main/java/com/enigmacamp/pawtner/service/AuthService.java`: Interface for authentication services.
-- `src/main/java/com/enigmacamp/pawtner/service/EmailService.java`: Interface for email services.
-- `src/main/java/com/enigmacamp/pawtner/service/UserService.java`: Interface for user details service.
-- `src/main/java/com/enigmacamp/pawtner/service/impl/AuthServiceImpl.java`: Implementation of `AuthService`.
-- `src/main/java/com/enigmacamp/pawtner/service/impl/EmailServiceImpl.java`: Implementation of `EmailService`.
-- `src/main/java/com/enigmacamp/pawtner/service/impl/UserServiceImpl.java`: Implementation of `UserService`.
-- `src/main/java/com/enigmacamp/pawtner/util/ResponseUtil.java`: Utility class for creating standardized API responses.
-- `src/main/resources/templates/verification-email.html`: Thymeleaf template for verification emails.
+- `src/main/java/com/enigmacamp/pawtner/config/AdminInitializer.java`: Initializes the admin user.
+- `src/main/java/com/enigmacamp/pawtner/controller/BusinessController.java`: REST controller for managing business profiles.
+- `src/main/java/com/enigmacamp/pawtner/dto/request/BusinessRequestDTO.java`: DTO for business registration requests.
+- `src/main/java/com/enigmacamp/pawtner/dto/response/BusinessResponseDTO.java`: DTO for business profile responses.
+- `src/main/java/com/enigmacamp/pawtner/repository/BusinessRepository.java`: Repository for business profile operations.
+- `src/main/java/com/enigmacamp/pawtner/service/BusinessService.java`: Interface for business profile services.
+- `src/main/java/com/enigmacamp/pawtner/service/impl/BusinessServiceImpl.java`: Implementation of `BusinessService`.
 
 ### Modified Files:
 
-- `pom.xml`: Added new dependencies for Spring Security, JWT, Spring Mail, and Thymeleaf.
-- `src/main/java/com/enigmacamp/pawtner/constant/UserRole.java`: Minor formatting change (added a newline).
-- `src/main/java/com/enigmacamp/pawtner/entity/Booking.java`: Changed `totalPrice` from `Double` to `BigDecimal`.
-- `src/main/java/com/enigmacamp/pawtner/entity/Business.java`: Changed `latitude` and `longitude` from `Double` to `BigDecimal`.
-- `src/main/java/com/enigmacamp/pawtner/entity/Order.java`: Changed `totalAmount` from `Double` to `BigDecimal`.
-- `src/main/java/com/enigmacamp/pawtner/entity/OrderItem.java`: Changed `priceAtPurchase` from `Double` to `BigDecimal`.
-- `src/main/java/com/enigmacamp/pawtner/entity/Payment.java`: Changed `amount` from `Double` to `BigDecimal`.
-- `src/main/java/com/enigmacamp/pawtner/entity/Product.java`: Changed `price` from `Double` to `BigDecimal`.
-- `src/main/java/com/enigmacamp/pawtner/entity/Service.java`: Changed `basePrice` from `Double` to `BigDecimal`.
-- `src/main/java/com/enigmacamp/pawtner/entity/User.java`: Implemented `UserDetails` interface and added methods for Spring Security integration. Also, changed `password` field to `passwordHash` and added `codeVerification` and `codeExpire` fields for email verification.
-- `src/main/resources/application.properties`: Added JWT and email configuration properties.
+- `pom.xml`: Added `hibernate-types-60` dependency for JSON mapping.
+- `src/main/java/com/enigmacamp/pawtner/config/SecurityConfig.java`: Enabled method-level security (`@EnableMethodSecurity`) to allow for role-based authorization on controller methods and configured CORS.
+- `src/main/java/com/enigmacamp/pawtner/constant/UserRole.java`: Added `ADMIN` role to support administrative privileges.
+- `src/main/java/com/enigmacamp/pawtner/controller/AuthController.java`: Added input validation (`@Valid`) and improved user-facing response messages.
+- `src/main/java/com/enigmacamp/pawtner/dto/request/RegisterRequestDTO.java`: Updated to include `phoneNumber` and `address` fields for more complete user profiles.
+- `src/main/java/com/enigmacamp/pawtner/entity/Business.java`: Refactored `operationHours` to use `Map<String, String>` with `JsonType` for better structure and updated column definitions for `description` and `address`.
+- `src/main/java/com/enigmacamp/pawtner/entity/User.java`: Updated `address` column definition.
+- `src/main/java/com/enigmacamp/pawtner/repository/AuthRepository.java`: Added `existsByEmail` method to check for existing users during admin initialization.
+- `src/main/java/com/enigmacamp/pawtner/service/impl/AuthServiceImpl.java`: Hardcoded new user registrations to the `CUSTOMER` role and added a check to prevent login for unverified accounts.
 
 ## 3. Conclusion
 
-These changes introduce a robust authentication and authorization system with email verification, enhancing the security and user management capabilities of the Pawtner application. The migration of `Double` to `BigDecimal` for monetary and coordinate values improves precision and avoids floating-point inaccuracies.
+These changes introduce a robust authentication and authorization system with email verification, enhancing the security and user management capabilities of the Pawtner application. The addition of an admin role and business profile management features, secured by method-level authorization, provides a foundation for core application functionality. The migration of `Double` to `BigDecimal` for monetary and coordinate values improves precision and avoids floating-point inaccuracies.

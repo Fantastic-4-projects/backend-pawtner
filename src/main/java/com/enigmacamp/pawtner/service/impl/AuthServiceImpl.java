@@ -1,5 +1,6 @@
 package com.enigmacamp.pawtner.service.impl;
 
+import com.enigmacamp.pawtner.constant.UserRole;
 import com.enigmacamp.pawtner.dto.request.LoginRequestDTO;
 import com.enigmacamp.pawtner.dto.request.RegisterRequestDTO;
 import com.enigmacamp.pawtner.dto.request.ResendVerificationRequestDTO;
@@ -34,9 +35,11 @@ public class AuthServiceImpl implements AuthService {
     public RegisterResponseDTO register(RegisterRequestDTO registerRequestDTO) {
         User user = User.builder()
                 .email(registerRequestDTO.getEmail())
+                .phoneNumber(registerRequestDTO.getPhoneNumber())
                 .passwordHash(passwordEncoder.encode(registerRequestDTO.getPassword()))
                 .name(registerRequestDTO.getName())
-                .role(registerRequestDTO.getRole())
+                .address(registerRequestDTO.getAddress())
+                .role(UserRole.CUSTOMER)
                 .codeExpire(LocalDateTime.now().plusMinutes(3))
                 .codeVerification(generateRandomCode(6))
                 .build();
@@ -59,6 +62,11 @@ public class AuthServiceImpl implements AuthService {
         SecurityContextHolder.getContext().setAuthentication(authentication);
 
         User user = (User) authentication.getPrincipal();
+
+        if (!user.getIsVerified()){
+            throw new BadCredentialsException("Email belum terverifikasi.");
+        }
+
         String token = jwtService.generateToken(user);
 
         return LoginResponseDTO.builder()

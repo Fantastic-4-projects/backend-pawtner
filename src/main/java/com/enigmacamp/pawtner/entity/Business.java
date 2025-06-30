@@ -3,15 +3,18 @@ package com.enigmacamp.pawtner.entity;
 
 import com.enigmacamp.pawtner.constant.BusinessStatus;
 import com.enigmacamp.pawtner.constant.BusinessType;
+import com.vladmihalcea.hibernate.type.json.JsonType;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.Type;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.Map;
 
 @Data
 @AllArgsConstructor
@@ -33,7 +36,7 @@ public class Business {
     @Size(max = 255)
     private String name;
 
-    @Lob
+    @Column(length = 2000)
     private String description;
 
     @NotNull(message = "Business type is required")
@@ -61,7 +64,7 @@ public class Business {
     @Size(max = 255)
     private String certificateImageUrl;
 
-    @Lob
+    @Column(length = 2000)
     private String address;
 
     @Digits(integer = 9, fraction = 6)
@@ -73,8 +76,9 @@ public class Business {
     @Builder.Default
     private Boolean isVerified = false;
 
-    @Column(columnDefinition = "JSONB")
-    private String operationHours;
+    @Type(JsonType.class)
+    @Column(columnDefinition = "jsonb")
+    private Map<String, String> operationHours;
 
     @Builder.Default
     @Enumerated(EnumType.STRING)

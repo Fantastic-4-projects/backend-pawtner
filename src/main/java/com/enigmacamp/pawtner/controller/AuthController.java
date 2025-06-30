@@ -26,30 +26,30 @@ public class AuthController {
     private final AuthService authService;
 
     @PostMapping("/register")
-    public ResponseEntity<CommonResponse<RegisterResponseDTO>> register(@RequestBody RegisterRequestDTO registerRequestDTO) {
+    public ResponseEntity<CommonResponse<RegisterResponseDTO>> register(@Valid @RequestBody RegisterRequestDTO registerRequestDTO) {
 
         return ResponseUtil.createResponse(
                 HttpStatus.CREATED,
-                "Selamat datang di Pawtner",
+                "Selamat datang di Pawtner. Kode verifikasi telah dikirim ke email Anda.",
                 authService.register(registerRequestDTO)
         );
     }
 
     @PostMapping("/login")
-    public ResponseEntity<CommonResponse<LoginResponseDTO>> login(@RequestBody LoginRequestDTO loginRequestDTO) {
+    public ResponseEntity<CommonResponse<LoginResponseDTO>> login(@Valid @RequestBody LoginRequestDTO loginRequestDTO) {
         return ResponseUtil.createResponse(
                 HttpStatus.OK,
-                "Anda berhasil login",
+                "Anda berhasil login.",
                 authService.login(loginRequestDTO)
         );
     }
 
     @PostMapping("/verify")
-    public ResponseEntity<CommonResponse<String>> verify(@RequestBody VerificationRequestDTO request) {
+    public ResponseEntity<CommonResponse<String>> verify(@Valid @RequestBody VerificationRequestDTO request) {
         authService.verify(request);
         return ResponseUtil.createResponse(
                 HttpStatus.OK,
-                "Account verified successfully",
+                "Akun berhasil diverifikasi.",
                 null
         );
     }
@@ -59,7 +59,7 @@ public class AuthController {
         authService.resendVerificationCode(request);
         return ResponseUtil.createResponse(
                 HttpStatus.OK,
-                "Verification code sent successfully",
+                "Kode verifikasi telah dikirim ke email Anda.",
                 null
         );
     }
