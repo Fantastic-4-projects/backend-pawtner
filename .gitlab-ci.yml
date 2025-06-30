@@ -11,10 +11,11 @@ mirror_to_github:
     - git config --global user.name "GitLab Mirror Bot"
     - git config --global user.email "mirror@example.com"
     - git remote add github "https://alrifqidarmawan:${GITHUB_TOKEN}@github.com/Fantastic-4-projects/backend-pawtner.git"
-    # Explicitly push all branches from the GitLab remote to be branches on GitHub
+    # Explicitly push all branches and tags
     - git push github 'refs/remotes/origin/*:refs/heads/*'
-    # Explicitly push all tags
     - git push github --tags
+    # Clean up the unwanted HEAD branch
+    - git push github --delete HEAD
   tags:
     - github-mirror
   rules:
