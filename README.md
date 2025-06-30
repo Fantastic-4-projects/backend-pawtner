@@ -363,3 +363,188 @@ To ensure high quality, the MVP will focus on validating **one core business cyc
 -   **Advanced Logistics**: Integrate with shipping APIs for real-time delivery tracking.
 -   **Push Notifications**: Implement reminders for medication, appointments, and order status updates.
 -   **Pet Profiles & Social Features**: Allow users to connect and share experiences.
+
+### Data Model & Core Entities:
+The application's functionality is built around a set of core data entities:
+
+*   **`User`**: Represents an individual who can log in to the platform. Each user has one of three roles (`ADMIN`, `business_owner`, `customer`) that dictates their permissions.
+*   **`Business`**: Represents a business profile created and managed by a `business_owner`. It contains all relevant information, such as name, address, contact details, and services offered.
+*   **`Product`**: An item or good sold by a `Business`. Each product has details like name, price, stock quantity, and an image.
+*   **`ServiceOffering`**: A service (e.g., grooming, veterinary check-up) offered by a `Business`. It includes details like base price and capacity.
+*   **`Pet`**: A profile for a pet, created and managed by a `customer`. It stores information like name, species, and breed.
+*   **`Order`**: A record of a `customer`'s purchase of one or more `Product` items from a single `Business`.
+*   **`Booking`**: A record of a `customer`'s appointment for a `ServiceOffering` provided by a `Business`.
+*   **`Payment`**: The financial transaction record for an `Order` or `Booking`. It is integrated with the Midtrans payment gateway and tracks the payment status.
+*   **`Review`**: Feedback provided by a `customer` for a specific `Business`, `Product`, or `ServiceOffering`.
+*   **`ShoppingCart`**: A temporary container for `Product` items that a `customer` intends to purchase from a `Business`.
+
+### User Roles & Permissions:
+*   **`ADMIN`**: The project owner with full administrative access. This role is for system maintenance and oversight. The default admin user is created via a database seed (`admin@example.com` / `admin123`) and cannot be registered through the public API.
+*   **`business_owner`**: A user who owns and manages businesses. They can create and update their business profile, add/remove products and services, and manage incoming orders and bookings.
+*   **`customer`**: A regular user (pet owner). They can browse businesses, purchase products, book services, manage their pets, and write reviews. **All new users registered via the public API are automatically assigned this role.**
+
+## 2. Authentication & Authorization
+
+Access to the API is controlled via JWT (JSON Web Tokens).
+
+1.  A user (of any role) submits their credentials to the `POST /api/auth/login` endpoint.
+2.  On successful authentication, the server returns a JWT.
+3.  This token must be included in the `Authorization` header for all subsequent requests to protected endpoints, prefixed with `Bearer `.
+    *   **Example**: `Authorization: Bearer <your_jwt_token>`
+
+Authorization is role-based. Most endpoints are protected and require a specific role for access, which is enforced by Spring Security. The "Roles Permitted" column in the endpoint reference below specifies the required role(s).
+
+## 3. API Endpoint Reference
+
+This section provides a detailed list of all API endpoints with their full, absolute paths.
+
+---
+
+### **Authentication (`/api/auth`)**
+
+| Method | Full Endpoint | Description | Roles Permitted |
+|---|---|---|---|
+| `POST` | `/api/auth/register` | Registers a new user. All new registrations default to the `customer` role. | Public |
+| `POST` | `/api/auth/login` | Authenticates a user and returns a JWT. | Public |
+| `GET` | `/api/auth/verify` | Verifies a user's account using a code sent to their email. | Public |
+| `GET` | `/oauth2/authorization/google` | Initiates the Google OAuth2 login flow. | Public |
+| `GET` | `/api/auth/oauth2/success` | Callback endpoint for successful Google OAuth2 login. | Public |
+
+---
+
+### **Businesses (`/api/businesses`)**
+
+| Method | Full Endpoint | Description | Roles Permitted |
+|---|---|---|---|
+| `POST` | `/api/businesses` | Creates a new business profile. | `business_owner` |
+| `GET` | `/api/businesses` | Retrieves a paginated list of all businesses. | Authenticated |
+| `GET` | `/api/businesses/{id}` | Retrieves a specific business by its ID. | Authenticated |
+| `PUT` | `/api/businesses/{id}` | Updates an existing business profile. | `business_owner` |
+| `DELETE` | `/api/businesses/{id}` | Deletes a business. | `ADMIN`, `business_owner` |
+| `GET` | `/api/businesses/emergency` | Retrieves businesses with emergency services, sorted by proximity. | Authenticated |
+
+---
+
+### **Products (`/api/products`)**
+
+| Method | Full Endpoint | Description | Roles Permitted |
+|---|---|---|---|
+| `POST` | `/api/products` | Creates a new product with an image. (Multipart request) | `business_owner` |
+| `GET` | `/api/products` | Retrieves a paginated list of all products. | Authenticated |
+| `GET` | `/api/products/{id}` | Retrieves a specific product by its ID. | Authenticated |
+| `PUT` | `/api/products/{id}` | Updates a product, with an option to upload a new image. (Multipart request) | `business_owner` |
+| `DELETE` | `/api/products/{id}` | Deletes a product. | `business_owner` |
+
+---
+
+### **Services (`/api/services`)**
+
+| Method | Full Endpoint | Description | Roles Permitted |
+|---|---|---|---|
+| `POST` | `/api/services` | Creates a new service offering. | `business_owner` |
+| `GET` | `/api/services` | Retrieves a paginated list of all services. | Authenticated |
+| `GET` | `/api/services/{id}` | Retrieves a specific service by its ID. | Authenticated |
+| `PUT` | `/api/services/{id}` | Updates an existing service. | `business_owner` |
+| `DELETE` | `/api/services/{id}` | Deletes a service. | `business_owner` |
+
+---
+
+### **Shopping Cart (`/api/carts`)**
+
+| Method | Full Endpoint | Description | Roles Permitted |
+|---|---|---|---|
+| `POST` | `/api/carts` | Gets or creates a shopping cart for the logged-in customer. | `customer` |
+| `POST` | `/api/carts/{cartId}/items` | Adds a product to the specified shopping cart. | `customer` |
+| `DELETE` | `/api/carts/{cartId}/items/{cartItemId}` | Removes a single item from the cart. | `customer` |
+| `DELETE` | `/api/carts/{cartId}/clear` | Clears all items from the cart. | `customer` |
+
+---
+
+### **Orders (`/api/orders`)**
+
+| Method | Full Endpoint | Description | Roles Permitted |
+|---|---|---|---|
+| `POST` | `/api/orders` | Creates a new order from cart items and initiates payment. | `customer` |
+| `GET` | `/api/orders` | Retrieves a paginated list of orders. | Authenticated |
+| `GET` | `/api/orders/{id}` | Retrieves a specific order by its ID. | Authenticated |
+| `PUT` | `/api/orders/{id}` | Updates an order's status (e.g., to 'shipped'). | `business_owner` |
+| `DELETE` | `/api/orders/{id}` | Deletes an order. | `ADMIN`, `business_owner` |
+
+---
+
+### **Bookings (`/api/bookings`)**
+
+| Method | Full Endpoint | Description | Roles Permitted |
+|---|---|---|---|
+| `POST` | `/api/bookings` | Creates a new service booking and initiates payment. | `customer` |
+| `GET` | `/api/bookings` | Retrieves a paginated list of bookings. | Authenticated |
+| `GET` | `/api/bookings/{id}` | Retrieves a specific booking by its ID. | Authenticated |
+| `PUT` | `/api/bookings/{id}` | Updates a booking's status (e.g., to 'confirmed'). | `business_owner` |
+| `DELETE` | `/api/bookings/{id}` | Deletes a booking. | `ADMIN`, `business_owner` |
+
+---
+
+### **Payments (`/api/payments`)**
+
+| Method | Full Endpoint | Description | Roles Permitted |
+|---|---|---|---|
+| `POST` | `/api/payments/order/{orderId}` | Creates a payment transaction for a given order. | `customer` |
+| `POST` | `/api/payments/booking/{bookingId}` | Creates a payment transaction for a given booking. | `customer` |
+| `POST` | `/api/payments/webhook` | Handles incoming payment notification webhooks from Midtrans. | Public |
+| `GET` | `/api/payments/{id}` | Retrieves payment details by ID. | Authenticated |
+
+---
+
+### **Pets (`/api/pets`)**
+
+| Method | Full Endpoint | Description | Roles Permitted |
+|---|---|---|---|
+| `POST` | `/api/pets` | Creates a new pet profile for the logged-in customer. | `customer` |
+| `GET` | `/api/pets` | Retrieves a paginated list of the customer's pets. | `customer` |
+| `GET` | `/api/pets/{id}` | Retrieves a specific pet by its ID. | `customer` |
+| `PUT` | `/api/pets/{id}` | Updates a pet's profile. | `customer` |
+| `DELETE` | `/api/pets/{id}` | Deletes a pet's profile. | `customer` |
+
+---
+
+### **Reviews (`/api/reviews`)**
+
+| Method | Full Endpoint | Description | Roles Permitted |
+|---|---|---|---|
+| `POST` | `/api/reviews` | Creates a new review for a business, product, or service. | `customer` |
+| `GET` | `/api/reviews` | Retrieves a paginated list of all reviews. | Authenticated |
+| `GET` | `/api/reviews/{id}` | Retrieves a specific review by its ID. | Authenticated |
+| `PUT` | `/api/reviews/{id}` | Updates a review. | `customer` |
+| `DELETE` | `/api/reviews/{id}` | Deletes a review. | `ADMIN`, `customer` |
+
+---
+
+### **Prescriptions (`/api/prescriptions`)**
+
+| Method | Full Endpoint | Description | Roles Permitted |
+|---|---|---|---|
+| `POST` | `/api/prescriptions` | Creates a new prescription for a pet. | `business_owner` (Vet) |
+| `GET` | `/api/prescriptions` | Retrieves a paginated list of prescriptions. | Authenticated |
+| `GET` | `/api/prescriptions/{id}` | Retrieves a specific prescription by its ID. | Authenticated |
+| `PUT` | `/api/prescriptions/{id}` | Updates a prescription. | `business_owner` (Vet) |
+| `DELETE` | `/api/prescriptions/{id}` | Deletes a prescription. | `business_owner` (Vet) |
+
+---
+
+### **Prescription Items (`/api/prescription-items`)**
+
+| Method | Full Endpoint | Description | Roles Permitted |
+|---|---|---|---|
+| `POST` | `/api/prescription-items` | Creates a new item within a prescription. | `business_owner` (Vet) |
+| `GET` | `/api/prescription-items` | Retrieves a paginated list of all prescription items. | Authenticated |
+| `GET` | `/api/prescription-items/{id}` | Retrieves a specific prescription item by its ID. | Authenticated |
+| `PUT` | `/api/prescription-items/{id}` | Updates a prescription item. | `business_owner` (Vet) |
+| `DELETE` | `/api/prescription-items/{id}` | Deletes a prescription item. | `business_owner` (Vet) |
+
+---
+
+### **Test (`/api/test`)**
+
+| Method | Full Endpoint | Description | Roles Permitted |
+|---|---|---|---|
+| `GET` | `/api/test/protected` | A simple protected endpoint to verify that a JWT is valid. | Authenticated |
