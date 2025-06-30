@@ -4,12 +4,15 @@ stages:
 mirror_to_github:
   stage: mirror
   image: bitnami/git:latest
+  before_script:
+    - git remote remove github 2>/dev/null || true
   script:
     - git config --global user.name "GitLab Mirror Bot"
     - git config --global user.email "mirror@example.com"
     - git remote add github https://alrifqidarmawan:${GITHUB_TOKEN}@github.com/Fantastic-4-projects/backend-pawtner.git
-    - git push github HEAD:refs/heads/$CI_COMMIT_REF_NAME
+    - git push github --all
+    - git push github --tags
   tags:
     - github-mirror
-  only:
-    - branches
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "push"'
