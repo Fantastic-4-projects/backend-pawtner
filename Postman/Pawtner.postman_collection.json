@@ -16,7 +16,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"email\": \"muhammadhudaibi098@gmail.com\",\n    \"password\": \"hudahuda\",\n    \"name\": \"Muhammad Hudaibi\",\n    \"role\": \"CUSTOMER\"\n}",
+							"raw": "{\n    \"email\": \"muhammadhudaibi098@gmail.com\",\n    \"phoneNumber\": \"08558923189\",\n    \"password\": \"hudahuda\",\n    \"name\": \"Muhammad Hudaibi\",\n    \"address\": \"Lowokwaru\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -28,13 +28,37 @@
 					"response": []
 				},
 				{
+					"name": "Regist Business",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": {
+								"token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJwYXd0bmVyIiwic3ViIjoibXVoaHVkYWliaTExQGdtYWlsLmNvbSIsImV4cCI6MTc1MTM1NDY4MSwiaWF0IjoxNzUxMjY4MjgxLCJ1c2VySWQiOiI5YmFiYTBiZS00Mzg4LTRlNGItYjYwNy1kYzJiOTI2OTk1MDMiLCJyb2xlIjoiQ1VTVE9NRVIifQ.mUgxCcvmMPl_CdfpvfKs3H0QK1n7ykav7SBBRdpaTj0"
+							}
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"nameBusiness\": \"Intan Grooming House\",\n  \"descriptionBusiness\": \"Tempat grooming hewan terpercaya dengan layanan ramah dan profesional.\",\n  \"businessType\": \"GROOMING_SALON\",\n  \"businessEmail\": \"intan.grooming@example.com\",\n  \"businessPhone\": \"082112345678\",\n  \"emergencyPhone\": \"081299998888\",\n  \"businessImageUrl\": \"https://example.com/images/grooming-house.jpg\",\n  \"certificateImageUrl\": \"https://example.com/certificates/grooming-cert.pdf\",\n  \"businessAddress\": \"Jl. Anjing Bahagia No. 12, Jakarta Selatan\",\n  \"latitude\": -6.244669,\n  \"longitude\": 106.800293,\n  \"operationHour\": {\n    \"monday\": \"09:00-18:00\",\n    \"tuesday\": \"09:00-18:00\",\n    \"wednesday\": \"09:00-18:00\",\n    \"thursday\": \"09:00-18:00\",\n    \"friday\": \"09:00-18:00\",\n    \"saturday\": \"10:00-14:00\",\n    \"sunday\": \"Closed\"\n  }\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": "{{BASE_URL}}/business/register"
+					},
+					"response": []
+				},
+				{
 					"name": "verify",
 					"request": {
 						"method": "POST",
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"email\": \"muhammadhudaibi098@gmail.com\",\n    \"verificationCode\": \"175413\"\n}",
+							"raw": "{\n    \"email\": \"muhhudaibi11@gmail.com\",\n    \"verificationCode\": \"220778\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -52,7 +76,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"email\": \"muhammadhudaibi098@gmail.com\"\n}",
+							"raw": "{\n    \"email\": \"intanutama123@gmail.com\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -70,7 +94,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"email\": \"muhammadhudaibi098@gmail.com\",\n    \"password\": \"hudahuda\"\n}",
+							"raw": "{\n    \"email\": \"admin@pawtner.com\",\n    \"password\": \"admin123\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -78,6 +102,21 @@
 							}
 						},
 						"url": "http://localhost:8080/auth/login"
+					},
+					"response": []
+				},
+				{
+					"name": "View Business",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": {
+								"token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJwYXd0bmVyIiwic3ViIjoibXVoaHVkYWliaTExQGdtYWlsLmNvbSIsImV4cCI6MTc1MTM1NDY4MSwiaWF0IjoxNzUxMjY4MjgxLCJ1c2VySWQiOiI5YmFiYTBiZS00Mzg4LTRlNGItYjYwNy1kYzJiOTI2OTk1MDMiLCJyb2xlIjoiQ1VTVE9NRVIifQ.mUgxCcvmMPl_CdfpvfKs3H0QK1n7ykav7SBBRdpaTj0"
+							}
+						},
+						"method": "GET",
+						"header": [],
+						"url": "{{BASE_URL}}/business"
 					},
 					"response": []
 				}
