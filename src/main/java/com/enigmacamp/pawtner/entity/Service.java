@@ -45,6 +45,8 @@ public class Service {
     @Min(0)
     private Integer capacityPerDay;
 
+    private String imageUrl;
+
     @Builder.Default
     private Boolean isActive = true;
 
