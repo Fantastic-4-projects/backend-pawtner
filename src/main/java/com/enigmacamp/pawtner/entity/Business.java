@@ -3,18 +3,17 @@ package com.enigmacamp.pawtner.entity;
 
 import com.enigmacamp.pawtner.constant.BusinessStatus;
 import com.enigmacamp.pawtner.constant.BusinessType;
-import com.vladmihalcea.hibernate.type.json.JsonType;
+import com.enigmacamp.pawtner.converter.OperationHoursConverter;
+import com.enigmacamp.pawtner.model.OperationHoursDTO;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.hibernate.annotations.Type;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.util.Map;
 
 @Data
 @AllArgsConstructor
@@ -76,9 +75,9 @@ public class Business {
     @Builder.Default
     private Boolean isVerified = false;
 
-    @Type(JsonType.class)
-    @Column(columnDefinition = "jsonb")
-    private Map<String, String> operationHours;
+    @Convert(converter = OperationHoursConverter.class)
+    @Column(columnDefinition = "TEXT")
+    private OperationHoursDTO operationHours;
 
     @Builder.Default
     @Enumerated(EnumType.STRING)

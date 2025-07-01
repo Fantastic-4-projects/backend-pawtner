@@ -1,13 +1,13 @@
 package com.enigmacamp.pawtner.dto.request;
 
 import com.enigmacamp.pawtner.constant.BusinessType;
+import com.enigmacamp.pawtner.model.OperationHoursDTO;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
-import java.util.Map;
 
 @Data
 @AllArgsConstructor
@@ -25,5 +25,5 @@ public class BusinessRequestDTO {
     private String businessAddress;
     private BigDecimal latitude;
     private BigDecimal longitude;
-    private Map<String, String> operationHour;
+    private OperationHoursDTO operationHours;
 }

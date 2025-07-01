@@ -72,6 +72,12 @@ public class User implements UserDetails {
 
     private LocalDateTime codeExpire;
 
+    @Column(name = "reset_password_token")
+    private String resetPasswordToken;
+
+    @Column(name = "reset_password_token_expire")
+    private LocalDateTime resetPasswordTokenExpire;
+
     @Builder.Default
     @Column(updatable = false)
     private LocalDateTime createdAt = LocalDateTime.now();
