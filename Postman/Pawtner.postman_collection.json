@@ -16,14 +16,38 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"email\": \"muhammadhudaibi098@gmail.com\",\n    \"password\": \"hudahuda\",\n    \"name\": \"Muhammad Hudaibi\",\n    \"role\": \"CUSTOMER\"\n}",
+							"raw": "{\n    \"email\": \"muhhudaibi11@gmail.com\",\n    \"phoneNumber\": \"085589231880\",\n    \"password\": \"hudahuda\",\n    \"name\": \"Muhammad Hudaibi\",\n    \"address\": \"Sumedang\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
 								}
 							}
 						},
-						"url": "http://localhost:8080/auth/register"
+						"url": "http://localhost:8080/api/auth/register"
+					},
+					"response": []
+				},
+				{
+					"name": "Regist Business",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": {
+								"token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJwYXd0bmVyIiwic3ViIjoibXVoYW1tYWRodWRhaWJpMDk4QGdtYWlsLmNvbSIsImV4cCI6MTc1MTQzNzUzNywiaWF0IjoxNzUxMzUxMTM3LCJ1c2VySWQiOiI5MzBjNjRkYS1mMmQ0LTQ5ZDAtYjM5ZC0wY2ZkN2Y3NzUxOWQiLCJyb2xlIjoiQlVTSU5FU1NfT1dORVIifQ.8jQhyPzGX-QQqnJaZdQDHpGh2mUVhmwzlX8VSf2fnRc"
+							}
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"nameBusiness\": \"Intan Grooming House\",\n  \"descriptionBusiness\": \"Tempat grooming hewan terpercaya dengan layanan ramah dan profesional.\",\n  \"businessType\": \"GROOMING_SALON\",\n  \"businessEmail\": \"intan.grooming@example.com\",\n  \"businessPhone\": \"082112345678\",\n  \"emergencyPhone\": \"081299998888\",\n  \"businessImageUrl\": \"https://example.com/images/grooming-house.jpg\",\n  \"certificateImageUrl\": \"https://example.com/certificates/grooming-cert.pdf\",\n  \"businessAddress\": \"Jl. Anjing Bahagia No. 12, Jakarta Selatan\",\n  \"latitude\": -6.244669,\n  \"longitude\": 106.800293,\n  \"operationHours\": {\n    \"monday\": \"09:00-18:00\",\n    \"tuesday\": \"09:00-18:00\"\n  }\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": "http://localhost:8080/api/business/register"
 					},
 					"response": []
 				},
@@ -34,19 +58,31 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"email\": \"muhammadhudaibi098@gmail.com\",\n    \"verificationCode\": \"175413\"\n}",
+							"raw": "{\n    \"email\": \"muhhudaibi11@gmail.com\",\n    \"verificationCode\": \"757178\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
 								}
 							}
 						},
-						"url": "http://localhost:8080/auth/verify"
+						"url": "http://localhost:8080/api/auth/verify"
 					},
 					"response": []
 				},
 				{
 					"name": "resend-verification",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
 					"request": {
 						"method": "POST",
 						"header": [],
@@ -59,7 +95,7 @@
 								}
 							}
 						},
-						"url": "http://localhost:8080/auth/resend-verification"
+						"url": "http://localhost:8080/api/auth/resend-verification"
 					},
 					"response": []
 				},
@@ -70,14 +106,65 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"email\": \"muhammadhudaibi098@gmail.com\",\n    \"password\": \"hudahuda\"\n}",
+							"raw": "{\n    \"email\": \"muhhudaibi11@gmail.com\",\n    \"password\": \"hudahuda\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
 								}
 							}
 						},
-						"url": "http://localhost:8080/auth/login"
+						"url": "http://localhost:8080/api/auth/login"
+					},
+					"response": []
+				},
+				{
+					"name": "View Business",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": {
+								"token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJwYXd0bmVyIiwic3ViIjoibXVoYW1tYWRodWRhaWJpMDk4QGdtYWlsLmNvbSIsImV4cCI6MTc1MTQzMzI4NCwiaWF0IjoxNzUxMzQ2ODg0LCJ1c2VySWQiOiI5MzBjNjRkYS1mMmQ0LTQ5ZDAtYjM5ZC0wY2ZkN2Y3NzUxOWQiLCJyb2xlIjoiQlVTSU5FU1NfT1dORVIifQ.A109oeXeh3ePAtqFAUXEkNDE1dsGvDDJgb8BNNYbHak"
+							}
+						},
+						"method": "GET",
+						"header": [],
+						"url": "http://localhost:8080/api/business"
+					},
+					"response": []
+				},
+				{
+					"name": "Forgot Password",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"email\": \"muhhudaibi11@gmail.com\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": "http://localhost:8080/api/auth/forgot-password"
+					},
+					"response": []
+				},
+				{
+					"name": "Reset password",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"token\": \"af243986-3b74-4418-aded-ed4dc217dafe\",\n    \"newPassword\": \"aduhhuda\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": "http://localhost:8080/api/auth/reset-password"
 					},
 					"response": []
 				}

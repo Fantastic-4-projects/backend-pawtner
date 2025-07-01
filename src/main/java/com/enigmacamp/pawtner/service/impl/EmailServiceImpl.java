@@ -45,4 +45,30 @@ public class EmailServiceImpl implements EmailService {
             throw new RuntimeException("Gagal mengirim email verifikasi.");
         }
     }
+
+    @Override
+    public void sendPasswordResetEmail(String toEmail, String name, String resetLink) {
+        try {
+            Context context = new Context();
+            context.setVariable("name", name);
+            context.setVariable("resetLink", resetLink);
+
+            String html = templateEngine.process("password-reset-email", context);
+
+            MimeMessage message = mailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(message, true);
+
+            helper.setFrom("Pawtner <pawtner_no_reply@yahoo.com>");
+            helper.setTo(toEmail);
+            helper.setSubject("Instruksi Reset Password Akun Pawtner Anda");
+            helper.setText(html, true);
+
+            mailSender.send(message);
+
+            logger.info("Password reset email sent successfully to {}", toEmail);
+        } catch (MessagingException | RuntimeException e) {
+            logger.error("Failed to send password reset email to {}: {}", toEmail, e.getMessage());
+            throw new RuntimeException("Gagal mengirim email reset password.");
+        }
+    }
 }

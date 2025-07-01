@@ -8,13 +8,12 @@ import com.enigmacamp.pawtner.util.ResponseUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 @RestController
-@RequestMapping("/business")
+@RequestMapping("/api/business")
 @RequiredArgsConstructor
 public class BusinessController {
 
@@ -32,7 +31,6 @@ public class BusinessController {
     }
 
     @GetMapping
-    @PreAuthorize("hasRole('ROLE_ADMIN')")
     public ResponseEntity<CommonResponse<List<BusinessResponseDTO>>> viewBusiness(){
         return ResponseUtil.createResponse(
                 HttpStatus.OK,
