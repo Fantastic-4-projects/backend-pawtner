@@ -36,3 +36,21 @@ This document summarizes the changes made by the Gemini CLI agent related to aut
 ## 3. Conclusion
 
 These changes introduce a robust authentication and authorization system with email verification, enhancing the security and user management capabilities of the Pawtner application. The addition of an admin role and business profile management features, secured by method-level authorization, provides a foundation for core application functionality. The migration of `Double` to `BigDecimal` for monetary and coordinate values improves precision and avoids floating-point inaccuracies.
+
+## 4. Post-Implementation Refinements
+
+Following the initial implementation, several refinements were made to improve consistency and address feedback:
+
+- **`BusinessController.java`**: Removed `@PreAuthorize("hasRole('ROLE_ADMIN')")` from the `viewBusiness` endpoint to allow broader access and add endpoint in front `/api`.
+- **`AuthController.java`**: add endpoint in front `/api`.
+- **`BusinessRequestDTO.java`**: Renamed the `operationHour` field to `operationHours` for clarity and consistency.
+- **`Business.java`**: Changed the `columnDefinition` for the `operationHours` field from `jsonb` to `TEXT` to simplify data handling.
+- **`BusinessServiceImpl.java`**: Updated the `create` method to use `getOperationHours()` in alignment with the DTO changes.
+
+## 5. Refactoring `operationHours`
+
+To improve the structure and maintainability of how business operation hours are handled :
+
+- **DTO and Converter**: Introduced `OperationHoursDTO` to replace the generic `Map<String, String>` and added a custom `OperationHoursConverter` to handle serialization to and from JSON in the database.
+- **Dependency Removal**: Removed the `hibernate-types-60` dependency, favoring the custom converter for a more lightweight solution.
+- **Codebase Update**: Updated the `Business` entity, DTOs, and service layer to utilize the new `OperationHoursDTO` and converter, ensuring a more robust and type-safe implementation.

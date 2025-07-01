@@ -76,7 +76,7 @@ public class Business {
     private Boolean isVerified = false;
 
     @Convert(converter = OperationHoursConverter.class)
-    @Column(columnDefinition = "jsonb")
+    @Column(columnDefinition = "TEXT")
     private OperationHoursDTO operationHours;
 
     @Builder.Default

@@ -25,5 +25,5 @@ public class BusinessRequestDTO {
     private String businessAddress;
     private BigDecimal latitude;
     private BigDecimal longitude;
-    private OperationHoursDTO operationHour;
+    private OperationHoursDTO operationHours;
 }

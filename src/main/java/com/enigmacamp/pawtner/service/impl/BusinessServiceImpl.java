@@ -40,7 +40,7 @@ public class BusinessServiceImpl implements BusinessService {
                 .certificateImageUrl(businessRequestDTO.getCertificateImageUrl())
                 .latitude(businessRequestDTO.getLatitude())
                 .longitude(businessRequestDTO.getLongitude())
-                .operationHours(businessRequestDTO.getOperationHour())
+                .operationHours(businessRequestDTO.getOperationHours())
                 .build();
 
         currentUser.setRole(UserRole.BUSINESS_OWNER);
