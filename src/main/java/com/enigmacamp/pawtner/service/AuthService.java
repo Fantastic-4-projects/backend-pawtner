@@ -1,10 +1,7 @@
 package com.enigmacamp.pawtner.service;
 
-import com.enigmacamp.pawtner.dto.request.LoginRequestDTO;
-import com.enigmacamp.pawtner.dto.request.ResendVerificationRequestDTO;
-import com.enigmacamp.pawtner.dto.request.VerificationRequestDTO;
+import com.enigmacamp.pawtner.dto.request.*;
 import com.enigmacamp.pawtner.dto.response.LoginResponseDTO;
-import com.enigmacamp.pawtner.dto.request.RegisterRequestDTO;
 import com.enigmacamp.pawtner.dto.response.RegisterResponseDTO;
 import com.enigmacamp.pawtner.entity.User;
 import com.enigmacamp.pawtner.repository.AuthRepository;
@@ -21,4 +18,6 @@ public interface AuthService {
     RegisterResponseDTO register(RegisterRequestDTO registerRequestDTO);
     void verify(VerificationRequestDTO requestDTO);
     void resendVerificationCode(ResendVerificationRequestDTO verificationRequestDTO);
+    void forgotPassword(ForgotPasswordRequestDTO forgotPasswordRequestDTO);
+    void resetPassword(ResetPasswordRequestDTO resetPasswordRequestDTO);
 }

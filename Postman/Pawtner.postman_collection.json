@@ -16,7 +16,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"email\": \"muhammadhudaibi098@gmail.com\",\n    \"phoneNumber\": \"08558923189\",\n    \"password\": \"hudahuda\",\n    \"name\": \"Muhammad Hudaibi\",\n    \"address\": \"Lowokwaru\"\n}",
+							"raw": "{\n    \"email\": \"muhhudaibi11@gmail.com\",\n    \"phoneNumber\": \"085589231880\",\n    \"password\": \"hudahuda\",\n    \"name\": \"Muhammad Hudaibi\",\n    \"address\": \"Sumedang\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -58,7 +58,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"email\": \"muhammadhudaibi098@gmail.com\",\n    \"verificationCode\": \"586043\"\n}",
+							"raw": "{\n    \"email\": \"muhhudaibi11@gmail.com\",\n    \"verificationCode\": \"757178\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -106,7 +106,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"email\": \"muhammadhudaibi098@gmail.com\",\n    \"password\": \"hudahuda\"\n}",
+							"raw": "{\n    \"email\": \"muhhudaibi11@gmail.com\",\n    \"password\": \"hudahuda\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -129,6 +129,42 @@
 						"method": "GET",
 						"header": [],
 						"url": "http://localhost:8080/api/business"
+					},
+					"response": []
+				},
+				{
+					"name": "Forgot Password",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"email\": \"muhhudaibi11@gmail.com\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": "http://localhost:8080/api/auth/forgot-password"
+					},
+					"response": []
+				},
+				{
+					"name": "Reset password",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"token\": \"af243986-3b74-4418-aded-ed4dc217dafe\",\n    \"newPassword\": \"aduhhuda\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": "http://localhost:8080/api/auth/reset-password"
 					},
 					"response": []
 				}

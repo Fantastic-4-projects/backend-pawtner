@@ -1,11 +1,8 @@
 package com.enigmacamp.pawtner.controller;
 
-import com.enigmacamp.pawtner.dto.request.LoginRequestDTO;
-import com.enigmacamp.pawtner.dto.request.ResendVerificationRequestDTO;
-import com.enigmacamp.pawtner.dto.request.VerificationRequestDTO;
+import com.enigmacamp.pawtner.dto.request.*;
 import com.enigmacamp.pawtner.dto.response.CommonResponse;
 import com.enigmacamp.pawtner.dto.response.LoginResponseDTO;
-import com.enigmacamp.pawtner.dto.request.RegisterRequestDTO;
 import com.enigmacamp.pawtner.dto.response.RegisterResponseDTO;
 import com.enigmacamp.pawtner.service.AuthService;
 import com.enigmacamp.pawtner.util.ResponseUtil;
@@ -57,6 +54,26 @@ public class AuthController {
         return ResponseUtil.createResponse(
                 HttpStatus.OK,
                 "Kode verifikasi telah dikirim ke email Anda.",
+                null
+        );
+    }
+
+    @PostMapping("/forgot-password")
+    public ResponseEntity<CommonResponse<String>> forgotPassword(@Valid @RequestBody ForgotPasswordRequestDTO request) {
+        authService.forgotPassword(request);
+        return ResponseUtil.createResponse(
+                HttpStatus.OK,
+                "Jika email terdaftar, link untuk reset password telah dikirim.",
+                null
+        );
+    }
+
+    @PostMapping("/reset-password")
+    public ResponseEntity<CommonResponse<String>> resetPassword(@Valid @RequestBody ResetPasswordRequestDTO request) {
+        authService.resetPassword(request);
+        return ResponseUtil.createResponse(
+                HttpStatus.OK,
+                "Password berhasil diubah.",
                 null
         );
     }

@@ -13,4 +13,6 @@ public interface AuthRepository extends JpaRepository<User, UUID> {
     Optional<UserDetails> findByEmail(String email);
 
     boolean existsByEmail(String email);
+
+    Optional<User> findByResetPasswordToken(String resetPasswordToken);
 }

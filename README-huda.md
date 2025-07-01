@@ -54,3 +54,15 @@ To improve the structure and maintainability of how business operation hours are
 - **DTO and Converter**: Introduced `OperationHoursDTO` to replace the generic `Map<String, String>` and added a custom `OperationHoursConverter` to handle serialization to and from JSON in the database.
 - **Dependency Removal**: Removed the `hibernate-types-60` dependency, favoring the custom converter for a more lightweight solution.
 - **Codebase Update**: Updated the `Business` entity, DTOs, and service layer to utilize the new `OperationHoursDTO` and converter, ensuring a more robust and type-safe implementation.
+
+## 6. Forgot Password Feature
+
+To enhance user account management, a "forgot password" feature has been implemented. This allows users to securely reset their password if they forget it.
+
+- **New Endpoints**: Added `/api/auth/forgot-password` to initiate the password reset process and `/api/auth/reset-password` to set a new password using a token.
+- **Email Integration**: The system now sends a password reset link to the user's registered email address.
+- **Data Model Update**: The `User` entity has been updated with `resetPasswordToken` and `resetPasswordTokenExpire` fields to manage the reset process securely.
+- **New DTOs**: Introduced `ForgotPasswordRequestDTO` and `ResetPasswordRequestDTO` to handle the request data.
+- **Service Layer**: Implemented the necessary logic in `AuthService` and `EmailService` to handle token generation, email sending, and password updates.
+- **Email Template**: Added a new `password-reset-email.html` template for the password reset email.
+- **Postman Collection**: Updated the Postman collection with new requests to test the "Forgot Password" and "Reset Password" functionality.
