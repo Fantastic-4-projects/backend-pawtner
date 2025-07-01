@@ -4,6 +4,7 @@ import com.enigmacamp.pawtner.dto.request.ServiceRequestDTO;
 import com.enigmacamp.pawtner.dto.response.CommonResponse;
 import com.enigmacamp.pawtner.dto.response.ServiceResponseDTO;
 import com.enigmacamp.pawtner.service.ServiceService;
+import com.enigmacamp.pawtner.util.ResponseUtil;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -24,31 +25,19 @@ public class ServiceController {
     @PreAuthorize("hasRole('BUSINESS_OWNER')")
     public ResponseEntity<CommonResponse<ServiceResponseDTO>> createService(@Valid @ModelAttribute ServiceRequestDTO serviceRequestDTO) {
         ServiceResponseDTO responseDTO = serviceService.createService(serviceRequestDTO);
-        CommonResponse<ServiceResponseDTO> commonResponse = new CommonResponse<>(
-                "Successfully created service",
-                responseDTO
-        );
-        return new ResponseEntity<>(commonResponse, HttpStatus.CREATED);
+        return ResponseUtil.createResponse(HttpStatus.CREATED, "Successfully created service", responseDTO);
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<CommonResponse<ServiceResponseDTO>> getServiceById(@PathVariable Integer id) {
         ServiceResponseDTO responseDTO = serviceService.getServiceById(id);
-        CommonResponse<ServiceResponseDTO> commonResponse = new CommonResponse<>(
-                "Successfully fetched service",
-                responseDTO
-        );
-        return new ResponseEntity<>(commonResponse, HttpStatus.OK);
+        return ResponseUtil.createResponse(HttpStatus.OK, "Successfully fetched service", responseDTO);
     }
 
     @GetMapping
     public ResponseEntity<CommonResponse<Page<ServiceResponseDTO>>> getAllServices(Pageable pageable) {
         Page<ServiceResponseDTO> responseDTOPage = serviceService.getAllServices(pageable);
-        CommonResponse<Page<ServiceResponseDTO>> commonResponse = new CommonResponse<>(
-                "Successfully fetched all services",
-                responseDTOPage
-        );
-        return new ResponseEntity<>(commonResponse, HttpStatus.OK);
+        return ResponseUtil.createResponse(HttpStatus.OK, "Successfully fetched all services", responseDTOPage);
     }
 
     @PutMapping("/{id}")
@@ -56,21 +45,13 @@ public class ServiceController {
     public ResponseEntity<CommonResponse<ServiceResponseDTO>> updateService(@PathVariable Integer id, @Valid @ModelAttribute ServiceRequestDTO serviceRequestDTO) {
         serviceRequestDTO.setId(id);
         ServiceResponseDTO responseDTO = serviceService.updateService(serviceRequestDTO);
-        CommonResponse<ServiceResponseDTO> commonResponse = new CommonResponse<>(
-                "Successfully updated service",
-                responseDTO
-        );
-        return new ResponseEntity<>(commonResponse, HttpStatus.OK);
+        return ResponseUtil.createResponse(HttpStatus.OK, "Successfully updated service", responseDTO);
     }
 
     @DeleteMapping("/{id}")
     @PreAuthorize("hasRole('BUSINESS_OWNER')")
     public ResponseEntity<CommonResponse<Void>> deleteService(@PathVariable Integer id) {
         serviceService.deleteService(id);
-        CommonResponse<Void> commonResponse = new CommonResponse<>(
-                "Successfully deleted service",
-                null
-        );
-        return new ResponseEntity<>(commonResponse, HttpStatus.OK);
+        return ResponseUtil.createResponse(HttpStatus.OK, "Successfully deleted service", null);
     }
 }

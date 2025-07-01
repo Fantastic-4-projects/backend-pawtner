@@ -1,6 +1,6 @@
 package com.enigmacamp.pawtner.converter;
 
-import com.enigmacamp.pawtner.model.OperationHoursDTO;
+import com.enigmacamp.pawtner.dto.request.OperationHoursDTO;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.persistence.AttributeConverter;

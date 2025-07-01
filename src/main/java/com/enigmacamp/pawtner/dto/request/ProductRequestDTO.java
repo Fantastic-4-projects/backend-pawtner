@@ -1,5 +1,6 @@
 package com.enigmacamp.pawtner.dto.request;
 
+import java.util.UUID;
 import com.enigmacamp.pawtner.constant.ProductCategory;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
@@ -21,7 +22,7 @@ public class ProductRequestDTO {
     private Integer id;
 
     @NotNull(message = "Business ID is required")
-    private Integer businessId;
+    private UUID businessId;
 
     @NotBlank(message = "Product name is required")
     private String name;

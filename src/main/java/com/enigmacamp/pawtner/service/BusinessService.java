@@ -4,8 +4,12 @@ import com.enigmacamp.pawtner.dto.request.BusinessRequestDTO;
 import com.enigmacamp.pawtner.dto.response.BusinessResponseDTO;
 
 import java.util.List;
+import java.util.UUID;
+
+import com.enigmacamp.pawtner.entity.Business;
 
 public interface BusinessService {
     BusinessResponseDTO registerBusiness(BusinessRequestDTO businessRequestDTO);
     List<BusinessResponseDTO> viewBusiness();
+    Business getBusinessByIdForInternal(UUID id);
 }

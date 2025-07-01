@@ -1,5 +1,6 @@
 package com.enigmacamp.pawtner.dto.response;
 
+import java.util.UUID;
 import com.enigmacamp.pawtner.constant.ProductCategory;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -15,7 +16,7 @@ import java.math.BigDecimal;
 @Builder(toBuilder = true)
 public class ProductResponseDTO {
     private Integer id;
-    private Integer businessId;
+    private UUID businessId;
     private String name;
     private ProductCategory category;
     private String description;

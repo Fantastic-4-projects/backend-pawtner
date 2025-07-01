@@ -138,7 +138,7 @@ public class AuthServiceImpl implements AuthService {
     @Override
     public void resetPassword(ResetPasswordRequestDTO resetPasswordRequestDTO) {
         User user = authRepository.findByResetPasswordToken(resetPasswordRequestDTO.getToken())
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Token ditemukan"));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Token tidak ditemukan"));
 
         if (user.getResetPasswordTokenExpire().isBefore(LocalDateTime.now())) {
             user.setResetPasswordToken(null);

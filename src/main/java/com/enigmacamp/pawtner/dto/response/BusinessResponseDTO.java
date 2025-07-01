@@ -1,10 +1,12 @@
 package com.enigmacamp.pawtner.dto.response;
 
-import com.enigmacamp.pawtner.model.OperationHoursDTO;
+import com.enigmacamp.pawtner.dto.request.OperationHoursDTO;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+
+import java.util.UUID;
 
 
 @Data
@@ -12,6 +14,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @Builder
 public class BusinessResponseDTO {
+    private UUID businessId;
     private String ownerName;
     private String businessName;
     private String businessAddress;

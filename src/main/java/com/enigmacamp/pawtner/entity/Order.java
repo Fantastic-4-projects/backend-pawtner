@@ -29,7 +29,7 @@ public class Order {
     private User customer;
 
     @ManyToOne
-    @JoinColumn(name = "business_id", nullable = false)
+    @JoinColumn(name = "business_id", nullable = false, columnDefinition = "uuid")
     private Business business;
 
     @NotBlank(message = "Order number is required")
