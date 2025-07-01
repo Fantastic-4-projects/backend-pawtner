@@ -4,88 +4,61 @@ This document summarizes the initial review and setup steps performed by the Gem
 
 ## 1. Project Overview and Database Schema Review
 
-- **`README.md`**: The main `README.md` was thoroughly reviewed. It provides a comprehensive and well-structured plan for the Pawtner application, including:
-    - Executive Summary
-    - Core Problem Statement
-    - Proposed Solution & Core Features
-    - Technical Architecture (with detailed Database Design and ERD)
-    - Core User Workflows
-    - Technical Specifications
-    - MVP Execution Plan and Roadmap
-
-    The `README.md` serves as an excellent foundation for understanding the project's vision and technical direction.
+- **`README.md`**: The main `README.md` was thoroughly reviewed. It provides a comprehensive and well-structured plan for the Pawtner application.
+- **Conclusion**: The `README.md` serves as an excellent foundation for understanding the project's vision and technical direction.
 
 ## 2. Entity Class Review and Validation
 
 All Java entity classes located in `src/main/java/com/enigmacamp/pawtner/entity/` were reviewed against the database schema defined in `README.md`.
 
-The following entity classes were checked:
-- `Booking.java`
-- `Business.java`
-- `CartItem.java`
-- `Order.java`
-- `OrderItem.java`
-- `Payment.java`
-- `Pet.java`
-- `Prescription.java`
-- `PrescriptionItem.java`
-- `Product.java`
-- `Review.java`
-- `Service.java`
-- `ShoppingCart.java`
-- `User.java`
-
-**Findings:**
-- The entity classes are generally well-implemented, with correct JPA annotations (`@Entity`, `@Table`, `@Id`, `@GeneratedValue`, `@ManyToOne`, `@OneToOne`, `@JoinColumn`).
-- Relationships between entities are correctly defined.
-- Validation constraints (`@NotBlank`, `@NotNull`, `@Size`, `@Email`, `@Min`, `@Max`, `@DecimalMin`, `@Digits`, `@Pattern`) are appropriately used, aligning with the schema's data integrity requirements.
-- `PrePersist` and `PreUpdate` lifecycle callbacks are used for `createdAt` and `updatedAt` timestamps where applicable.
-
 **Correction Made:**
-- **`User.java`**: The `name` field was identified as non-nullable in the database schema but lacked an explicit `nullable = false` in its `@Column` annotation within the Java entity. This was corrected to ensure consistency and proper database schema generation/validation.
-
-    **Before:**
-    ```java
-    @NotBlank(message = "Name is required")
-    @Size(max = 255)
-    private String name;
-    ```
-
-    **After:**
-    ```java
-    @NotBlank(message = "Name is required")
-    @Size(max = 255)
-    @Column(nullable = false)
-    private String name;
-    ```
+- **`User.java`**: The `name` field was identified as non-nullable in the database schema but lacked an explicit `nullable = false` in its `@Column` annotation. This was corrected.
+- **`Service.java`**: The `imageUrl` field was missing and has been added.
 
 ## 3. Introduction of Enums for Type Safety
 
-To enhance type safety, readability, and prevent invalid data, several fields with a fixed set of allowed values were converted from `String` types to custom Java `enum` types. A new package `com.enigmacamp.pawtner.constant` was created to house these enum definitions.
+To enhance type safety and readability, several fields were converted from `String` types to custom Java `enum` types in the `com.enigmacamp.pawtner.constant` package.
 
-**Created Enum Classes:**
-- `UserRole.java`
-- `BusinessType.java`
-- `BusinessStatus.java`
-- `ProductCategory.java`
-- `ServiceCategory.java`
-- `OrderStatus.java`
-- `BookingStatus.java`
-- `PaymentStatus.java`
+## 4. Completed Development Tasks
 
-**Entity Classes Updated to Use Enums:**
-- **`User.java`**: The `role` field now uses `UserRole` enum.
-- **`Business.java`**: The `businessType` field now uses `BusinessType` enum, and `statusRealtime` uses `BusinessStatus` enum.
-- **`Product.java`**: The `category` field now uses `ProductCategory` enum.
-- **`Service.java`**: The `category` field now uses `ServiceCategory` enum.
-- **`Order.java`**: The `status` field now uses `OrderStatus` enum.
-- **`Booking.java`**: The `status` field now uses `BookingStatus` enum.
-- **`Payment.java`**: The `status` field now uses `PaymentStatus` enum.
+Based on the MVP plan in `README.md`, the following core features have been fully implemented:
 
-For each updated field, the `@Pattern` annotation (which was previously used for string-based validation) was removed, and `@Enumerated(EnumType.STRING)` was added to ensure that JPA persists the enum values as their string names in the database.
+### a. Product Management (CRUD)
+- **`ProductController`**: Exposes REST endpoints for creating, reading, updating, and deleting products.
+- **`ProductService`**: Contains the business logic for managing products.
+- **`ProductRepository`**: Handles data access for the `Product` entity.
+- **DTOs**: `ProductRequestDTO` and `ProductResponseDTO` were created for handling data transfer.
+- **Security**: Endpoints are secured, allowing only `business_owner` roles for modification operations.
 
-## 4. Conclusion
+### b. Service Management (CRUD)
+- **`ServiceController`**: Exposes REST endpoints for creating, reading, updating, and deleting services.
+- **`ServiceService`**: Contains the business logic for managing services.
+- **`ServiceRepository`**: Handles data access for the `Service` entity.
+- **DTOs**: `ServiceRequestDTO` and `ServiceResponseDTO` were created for handling data transfer.
+- **Security**: Endpoints are secured, allowing only `business_owner` roles for modification operations.
 
-The project's `README.md` provides a solid blueprint, and the existing entity classes are in good shape, closely mirroring the intended database design. The minor correction in `User.java` and the introduction of enums ensure even tighter alignment, improved type safety, and better maintainability.
+### c. Image Upload Service
+- **`ImageUploadService`**: A reusable service for handling image uploads.
+- **Cloudinary Integration**: The service is now configured to use Cloudinary for image storage.
+- **Configuration**: Cloudinary credentials have been externalized to `application.properties` for better security and maintainability.
 
-The project is now well-prepared for the next development phases, such as implementing repositories, services, and controllers based on these entities.
+## 5. Next Steps
+
+With the foundation for managing products and services now in place, the next logical steps are to implement the core e-commerce and booking workflows as defined in the MVP.
+
+### a. Implement Shopping Cart Functionality
+- Create `CartService` and `CartController` to allow customers to add products to a shopping cart.
+- Implement logic for adding, removing, and clearing cart items.
+
+### b. Implement Order and Checkout Process
+- Create `OrderService` and `OrderController` to allow customers to convert their cart into an order.
+- Implement the main `createOrderFromCart` method.
+
+### c. Implement Payment Integration (Midtrans)
+- Create `PaymentService` and `PaymentController`.
+- Integrate with the Midtrans API to create transactions and handle webhooks.
+
+### d. Implement Booking Functionality
+- Create `BookingService` and `BookingController` to allow customers to book services.
+- Implement logic for checking availability and creating bookings.
+- Integrate with the `PaymentService` to handle payments for bookings.

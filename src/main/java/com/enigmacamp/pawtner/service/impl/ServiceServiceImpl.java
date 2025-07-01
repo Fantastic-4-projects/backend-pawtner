@@ -1,0 +1,110 @@
+package com.enigmacamp.pawtner.service.impl;
+
+import com.enigmacamp.pawtner.dto.request.ServiceRequestDTO;
+import com.enigmacamp.pawtner.dto.response.ServiceResponseDTO;
+import com.enigmacamp.pawtner.entity.Business;
+import com.enigmacamp.pawtner.entity.Service;
+import com.enigmacamp.pawtner.repository.ServiceRepository;
+import com.enigmacamp.pawtner.service.BusinessService;
+import com.enigmacamp.pawtner.service.ImageUploadService;
+import com.enigmacamp.pawtner.service.ServiceService;
+import lombok.AllArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
+import org.springframework.stereotype.Component;
+import org.springframework.web.server.ResponseStatusException;
+
+import java.io.IOException;
+
+@Component
+@AllArgsConstructor
+public class ServiceServiceImpl implements ServiceService {
+
+    private final ServiceRepository serviceRepository;
+    private final BusinessService businessService;
+    private final ImageUploadService imageUploadService;
+
+    @Override
+    public ServiceResponseDTO createService(ServiceRequestDTO serviceRequestDTO) {
+        Business business = businessService.getBusinessByIdForInternal(serviceRequestDTO.getBusinessId());
+        String imageUrl = null;
+        if (serviceRequestDTO.getImage() != null && !serviceRequestDTO.getImage().isEmpty()) {
+            try {
+                imageUrl = imageUploadService.upload(serviceRequestDTO.getImage());
+            } catch (IOException e) {
+                throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Failed to upload image");
+            }
+        }
+
+        Service service = Service.builder()
+                .business(business)
+                .category(serviceRequestDTO.getCategory())
+                .name(serviceRequestDTO.getName())
+                .basePrice(serviceRequestDTO.getBasePrice())
+                .capacityPerDay(serviceRequestDTO.getCapacityPerDay())
+                .imageUrl(imageUrl)
+                .isActive(true)
+                .build();
+        serviceRepository.save(service);
+        return mapToResponseDTO(service);
+    }
+
+    @Override
+    public ServiceResponseDTO getServiceById(Integer id) {
+        Service service = serviceRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Service not found"));
+        return mapToResponseDTO(service);
+    }
+
+    @Override
+    public Page<ServiceResponseDTO> getAllServices(Pageable pageable) {
+        Page<Service> services = serviceRepository.findAll(pageable);
+        return services.map(this::mapToResponseDTO);
+    }
+
+    @Override
+    public ServiceResponseDTO updateService(ServiceRequestDTO serviceRequestDTO) {
+        Service existingService = serviceRepository.findById(serviceRequestDTO.getId())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Service not found"));
+
+        String imageUrl = existingService.getImageUrl();
+        if (serviceRequestDTO.getImage() != null && !serviceRequestDTO.getImage().isEmpty()) {
+            try {
+                imageUrl = imageUploadService.upload(serviceRequestDTO.getImage());
+            } catch (IOException e) {
+                throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Failed to upload image");
+            }
+        }
+
+        existingService.setCategory(serviceRequestDTO.getCategory());
+        existingService.setName(serviceRequestDTO.getName());
+        existingService.setBasePrice(serviceRequestDTO.getBasePrice());
+        existingService.setCapacityPerDay(serviceRequestDTO.getCapacityPerDay());
+        existingService.setImageUrl(imageUrl);
+
+        serviceRepository.save(existingService);
+        return mapToResponseDTO(existingService);
+    }
+
+    @Override
+    public void deleteService(Integer id) {
+        Service service = serviceRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Service not found"));
+        service.setIsActive(false);
+        serviceRepository.save(service);
+    }
+
+    private ServiceResponseDTO mapToResponseDTO(Service service) {
+        return ServiceResponseDTO.builder()
+                .id(service.getId())
+                .businessId(service.getBusiness().getId())
+                .category(service.getCategory())
+                .name(service.getName())
+                .basePrice(service.getBasePrice())
+                .capacityPerDay(service.getCapacityPerDay())
+                .imageUrl(service.getImageUrl())
+                .isActive(service.getIsActive())
+                .build();
+    }
+}
