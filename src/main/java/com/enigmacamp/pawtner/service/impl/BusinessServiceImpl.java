@@ -1,6 +1,7 @@
 package com.enigmacamp.pawtner.service.impl;
 
 import com.enigmacamp.pawtner.constant.UserRole;
+import com.enigmacamp.pawtner.model.OperationHoursDTO;
 import com.enigmacamp.pawtner.dto.request.BusinessRequestDTO;
 import com.enigmacamp.pawtner.dto.response.BusinessResponseDTO;
 import com.enigmacamp.pawtner.entity.Business;
@@ -59,7 +60,7 @@ public class BusinessServiceImpl implements BusinessService {
     }
 
     private BusinessResponseDTO mapToResponse(Business business) {
-                return BusinessResponseDTO.builder()
+        return BusinessResponseDTO.builder()
                 .ownerName(business.getOwner().getName())
                 .businessName(business.getName())
                 .businessAddress(business.getAddress())
