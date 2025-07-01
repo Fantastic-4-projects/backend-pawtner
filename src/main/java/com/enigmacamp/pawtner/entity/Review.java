@@ -29,7 +29,7 @@ public class Review {
     private User user;
 
     @ManyToOne
-    @JoinColumn(name = "business_id")
+    @JoinColumn(name = "business_id", columnDefinition = "uuid")
     private Business business;
 
     @ManyToOne

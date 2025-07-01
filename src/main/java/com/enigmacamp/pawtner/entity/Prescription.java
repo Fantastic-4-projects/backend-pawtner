@@ -28,7 +28,7 @@ public class Prescription {
     private Pet pet;
 
     @ManyToOne
-    @JoinColumn(name = "issuing_business_id", nullable = false)
+    @JoinColumn(name = "issuing_business_id", nullable = false, columnDefinition = "uuid")
     private Business issuingBusiness;
 
     @NotNull(message = "Issue date is required")

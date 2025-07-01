@@ -4,7 +4,7 @@ package com.enigmacamp.pawtner.entity;
 import com.enigmacamp.pawtner.constant.BusinessStatus;
 import com.enigmacamp.pawtner.constant.BusinessType;
 import com.enigmacamp.pawtner.converter.OperationHoursConverter;
-import com.enigmacamp.pawtner.model.OperationHoursDTO;
+import com.enigmacamp.pawtner.dto.request.OperationHoursDTO;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
 import lombok.AllArgsConstructor;
@@ -14,6 +14,7 @@ import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 @Data
 @AllArgsConstructor
@@ -24,8 +25,9 @@ import java.time.LocalDateTime;
 public class Business {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer id;
+    @GeneratedValue(strategy = GenerationType.UUID)
+    @Column(columnDefinition = "uuid")
+    private UUID id;
 
     @ManyToOne
     @JoinColumn(name = "owner_id", nullable = false)

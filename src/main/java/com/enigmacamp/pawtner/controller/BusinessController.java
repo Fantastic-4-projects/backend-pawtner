@@ -5,6 +5,7 @@ import com.enigmacamp.pawtner.dto.response.BusinessResponseDTO;
 import com.enigmacamp.pawtner.dto.response.CommonResponse;
 import com.enigmacamp.pawtner.service.BusinessService;
 import com.enigmacamp.pawtner.util.ResponseUtil;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -21,7 +22,7 @@ public class BusinessController {
 
     @PostMapping("/register")
     public ResponseEntity<CommonResponse<BusinessResponseDTO>> createBusiness(
-            @RequestBody BusinessRequestDTO businessRequestDTO
+            @Valid @RequestBody BusinessRequestDTO businessRequestDTO
     ) {
         return ResponseUtil.createResponse(
                 HttpStatus.CREATED,

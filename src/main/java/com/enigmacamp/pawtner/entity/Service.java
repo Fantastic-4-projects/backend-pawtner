@@ -25,7 +25,7 @@ public class Service {
     private Integer id;
 
     @ManyToOne
-    @JoinColumn(name = "business_id", nullable = false)
+    @JoinColumn(name = "business_id", nullable = false, columnDefinition = "uuid")
     private Business business;
 
     @NotNull(message = "Category is required")
