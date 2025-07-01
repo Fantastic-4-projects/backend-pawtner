@@ -28,7 +28,7 @@ public class ShoppingCart {
     private User customer;
 
     @ManyToOne
-    @JoinColumn(name = "business_id", nullable = false)
+    @JoinColumn(name = "business_id", nullable = false, columnDefinition = "uuid")
     private Business business;
 
     @Builder.Default

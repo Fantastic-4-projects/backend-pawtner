@@ -25,7 +25,7 @@ public class Product {
     private Integer id;
 
     @ManyToOne
-    @JoinColumn(name = "business_id", nullable = false)
+    @JoinColumn(name = "business_id", nullable = false, columnDefinition = "uuid")
     private Business business;
 
     @NotBlank(message = "Name is required")

@@ -1,7 +1,8 @@
 package com.enigmacamp.pawtner.service.impl;
 
+import java.util.UUID;
 import com.enigmacamp.pawtner.constant.UserRole;
-import com.enigmacamp.pawtner.model.OperationHoursDTO;
+import com.enigmacamp.pawtner.dto.request.OperationHoursDTO;
 import com.enigmacamp.pawtner.dto.request.BusinessRequestDTO;
 import com.enigmacamp.pawtner.dto.response.BusinessResponseDTO;
 import com.enigmacamp.pawtner.entity.Business;
@@ -12,7 +13,9 @@ import com.enigmacamp.pawtner.service.BusinessService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -61,10 +64,17 @@ public class BusinessServiceImpl implements BusinessService {
 
     private BusinessResponseDTO mapToResponse(Business business) {
         return BusinessResponseDTO.builder()
+                .businessId(business.getId())
                 .ownerName(business.getOwner().getName())
                 .businessName(business.getName())
                 .businessAddress(business.getAddress())
                 .operationHours(business.getOperationHours())
                 .build();
+    }
+
+    @Override
+    public Business getBusinessByIdForInternal(UUID id) {
+        return businessRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Business not found"));
     }
 }

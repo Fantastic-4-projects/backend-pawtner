@@ -1,5 +1,6 @@
 package com.enigmacamp.pawtner.dto.request;
 
+import java.util.UUID;
 import com.enigmacamp.pawtner.constant.ServiceCategory;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
@@ -20,7 +21,7 @@ public class ServiceRequestDTO {
     private Integer id;
 
     @NotNull(message = "Business ID is required")
-    private Integer businessId;
+    private UUID businessId;
 
     @NotNull(message = "Service category is required")
     private ServiceCategory category;

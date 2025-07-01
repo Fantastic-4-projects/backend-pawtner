@@ -1,7 +1,7 @@
 package com.enigmacamp.pawtner.dto.request;
 
 import com.enigmacamp.pawtner.constant.BusinessType;
-import com.enigmacamp.pawtner.model.OperationHoursDTO;
+import com.enigmacamp.pawtner.dto.request.OperationHoursDTO;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
