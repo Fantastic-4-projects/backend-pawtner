@@ -84,8 +84,24 @@ To enhance type safety, readability, and prevent invalid data, several fields wi
 
 For each updated field, the `@Pattern` annotation (which was previously used for string-based validation) was removed, and `@Enumerated(EnumType.STRING)` was added to ensure that JPA persists the enum values as their string names in the database.
 
-## 4. Conclusion
+## 4. Postman Collection Updates and User Flow Clarification
 
-The project's `README.md` provides a solid blueprint, and the existing entity classes are in good shape, closely mirroring the intended database design. The minor correction in `User.java` and the introduction of enums ensure even tighter alignment, improved type safety, and better maintainability.
+This section details the updates made to the `Pawtner.postman_collection.json` file to accurately reflect the user registration and business creation flow, along with a bug fix.
+
+**User Registration Flow Clarification:**
+- It was clarified that all new user registrations via the `/api/auth/register` endpoint are *always* assigned the `CUSTOMER` role by default. There is no direct registration endpoint for `BUSINESS_OWNER` roles.
+- To become a "business owner" in the application's context, a user first registers as a `CUSTOMER`, logs in, and then creates a business entity. This association grants them the necessary permissions to manage products and services for that specific business.
+
+**Postman Collection Changes:**
+- **Removed "Register Business Owner" Request:** The misleading "Register Business Owner" request was removed from the "Authentication" folder, as it implied a direct registration path for business owners which does not exist in the current backend implementation.
+- **Added "Business Management" Folder and "Create Business" Request:** A new folder named "Business Management" was added. Inside this folder, a "Create Business (Sets businessId)" request was added. This request demonstrates the correct flow for a logged-in `CUSTOMER` to create a business, and it automatically captures the `businessId` from the response for subsequent requests.
+
+**Bug Found and Fixed:**
+- **JSON Escaping in "Create Business" Request:** An error was identified and fixed in the `raw` body of the "Create Business (Sets businessId)" request. The double quotes within the JSON string were not properly escaped, leading to an invalid JSON format. This has been corrected to ensure the request body is valid.
+- **`role` field in "Register Customer" Request:** The `role` field was incorrectly present in the request body for "Register Customer". This was removed as the backend automatically assigns the `CUSTOMER` role upon registration.
+
+## 5. Conclusion
+
+The project's `README.md` provides a solid blueprint, and the existing entity classes are in good shape, closely mirroring the intended database design. The minor correction in `User.java` and the introduction of enums ensure even tighter alignment, improved type safety, and better maintainability. The Postman collection has been updated to accurately reflect the user and business registration flow, and critical bugs related to JSON formatting and incorrect request parameters have been resolved.
 
 The project is now well-prepared for the next development phases, such as implementing repositories, services, and controllers based on these entities.
