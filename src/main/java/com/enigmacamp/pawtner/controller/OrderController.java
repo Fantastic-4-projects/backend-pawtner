@@ -23,21 +23,21 @@ public class OrderController {
     private final OrderService orderService;
 
     @PostMapping("/checkout")
-    @PreAuthorize("hasRole('CUSTOMER')")
+    @PreAuthorize("hasAuthority('CUSTOMER')")
     public ResponseEntity<CommonResponse<OrderResponseDTO>> checkout(Authentication authentication) {
         OrderResponseDTO responseDTO = orderService.createOrderFromCart(authentication.getName());
         return ResponseUtil.createResponse(HttpStatus.CREATED, "Order created successfully", responseDTO);
     }
 
     @GetMapping("/{id}")
-    @PreAuthorize("hasRole('CUSTOMER') or hasRole('BUSINESS_OWNER') or hasRole('ADMIN')")
+    @PreAuthorize("hasAuthority('CUSTOMER') or hasAuthority('BUSINESS_OWNER') or hasAuthority('ADMIN')")
     public ResponseEntity<CommonResponse<OrderResponseDTO>> getOrderById(@PathVariable UUID id) {
         OrderResponseDTO responseDTO = orderService.getOrderById(id);
         return ResponseUtil.createResponse(HttpStatus.OK, "Successfully fetched order", responseDTO);
     }
 
     @GetMapping
-    @PreAuthorize("hasRole('CUSTOMER')")
+    @PreAuthorize("hasAuthority('CUSTOMER')")
     public ResponseEntity<CommonResponse<Page<OrderResponseDTO>>> getMyOrders(Authentication authentication, Pageable pageable) {
         Page<OrderResponseDTO> responseDTOPage = orderService.getAllOrdersByCustomerId(authentication.getName(), pageable);
         return ResponseUtil.createResponse(HttpStatus.OK, "Successfully fetched all orders", responseDTOPage);

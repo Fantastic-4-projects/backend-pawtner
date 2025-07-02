@@ -25,28 +25,28 @@ public class PetController {
     private final PetService petService;
 
     @PostMapping
-    @PreAuthorize("hasRole('CUSTOMER')")
+    @PreAuthorize("hasAuthority('CUSTOMER')")
     public ResponseEntity<CommonResponse<PetResponseDTO>> createPet(@Valid @RequestBody PetRequestDTO petRequestDTO, Authentication authentication) {
         PetResponseDTO responseDTO = petService.createPet(petRequestDTO, authentication.getName());
         return ResponseUtil.createResponse(HttpStatus.CREATED, "Successfully created pet", responseDTO);
     }
 
     @GetMapping("/{id}")
-    @PreAuthorize("hasRole('CUSTOMER') or hasRole('BUSINESS_OWNER') or hasRole('ADMIN')")
+    @PreAuthorize("hasAuthority('CUSTOMER') or hasAuthority('BUSINESS_OWNER') or hasAuthority('ADMIN')")
     public ResponseEntity<CommonResponse<PetResponseDTO>> getPetById(@PathVariable UUID id) {
         PetResponseDTO responseDTO = petService.getPetById(id);
         return ResponseUtil.createResponse(HttpStatus.OK, "Successfully fetched pet", responseDTO);
     }
 
     @GetMapping
-    @PreAuthorize("hasRole('CUSTOMER')")
+    @PreAuthorize("hasAuthority('CUSTOMER')")
     public ResponseEntity<CommonResponse<Page<PetResponseDTO>>> getMyPets(Authentication authentication, Pageable pageable) {
         Page<PetResponseDTO> responseDTOPage = petService.getAllPetsByOwnerId(authentication.getName(), pageable);
         return ResponseUtil.createResponse(HttpStatus.OK, "Successfully fetched all pets", responseDTOPage);
     }
 
     @PutMapping("/{id}")
-    @PreAuthorize("hasRole('CUSTOMER')")
+    @PreAuthorize("hasAuthority('CUSTOMER')")
     public ResponseEntity<CommonResponse<PetResponseDTO>> updatePet(@PathVariable UUID id, @Valid @RequestBody PetRequestDTO petRequestDTO, Authentication authentication) {
         petRequestDTO.setId(id);
         PetResponseDTO responseDTO = petService.updatePet(petRequestDTO, authentication.getName());
@@ -54,7 +54,7 @@ public class PetController {
     }
 
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasRole('CUSTOMER')")
+    @PreAuthorize("hasAuthority('CUSTOMER')")
     public ResponseEntity<CommonResponse<Void>> deletePet(@PathVariable UUID id, Authentication authentication) {
         petService.deletePet(id, authentication.getName());
         return ResponseUtil.createResponse(HttpStatus.OK, "Successfully deleted pet", null);

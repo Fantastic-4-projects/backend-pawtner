@@ -24,7 +24,7 @@ public class ProductController {
     private final ProductService productService;
 
     @PostMapping
-    @PreAuthorize("hasRole('BUSINESS_OWNER')")
+    @PreAuthorize("hasAuthority('BUSINESS_OWNER')")
     public ResponseEntity<CommonResponse<ProductResponseDTO>> createProduct(@Valid @ModelAttribute ProductRequestDTO productRequestDTO) {
         ProductResponseDTO responseDTO = productService.createProduct(productRequestDTO);
         return ResponseUtil.createResponse(HttpStatus.CREATED, "Successfully created product", responseDTO);
@@ -43,7 +43,7 @@ public class ProductController {
     }
 
     @PutMapping("/{id}")
-    @PreAuthorize("hasRole('BUSINESS_OWNER')")
+    @PreAuthorize("hasAuthority('BUSINESS_OWNER')")
     public ResponseEntity<CommonResponse<ProductResponseDTO>> updateProduct(@PathVariable UUID id, @Valid @ModelAttribute ProductRequestDTO productRequestDTO) {
         productRequestDTO.setId(id);
         ProductResponseDTO responseDTO = productService.updateProduct(productRequestDTO);
@@ -51,7 +51,7 @@ public class ProductController {
     }
 
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasRole('BUSINESS_OWNER')")
+    @PreAuthorize("hasAuthority('BUSINESS_OWNER')")
     public ResponseEntity<CommonResponse<Void>> deleteProduct(@PathVariable UUID id) {
         productService.deleteProduct(id);
         return ResponseUtil.createResponse(HttpStatus.OK, "Successfully deleted product", null);

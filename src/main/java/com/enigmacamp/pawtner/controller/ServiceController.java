@@ -24,7 +24,7 @@ public class ServiceController {
     private final ServiceService serviceService;
 
     @PostMapping
-    @PreAuthorize("hasRole('BUSINESS_OWNER')")
+    @PreAuthorize("hasAuthority('BUSINESS_OWNER')")
     public ResponseEntity<CommonResponse<ServiceResponseDTO>> createService(@Valid @ModelAttribute ServiceRequestDTO serviceRequestDTO) {
         ServiceResponseDTO responseDTO = serviceService.createService(serviceRequestDTO);
         return ResponseUtil.createResponse(HttpStatus.CREATED, "Successfully created service", responseDTO);
@@ -43,7 +43,7 @@ public class ServiceController {
     }
 
     @PutMapping("/{id}")
-    @PreAuthorize("hasRole('BUSINESS_OWNER')")
+    @PreAuthorize("hasAuthority('BUSINESS_OWNER')")
     public ResponseEntity<CommonResponse<ServiceResponseDTO>> updateService(@PathVariable UUID id, @Valid @ModelAttribute ServiceRequestDTO serviceRequestDTO) {
         serviceRequestDTO.setId(id);
         ServiceResponseDTO responseDTO = serviceService.updateService(serviceRequestDTO);
@@ -51,7 +51,7 @@ public class ServiceController {
     }
 
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasRole('BUSINESS_OWNER')")
+    @PreAuthorize("hasAuthority('BUSINESS_OWNER')")
     public ResponseEntity<CommonResponse<Void>> deleteService(@PathVariable UUID id) {
         serviceService.deleteService(id);
         return ResponseUtil.createResponse(HttpStatus.OK, "Successfully deleted service", null);

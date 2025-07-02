@@ -40,7 +40,7 @@ public class UserController {
     }
 
     @GetMapping
-    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    @PreAuthorize("hasAuthority('ADMIN')")
     public ResponseEntity<?> getAllUser() {
         List<UserResponseDTO> userResponseDTOS = userService.getAllUser();
         CommonResponse<List<UserResponseDTO>> response = CommonResponse.<List<UserResponseDTO>>builder()
@@ -51,7 +51,7 @@ public class UserController {
     }
 
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    @PreAuthorize("hasAuthority('ADMIN')")
     public ResponseEntity<?> deleteUser(@PathVariable String id) {
         userService.deleteUser(id);
         CommonResponse<String> response = CommonResponse.<String>builder()
