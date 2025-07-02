@@ -548,3 +548,32 @@ This section provides a detailed list of all API endpoints with their full, abso
 | Method | Full Endpoint | Description | Roles Permitted |
 |---|---|---|---|
 | `GET` | `/api/test/protected` | A simple protected endpoint to verify that a JWT is valid. | Authenticated |# trigger test
+
+## 9. Additional Business Logic & Features
+
+This section outlines specific business logic and features implemented or planned for the Pawtner platform, serving as a quick reference for development.
+
+### 9.1. Platform Fee Implementation
+
+*   **Concept**: Pawtner will implement a platform fee, which is a commission or percentage taken from each successful transaction (product sales or service bookings) facilitated through the platform.
+*   **Mechanism**: This will be primarily handled via **Midtrans Split Payment**. When a customer makes a payment, Midtrans will automatically disburse a predefined percentage (the platform fee) to Pawtner's account, and the remaining amount to the respective business owner's account. This simplifies reconciliation and ensures Pawtner's revenue stream.
+*   **Impact**: The total amount paid by the customer remains unchanged; the fee is deducted from the business's payout.
+
+### 9.2. Delivery Fee & Mechanism
+
+*   **Delivery Fee**: A fixed delivery fee of **Rp 10,000** will be applied per applicable order (e.g., product delivery). This fee is added to the customer's total payment.
+*   **Delivery Mechanism**: For product deliveries and home-service bookings (non-boarding), the **businesses themselves are responsible for managing their own deliveries**. Pawtner's role is to facilitate the order/booking and payment, providing the necessary address information to the business. Pawtner does not manage the logistics or provide delivery personnel.
+
+### 9.3. Address Handling for Home Services
+
+*   **Source of Address**: For services or product deliveries that require a physical address (i.e., not boarding/in-store services), the delivery/service address will be automatically retrieved from the **user's registered address data** in their profile. This ensures convenience for the customer and provides the necessary information to the business for delivery/service provision.
+
+### 9.4. "Petshop Nearby" Feature
+
+*   **Concept**: The mobile application will include a "Petshop Nearby" feature, allowing users to discover pet shops and products within their vicinity.
+*   **Functionality**: 
+    *   Users can tap a dedicated button to find nearby businesses.
+    *   The system will use the user's current location (via GPS) or allow them to **manually "pin point" an area on a map**.
+    *   **Backend Logic**: The backend will perform spatial queries (using latitude and longitude data stored for businesses) to filter and return businesses and their products that fall within a specified radius of the user's or pinned location. This ensures that only relevant local options are displayed to the user.
+    *   **Filtering**: This feature will enable filtering of businesses and products based on their geographical proximity, enhancing the user's shopping and service discovery experience.
+
