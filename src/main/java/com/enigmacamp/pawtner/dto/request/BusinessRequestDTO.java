@@ -12,7 +12,7 @@ import java.math.BigDecimal;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-@Builder
+@Builder(toBuilder = true)
 public class BusinessRequestDTO {
     private String nameBusiness;
     private String descriptionBusiness;
