@@ -65,4 +65,15 @@ To enhance user account management, a "forgot password" feature has been impleme
 - **New DTOs**: Introduced `ForgotPasswordRequestDTO` and `ResetPasswordRequestDTO` to handle the request data.
 - **Service Layer**: Implemented the necessary logic in `AuthService` and `EmailService` to handle token generation, email sending, and password updates.
 - **Email Template**: Added a new `password-reset-email.html` template for the password reset email.
+<<<<<<< HEAD
 - **Postman Collection**: Updated the Postman collection with new requests to test the "Forgot Password" and "Reset Password" functionality.
+
+## 7. Google OAuth2 Login
+
+To provide a more seamless user experience, Google OAuth2 login has been integrated into the application. This allows users to register and log in using their Google accounts, reducing friction and improving accessibility.
+
+- **New Handler**: Implemented `OAuth2SuccessHandler` to manage the authentication process after a successful Google login. This handler is responsible for creating a new user if one does not already exist and generating a JWT token for the authenticated user.
+- **Security Configuration**: Updated `SecurityConfig` to include the OAuth2 login flow and configure the new success handler.
+- **Repository Update**: Modified `AuthRepository` to use `Optional<User>` instead of `Optional<UserDetails>` for better type safety and consistency.
+- **Service Layer**: Refactored `AuthServiceImpl` to align with the repository changes.
+- **Configuration**: Added OAuth2 client configuration properties to `application.properties` for the Google provider.

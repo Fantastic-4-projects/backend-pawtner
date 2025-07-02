@@ -24,6 +24,33 @@
 							}
 						},
 						"url": "http://localhost:8080/api/auth/register"
+<<<<<<< HEAD
+=======
+					},
+					"response": []
+				},
+				{
+					"name": "Regist Business",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": {
+								"token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJwYXd0bmVyIiwic3ViIjoibXVoYW1tYWRodWRhaWJpMDk4QGdtYWlsLmNvbSIsImV4cCI6MTc1MTQzNzUzNywiaWF0IjoxNzUxMzUxMTM3LCJ1c2VySWQiOiI5MzBjNjRkYS1mMmQ0LTQ5ZDAtYjM5ZC0wY2ZkN2Y3NzUxOWQiLCJyb2xlIjoiQlVTSU5FU1NfT1dORVIifQ.8jQhyPzGX-QQqnJaZdQDHpGh2mUVhmwzlX8VSf2fnRc"
+							}
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"nameBusiness\": \"Intan Grooming House\",\n  \"descriptionBusiness\": \"Tempat grooming hewan terpercaya dengan layanan ramah dan profesional.\",\n  \"businessType\": \"GROOMING_SALON\",\n  \"businessEmail\": \"intan.grooming@example.com\",\n  \"businessPhone\": \"082112345678\",\n  \"emergencyPhone\": \"081299998888\",\n  \"businessImageUrl\": \"https://example.com/images/grooming-house.jpg\",\n  \"certificateImageUrl\": \"https://example.com/certificates/grooming-cert.pdf\",\n  \"businessAddress\": \"Jl. Anjing Bahagia No. 12, Jakarta Selatan\",\n  \"latitude\": -6.244669,\n  \"longitude\": 106.800293,\n  \"operationHours\": {\n    \"monday\": \"09:00-18:00\",\n    \"tuesday\": \"09:00-18:00\"\n  }\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": "http://localhost:8080/api/business/register"
+>>>>>>> origin/dev/huda
 					},
 					"response": []
 				},
@@ -106,6 +133,24 @@
 					"response": []
 				},
 				{
+<<<<<<< HEAD
+=======
+					"name": "View Business",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": {
+								"token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJwYXd0bmVyIiwic3ViIjoibXVoYW1tYWRodWRhaWJpMDk4QGdtYWlsLmNvbSIsImV4cCI6MTc1MTQzMzI4NCwiaWF0IjoxNzUxMzQ2ODg0LCJ1c2VySWQiOiI5MzBjNjRkYS1mMmQ0LTQ5ZDAtYjM5ZC0wY2ZkN2Y3NzUxOWQiLCJyb2xlIjoiQlVTSU5FU1NfT1dORVIifQ.A109oeXeh3ePAtqFAUXEkNDE1dsGvDDJgb8BNNYbHak"
+							}
+						},
+						"method": "GET",
+						"header": [],
+						"url": "http://localhost:8080/api/business"
+					},
+					"response": []
+				},
+				{
+>>>>>>> origin/dev/huda
 					"name": "Forgot Password",
 					"request": {
 						"method": "POST",
@@ -138,6 +183,7 @@
 							}
 						},
 						"url": "http://localhost:8080/api/auth/reset-password"
+<<<<<<< HEAD
 					},
 					"response": []
 				}
@@ -445,6 +491,8 @@
 							]
 						},
 						"url": "http://localhost:8080/api/services/1"
+=======
+>>>>>>> origin/dev/huda
 					},
 					"response": []
 				}
