@@ -28,6 +28,12 @@ public class ProductServiceImpl implements ProductService {
     private final ImageUploadService imageUploadService;
 
     @Override
+    public Product getProductEntityById(Integer id) {
+        return productRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Product not found"));
+    }
+
+    @Override
     public ProductResponseDTO createProduct(ProductRequestDTO productRequestDTO) {
         Business business = businessService.getBusinessByIdForInternal(productRequestDTO.getBusinessId());
         String imageUrl = null;

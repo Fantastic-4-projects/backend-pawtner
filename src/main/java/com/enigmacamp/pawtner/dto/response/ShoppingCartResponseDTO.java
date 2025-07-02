@@ -1,22 +1,23 @@
 package com.enigmacamp.pawtner.dto.response;
 
-import com.enigmacamp.pawtner.dto.request.OperationHoursDTO;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.math.BigDecimal;
+import java.util.List;
 import java.util.UUID;
-
 
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-@Builder(toBuilder = true)
-public class BusinessResponseDTO {
+@Builder
+public class ShoppingCartResponseDTO {
+    private UUID id;
+    private UUID customerId;
     private UUID businessId;
-    private String ownerName;
     private String businessName;
-    private String businessAddress;
-    private OperationHoursDTO operationHours;
+    private List<CartItemResponseDTO> items;
+    private BigDecimal totalPrice;
 }
