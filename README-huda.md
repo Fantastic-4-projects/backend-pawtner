@@ -77,3 +77,13 @@ To provide a more seamless user experience, Google OAuth2 login has been integra
 - **Repository Update**: Modified `AuthRepository` to use `Optional<User>` instead of `Optional<UserDetails>` for better type safety and consistency.
 - **Service Layer**: Refactored `AuthServiceImpl` to align with the repository changes.
 - **Configuration**: Added OAuth2 client configuration properties to `application.properties` for the Google provider.
+
+## 8. Role-Based Access Control and Registration Refinements
+
+To enhance security and provide more granular control over user roles, the registration process has been updated and role-based access control has been implemented.
+
+- **Endpoint Security**: Secured the `/api/business/**` endpoint, ensuring that only users with the `BUSINESS_OWNER` role can access it.
+- **Separated Registration**: The user registration endpoint has been split into `/api/auth/register/customer` and `/api/auth/register/business-owner` to clearly distinguish between different user types upon registration.
+- **Role Management**: A new endpoint `PATCH /api/auth/user/set-role` was added to allow for dynamic role assignment to users.
+- **Service Layer**: The `AuthService` and its implementation were updated to support role assignment during registration and modification.
+- **Business Logic**: The responsibility of assigning the `BUSINESS_OWNER` role was removed from the `BusinessServiceImpl` to decouple business creation from role management.

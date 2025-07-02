@@ -1,6 +1,6 @@
 {
 	"info": {
-		"_postman_id": "be1e3563-9cdc-4a4b-b9ba-e0db35b0c7a4",
+		"_postman_id": "b6a91169-8c42-4ad8-9a86-dbeb3a02fbdf",
 		"name": "Pawtner",
 		"schema": "https://schema.getpostman.com/json/collection/v2.0.0/collection.json",
 		"_exporter_id": "36340488"
@@ -10,7 +10,7 @@
 			"name": "auth",
 			"item": [
 				{
-					"name": "Regist",
+					"name": "Regist Customer",
 					"request": {
 						"method": "POST",
 						"header": [],
@@ -34,7 +34,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"email\": \"muhhudaibi11@gmail.com\",\n    \"verificationCode\": \"757178\"\n}",
+							"raw": "{\n    \"email\": \"muhhudaibi11@gmail.com\",\n    \"verificationCode\": \"216992\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -140,6 +140,24 @@
 						"url": "http://localhost:8080/api/auth/reset-password"
 					},
 					"response": []
+				},
+				{
+					"name": "Regist Business Owner",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"email\": \"muhhudaibi11@gmail.com\",\n    \"phoneNumber\": \"085589231880\",\n    \"password\": \"hudahuda\",\n    \"name\": \"Muhammad Hudaibi\",\n    \"address\": \"Sumedang\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": "http://localhost:8080/api/auth/register/business-owner"
+					},
+					"response": []
 				}
 			]
 		},
@@ -152,12 +170,12 @@
 						{
 							"listen": "test",
 							"script": {
-                                "exec": [
-                                    "var jsonData = JSON.parse(responseBody);",
-                                    "pm.collectionVariables.set(\"business_id\", jsonData.data.businessId);"
-                                ],
-                                "type": "text/javascript"
-                            }
+								"exec": [
+									"var jsonData = JSON.parse(responseBody);",
+									"pm.collectionVariables.set(\"business_id\", jsonData.data.businessId);"
+								],
+								"type": "text/javascript"
+							}
 						}
 					],
 					"request": {
@@ -449,104 +467,16 @@
 					"response": []
 				}
 			]
+		}
+	],
+	"variable": [
+		{
+			"key": "auth_token",
+			"value": ""
 		},
 		{
-			"name": "cart",
-			"item": [
-				{
-					"name": "Add Item to Cart",
-					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": {
-								"token": "{{auth_token}}"
-							}
-						},
-						"method": "POST",
-						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n    \"productId\": 1,\n    \"quantity\": 2,\n    \"businessId\": \"{{business_id}}\"\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": "http://localhost:8080/api/cart"
-					},
-					"response": []
-				},
-				{
-					"name": "Get Shopping Cart",
-					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": {
-								"token": "{{auth_token}}"
-							}
-						},
-						"method": "GET",
-						"header": [],
-						"url": "http://localhost:8080/api/cart"
-					},
-					"response": []
-				},
-				{
-					"name": "Update Cart Item Quantity",
-					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": {
-								"token": "{{auth_token}}"
-							}
-						},
-						"method": "PUT",
-						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n    \"cartItemId\": 1,\n    \"quantity\": 3\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": "http://localhost:8080/api/cart"
-					},
-					"response": []
-				},
-				{
-					"name": "Remove Cart Item",
-					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": {
-								"token": "{{auth_token}}"
-							}
-						},
-						"method": "DELETE",
-						"header": [],
-						"url": "http://localhost:8080/api/cart/1"
-					},
-					"response": []
-				},
-				{
-					"name": "Clear Shopping Cart",
-					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": {
-								"token": "{{auth_token}}"
-							}
-						},
-						"method": "DELETE",
-						"header": [],
-						"url": "http://localhost:8080/api/cart"
-					},
-					"response": []
-				}
-			]
+			"key": "business_id",
+			"value": ""
 		}
 	]
 }

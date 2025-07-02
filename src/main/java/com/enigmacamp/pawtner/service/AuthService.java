@@ -1,5 +1,6 @@
 package com.enigmacamp.pawtner.service;
 
+import com.enigmacamp.pawtner.constant.UserRole;
 import com.enigmacamp.pawtner.dto.request.*;
 import com.enigmacamp.pawtner.dto.response.LoginResponseDTO;
 import com.enigmacamp.pawtner.dto.response.RegisterResponseDTO;
@@ -15,7 +16,8 @@ import org.springframework.stereotype.Service;
 
 public interface AuthService {
     LoginResponseDTO login(LoginRequestDTO loginRequestDTO);
-    RegisterResponseDTO register(RegisterRequestDTO registerRequestDTO);
+    RegisterResponseDTO register(RegisterRequestDTO registerRequestDTO, UserRole userRole);
+    UserRole setRoleUser(RegisterRequestDTO registerRequestDTO);
     void verify(VerificationRequestDTO requestDTO);
     void resendVerificationCode(ResendVerificationRequestDTO verificationRequestDTO);
     void forgotPassword(ForgotPasswordRequestDTO forgotPasswordRequestDTO);

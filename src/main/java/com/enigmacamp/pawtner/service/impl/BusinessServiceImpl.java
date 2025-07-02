@@ -24,7 +24,6 @@ import java.util.stream.Collectors;
 public class BusinessServiceImpl implements BusinessService {
 
     private final BusinessRepository businessRepository;
-    private final AuthRepository authRepository;
 
     @Transactional(rollbackOn =  Exception.class)
     @Override
@@ -45,10 +44,7 @@ public class BusinessServiceImpl implements BusinessService {
                 .operationHours(businessRequestDTO.getOperationHours())
                 .build();
 
-        currentUser.setRole(UserRole.BUSINESS_OWNER);
-
         businessRepository.save(newBusiness);
-        authRepository.save(currentUser);
 
         return mapToResponse(newBusiness);
     }

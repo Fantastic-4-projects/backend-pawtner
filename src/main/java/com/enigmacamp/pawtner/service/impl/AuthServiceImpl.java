@@ -1,6 +1,5 @@
 package com.enigmacamp.pawtner.service.impl;
 
-import com.enigmacamp.pawtner.config.JwtService;
 import com.enigmacamp.pawtner.constant.UserRole;
 import com.enigmacamp.pawtner.dto.request.*;
 import com.enigmacamp.pawtner.dto.response.LoginResponseDTO;
@@ -8,8 +7,10 @@ import com.enigmacamp.pawtner.dto.response.RegisterResponseDTO;
 import com.enigmacamp.pawtner.entity.User;
 import com.enigmacamp.pawtner.repository.AuthRepository;
 import com.enigmacamp.pawtner.service.AuthService;
+import com.enigmacamp.pawtner.config.JwtService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -17,13 +18,14 @@ import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.security.SecureRandom;
 import java.time.LocalDateTime;
-import java.util.Optional;
+import java.util.Random;
 import java.util.UUID;
 
 @RequiredArgsConstructor
@@ -38,14 +40,16 @@ public class AuthServiceImpl implements AuthService {
     @Value("${app.pawtner.reset-password-url}")
     private String resetPasswordUrl;
 
-    public RegisterResponseDTO register(RegisterRequestDTO registerRequestDTO) {
+    @Override
+    @Transactional(rollbackOn =  Exception.class)
+    public RegisterResponseDTO register(RegisterRequestDTO registerRequestDTO, UserRole userRole) {
         User user = User.builder()
                 .email(registerRequestDTO.getEmail())
                 .phoneNumber(registerRequestDTO.getPhoneNumber())
                 .passwordHash(passwordEncoder.encode(registerRequestDTO.getPassword()))
                 .name(registerRequestDTO.getName())
                 .address(registerRequestDTO.getAddress())
-                .role(UserRole.CUSTOMER)
+                .role(userRole)
                 .codeExpire(LocalDateTime.now().plusMinutes(3))
                 .codeVerification(generateRandomCode(6))
                 .build();
@@ -56,6 +60,16 @@ public class AuthServiceImpl implements AuthService {
         return RegisterResponseDTO.builder()
                 .email(user.getEmail())
                 .build();
+    }
+
+    @Override
+    public UserRole setRoleUser(RegisterRequestDTO registerRequestDTO) {
+        User user = authRepository.findByEmail(registerRequestDTO.getEmail())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Email tidak ditemukan"));
+
+        user.setRole(registerRequestDTO.getRole());
+        authRepository.save(user);
+        return registerRequestDTO.getRole();
     }
 
     public LoginResponseDTO login(LoginRequestDTO loginRequestDTO) {
@@ -84,10 +98,10 @@ public class AuthServiceImpl implements AuthService {
     @Override
     public void verify(VerificationRequestDTO requestDTO) {
         User user = authRepository.findByEmail(requestDTO.getEmail())
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Pengguna dengan email " + requestDTO.getEmail() + " tidak ditemukan."));
+                .orElseThrow(() -> new RuntimeException("Pengguna dengan email " + requestDTO.getEmail() + " tidak ditemukan."));
 
         if (user.getIsVerified()) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Akun sudah diverifikasi.");
+            throw new RuntimeException("Akun sudah diverifikasi.");
         }
 
         if (user.getCodeVerification().equals(requestDTO.getVerificationCode())) {
@@ -97,7 +111,7 @@ public class AuthServiceImpl implements AuthService {
                 user.setCodeExpire(null);
                 authRepository.save(user);
             } else {
-                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Kode verifikasi sudah kadaluarsa. Harap memina kode baru.");
+                throw new RuntimeException("Kode verifikasi sudah kadaluarsa. Harap memina kode baru.");
             }
         } else {
             throw new BadCredentialsException("Kode verifikasi salah.");
@@ -107,7 +121,7 @@ public class AuthServiceImpl implements AuthService {
     @Override
     public void resendVerificationCode(ResendVerificationRequestDTO verificationRequestDTO) {
         User user = authRepository.findByEmail(verificationRequestDTO.getEmail())
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
+                .orElseThrow(() -> new RuntimeException("User not found"));
 
         if (user.getIsVerified()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Account already verified");
@@ -124,20 +138,18 @@ public class AuthServiceImpl implements AuthService {
     @Override
     @Transactional
     public void forgotPassword(ForgotPasswordRequestDTO forgotPasswordRequestDTO) {
-        Optional<User> optionalUser = authRepository.findByEmail(forgotPasswordRequestDTO.getEmail());
+        User user = authRepository.findByEmail(forgotPasswordRequestDTO.getEmail())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Email tidak ditemukan"));
 
-        if (optionalUser.isPresent()) {
-            User user = optionalUser.get();
-            String token = UUID.randomUUID().toString();
+        String token = UUID.randomUUID().toString();
 
-            user.setResetPasswordToken(token);
-            user.setResetPasswordTokenExpire(LocalDateTime.now().plusHours(1));
-            authRepository.save(user);
+        user.setResetPasswordToken(token);
+        user.setResetPasswordTokenExpire(LocalDateTime.now().plusHours(1));
+        authRepository.save(user);
 
             String resetLink = resetPasswordUrl + "?token=" + token;
 
-            emailService.sendPasswordResetEmail(user.getEmail(), user.getName(), resetLink);
-        }
+        emailService.sendPasswordResetEmail(user.getEmail(), user.getName(), resetLink);
     }
 
     @Override

@@ -1,5 +1,6 @@
 package com.enigmacamp.pawtner.config;
 
+import com.enigmacamp.pawtner.constant.UserRole;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -21,8 +22,6 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 public class SecurityConfig {
 
     private final AuthTokenFilter authTokenFilter;
-
-    // Pastikan bean ini di-inject dari kelas yang sudah Anda buat
     private final OAuth2SuccessHandler oAuth2SuccessHandler;
 
     @Bean
@@ -44,6 +43,7 @@ public class SecurityConfig {
                 .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/auth/**", "/oauth2/**", "/login/oauth2/code/**").permitAll()
+                        .requestMatchers("api/business/**").hasAuthority(UserRole.BUSINESS_OWNER.name())
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(authTokenFilter, UsernamePasswordAuthenticationFilter.class)
