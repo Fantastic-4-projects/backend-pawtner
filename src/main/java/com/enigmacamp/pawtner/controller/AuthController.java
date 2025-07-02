@@ -1,5 +1,6 @@
 package com.enigmacamp.pawtner.controller;
 
+import com.enigmacamp.pawtner.constant.UserRole;
 import com.enigmacamp.pawtner.dto.request.*;
 import com.enigmacamp.pawtner.dto.response.CommonResponse;
 import com.enigmacamp.pawtner.dto.response.LoginResponseDTO;
@@ -19,13 +20,23 @@ public class AuthController {
 
     private final AuthService authService;
 
-    @PostMapping("/register")
-    public ResponseEntity<CommonResponse<RegisterResponseDTO>> register(@Valid @RequestBody RegisterRequestDTO registerRequestDTO) {
+    @PostMapping("/register/customer")
+    public ResponseEntity<CommonResponse<RegisterResponseDTO>> registerUserCustomer(@Valid @RequestBody RegisterRequestDTO registerRequestDTO) {
 
         return ResponseUtil.createResponse(
                 HttpStatus.CREATED,
                 "Selamat datang di Pawtner. Kode verifikasi telah dikirim ke email Anda.",
-                authService.register(registerRequestDTO)
+                authService.register(registerRequestDTO, UserRole.CUSTOMER)
+        );
+    }
+
+    @PostMapping("/register/business-owner")
+    public ResponseEntity<CommonResponse<RegisterResponseDTO>> registerUserBusinessOwner(@Valid @RequestBody RegisterRequestDTO registerRequestDTO) {
+
+        return ResponseUtil.createResponse(
+                HttpStatus.CREATED,
+                "Selamat datang di Pawtner. Kode verifikasi telah dikirim ke email Anda.",
+                authService.register(registerRequestDTO, UserRole.BUSINESS_OWNER)
         );
     }
 
@@ -35,6 +46,15 @@ public class AuthController {
                 HttpStatus.OK,
                 "Anda berhasil login.",
                 authService.login(loginRequestDTO)
+        );
+    }
+
+    @PatchMapping("/user/set-role")
+    public ResponseEntity<CommonResponse<UserRole>> setUserRole(@Valid @RequestBody RegisterRequestDTO registerRequestDTO) {
+        return ResponseUtil.createResponse(
+                HttpStatus.OK,
+                "Role berhasil diubah.",
+                authService.setRoleUser(registerRequestDTO)
         );
     }
 
