@@ -79,7 +79,7 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     public void verify(VerificationRequestDTO requestDTO) {
-        User user = (User) authRepository.findByEmail(requestDTO.getEmail())
+        User user = authRepository.findByEmail(requestDTO.getEmail())
                 .orElseThrow(() -> new RuntimeException("Pengguna dengan email " + requestDTO.getEmail() + " tidak ditemukan."));
 
         if (user.getIsVerified()) {
@@ -102,7 +102,7 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     public void resendVerificationCode(ResendVerificationRequestDTO verificationRequestDTO) {
-        User user = (User) authRepository.findByEmail(verificationRequestDTO.getEmail())
+        User user = authRepository.findByEmail(verificationRequestDTO.getEmail())
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
         if (user.getIsVerified()) {
@@ -120,7 +120,7 @@ public class AuthServiceImpl implements AuthService {
     @Override
     @Transactional
     public void forgotPassword(ForgotPasswordRequestDTO forgotPasswordRequestDTO) {
-        User user = (User) authRepository.findByEmail(forgotPasswordRequestDTO.getEmail())
+        User user = authRepository.findByEmail(forgotPasswordRequestDTO.getEmail())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Email tidak ditemukan"));
 
         String token = UUID.randomUUID().toString();
