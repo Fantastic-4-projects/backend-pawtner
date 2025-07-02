@@ -14,6 +14,8 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.UUID;
+
 @RestController
 @RequestMapping("/api/cart")
 @AllArgsConstructor
@@ -44,7 +46,7 @@ public class ShoppingCartController {
 
     @DeleteMapping("/{cartItemId}")
     @PreAuthorize("hasRole('CUSTOMER')")
-    public ResponseEntity<CommonResponse<Void>> removeCartItem(@PathVariable Integer cartItemId, Authentication authentication) {
+    public ResponseEntity<CommonResponse<Void>> removeCartItem(@PathVariable UUID cartItemId, Authentication authentication) {
         shoppingCartService.removeCartItem(cartItemId, authentication.getName());
         return ResponseUtil.createResponse(HttpStatus.OK, "Successfully removed item from cart", null);
     }

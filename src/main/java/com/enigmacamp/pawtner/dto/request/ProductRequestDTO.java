@@ -1,6 +1,5 @@
 package com.enigmacamp.pawtner.dto.request;
 
-import java.util.UUID;
 import com.enigmacamp.pawtner.constant.ProductCategory;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
@@ -12,14 +11,14 @@ import lombok.NoArgsConstructor;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.math.BigDecimal;
-
+import java.util.UUID;
 
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-@Builder(toBuilder = true)
+@Builder
 public class ProductRequestDTO {
-    private Integer id;
+    private UUID id;
 
     @NotNull(message = "Business ID is required")
     private UUID businessId;

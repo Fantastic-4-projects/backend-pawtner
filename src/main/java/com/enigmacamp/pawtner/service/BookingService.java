@@ -9,9 +9,9 @@ import java.util.UUID;
 
 public interface BookingService {
     BookingResponseDTO createBooking(BookingRequestDTO bookingRequestDTO, String customerEmail);
-    BookingResponseDTO getBookingById(Integer id);
+    BookingResponseDTO getBookingById(UUID id);
     Page<BookingResponseDTO> getAllBookingsByCustomerId(String customerEmail, Pageable pageable);
     Page<BookingResponseDTO> getAllBookingsByBusinessId(UUID businessId, Pageable pageable);
-    BookingResponseDTO updateBookingStatus(Integer id, String status);
-    void cancelBooking(Integer id, String customerEmail);
+    BookingResponseDTO updateBookingStatus(UUID id, String status);
+    void cancelBooking(UUID id, String customerEmail);
 }

@@ -10,7 +10,7 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-@Builder(toBuilder = true)
+@Builder
 public class ResetPasswordRequestDTO {
     @NotBlank(message = "Token tidak boleh kosong")
     private String token;

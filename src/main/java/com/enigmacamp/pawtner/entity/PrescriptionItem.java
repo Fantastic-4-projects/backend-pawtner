@@ -1,4 +1,3 @@
-
 package com.enigmacamp.pawtner.entity;
 
 import jakarta.persistence.*;
@@ -11,6 +10,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.UUID;
+
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
@@ -20,11 +21,11 @@ import lombok.NoArgsConstructor;
 public class PrescriptionItem {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer id;
+    @GeneratedValue(strategy = GenerationType.UUID)
+    private UUID id;
 
     @ManyToOne
-    @JoinColumn(name = "prescription_id", nullable = false)
+    @JoinColumn(name = "prescription_id", nullable = false, columnDefinition = "uuid")
     private Prescription prescription;
 
     @NotBlank(message = "Medication name is required")

@@ -6,11 +6,13 @@ import com.enigmacamp.pawtner.entity.Pet;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
+import java.util.UUID;
+
 public interface PetService {
     PetResponseDTO createPet(PetRequestDTO petRequestDTO, String ownerEmail);
-    PetResponseDTO getPetById(Integer id);
-    Pet getPetEntityById(Integer id);
+    PetResponseDTO getPetById(UUID id);
+    Pet getPetEntityById(UUID id);
     Page<PetResponseDTO> getAllPetsByOwnerId(String ownerEmail, Pageable pageable);
     PetResponseDTO updatePet(PetRequestDTO petRequestDTO, String ownerEmail);
-    void deletePet(Integer id, String ownerEmail);
+    void deletePet(UUID id, String ownerEmail);
 }

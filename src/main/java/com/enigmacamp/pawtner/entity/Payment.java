@@ -1,4 +1,3 @@
-
 package com.enigmacamp.pawtner.entity;
 
 import com.enigmacamp.pawtner.constant.PaymentStatus;
@@ -11,6 +10,7 @@ import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 @Data
 @AllArgsConstructor
@@ -21,15 +21,15 @@ import java.time.LocalDateTime;
 public class Payment {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer id;
+    @GeneratedValue(strategy = GenerationType.UUID)
+    private UUID id;
 
     @OneToOne
-    @JoinColumn(name = "order_id")
+    @JoinColumn(name = "order_id", columnDefinition = "uuid")
     private Order order;
 
     @OneToOne
-    @JoinColumn(name = "booking_id")
+    @JoinColumn(name = "booking_id", columnDefinition = "uuid")
     private Booking booking;
 
     @NotBlank(message = "Payment gateway reference ID is required")

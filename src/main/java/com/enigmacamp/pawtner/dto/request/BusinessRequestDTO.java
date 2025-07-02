@@ -1,7 +1,6 @@
 package com.enigmacamp.pawtner.dto.request;
 
 import com.enigmacamp.pawtner.constant.BusinessType;
-import com.enigmacamp.pawtner.dto.request.OperationHoursDTO;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -12,7 +11,7 @@ import java.math.BigDecimal;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-@Builder(toBuilder = true)
+@Builder
 public class BusinessRequestDTO {
     private String nameBusiness;
     private String descriptionBusiness;

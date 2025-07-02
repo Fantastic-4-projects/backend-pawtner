@@ -8,8 +8,9 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-@Builder
-public class VerificationRequestDTO {
-    private String email;
-    private String verificationCode;
+@Builder(toBuilder = true)
+public class UserRequestDTO {
+    private String name;
+    private String address;
+    private String phone;
 }

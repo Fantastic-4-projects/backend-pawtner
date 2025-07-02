@@ -16,6 +16,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.io.IOException;
+import java.util.UUID;
 
 @Component
 @AllArgsConstructor
@@ -51,7 +52,7 @@ public class ServiceServiceImpl implements ServiceService {
     }
 
     @Override
-    public ServiceResponseDTO getServiceById(Integer id) {
+    public ServiceResponseDTO getServiceById(UUID id) {
         Service service = serviceRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Service not found"));
         return mapToResponseDTO(service);
@@ -88,7 +89,7 @@ public class ServiceServiceImpl implements ServiceService {
     }
 
     @Override
-    public void deleteService(Integer id) {
+    public void deleteService(UUID id) {
         Service service = serviceRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Service not found"));
         service.setIsActive(false);
@@ -106,5 +107,11 @@ public class ServiceServiceImpl implements ServiceService {
                 .imageUrl(service.getImageUrl())
                 .isActive(service.getIsActive())
                 .build();
+    }
+
+    @Override
+    public Service getServiceEntityById(UUID id) {
+        return serviceRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Service not found"));
     }
 }

@@ -19,10 +19,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
-import java.time.LocalDateTime;
 import java.util.UUID;
 
-@Service
+@org.springframework.stereotype.Service
 @AllArgsConstructor
 public class BookingServiceImpl implements BookingService {
 
@@ -36,19 +35,15 @@ public class BookingServiceImpl implements BookingService {
     public BookingResponseDTO createBooking(BookingRequestDTO bookingRequestDTO, String customerEmail) {
         User customer = userService.getUserByEmailForInternal(customerEmail);
         Pet pet = petService.getPetEntityById(bookingRequestDTO.getPetId());
-        com.enigmacamp.pawtner.entity.Service service = serviceService.getServiceEntityById(bookingRequestDTO.getServiceId());
+        Service service = serviceService.getServiceEntityById(bookingRequestDTO.getServiceId());
 
         if (!pet.getOwner().getId().equals(customer.getId())) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Pet does not belong to the authenticated user");
         }
 
-        // Basic availability check (can be expanded)
         if (bookingRequestDTO.getStartTime().isAfter(bookingRequestDTO.getEndTime())) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Start time cannot be after end time");
         }
-
-        // You might want to add more sophisticated availability checks here,
-        // e.g., checking service capacity, existing bookings for the time slot.
 
         Booking booking = Booking.builder()
                 .customer(customer)
@@ -66,7 +61,7 @@ public class BookingServiceImpl implements BookingService {
     }
 
     @Override
-    public BookingResponseDTO getBookingById(Integer id) {
+    public BookingResponseDTO getBookingById(UUID id) {
         Booking booking = bookingRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Booking not found"));
         return mapToResponseDTO(booking);
@@ -81,25 +76,12 @@ public class BookingServiceImpl implements BookingService {
 
     @Override
     public Page<BookingResponseDTO> getAllBookingsByBusinessId(UUID businessId, Pageable pageable) {
-        // Assuming you have a way to get Business entity by ID
-        // For simplicity, we'll create a dummy business object for the query
-        // In a real scenario, you'd fetch the Business entity from BusinessService
-        // Business business = businessService.getBusinessByIdForInternal(businessId);
-        // For now, let's assume the business exists and we can query by its ID directly
-        // This might require a custom query in BookingRepository if not directly supported by Spring Data JPA
-        // For now, let's filter after fetching all, which is not efficient for large datasets
-        // A better approach would be to add a custom query to BookingRepository like:
-        // Page<Booking> findByService_Business_Id(UUID businessId, Pageable pageable);
-
-        // Temporarily, to avoid compilation errors, I'll use a placeholder logic.
-        // This part needs to be refined based on how you fetch Business entities.
-        // For now, I'll just return an empty page or throw an exception if businessService.getBusinessByIdForInternal is not available.
         throw new ResponseStatusException(HttpStatus.NOT_IMPLEMENTED, "Fetching bookings by business ID is not yet fully implemented.");
     }
 
     @Override
     @Transactional
-    public BookingResponseDTO updateBookingStatus(Integer id, String status) {
+    public BookingResponseDTO updateBookingStatus(UUID id, String status) {
         Booking booking = bookingRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Booking not found"));
         try {
@@ -113,7 +95,7 @@ public class BookingServiceImpl implements BookingService {
 
     @Override
     @Transactional
-    public void cancelBooking(Integer id, String customerEmail) {
+    public void cancelBooking(UUID id, String customerEmail) {
         User customer = userService.getUserByEmailForInternal(customerEmail);
         Booking booking = bookingRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Booking not found"));

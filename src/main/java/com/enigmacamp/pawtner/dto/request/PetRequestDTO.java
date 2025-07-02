@@ -7,15 +7,16 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-
 import org.springframework.web.multipart.MultipartFile;
+
+import java.util.UUID;
 
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-@Builder(toBuilder = true)
+@Builder
 public class PetRequestDTO {
-    private Integer id;
+    private UUID id;
 
     @NotBlank(message = "Pet name is required")
     @Size(max = 255)
@@ -32,7 +33,6 @@ public class PetRequestDTO {
     @NotNull(message = "Age is required")
     private Integer age;
 
-    @Size(max = 255)
     private MultipartFile image;
 
     @Size(max = 2000)

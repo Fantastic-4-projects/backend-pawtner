@@ -15,6 +15,8 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.UUID;
+
 @RestController
 @RequestMapping("/api/pets")
 @AllArgsConstructor
@@ -31,7 +33,7 @@ public class PetController {
 
     @GetMapping("/{id}")
     @PreAuthorize("hasRole('CUSTOMER') or hasRole('BUSINESS_OWNER') or hasRole('ADMIN')")
-    public ResponseEntity<CommonResponse<PetResponseDTO>> getPetById(@PathVariable Integer id) {
+    public ResponseEntity<CommonResponse<PetResponseDTO>> getPetById(@PathVariable UUID id) {
         PetResponseDTO responseDTO = petService.getPetById(id);
         return ResponseUtil.createResponse(HttpStatus.OK, "Successfully fetched pet", responseDTO);
     }
@@ -45,7 +47,7 @@ public class PetController {
 
     @PutMapping("/{id}")
     @PreAuthorize("hasRole('CUSTOMER')")
-    public ResponseEntity<CommonResponse<PetResponseDTO>> updatePet(@PathVariable Integer id, @Valid @RequestBody PetRequestDTO petRequestDTO, Authentication authentication) {
+    public ResponseEntity<CommonResponse<PetResponseDTO>> updatePet(@PathVariable UUID id, @Valid @RequestBody PetRequestDTO petRequestDTO, Authentication authentication) {
         petRequestDTO.setId(id);
         PetResponseDTO responseDTO = petService.updatePet(petRequestDTO, authentication.getName());
         return ResponseUtil.createResponse(HttpStatus.OK, "Successfully updated pet", responseDTO);
@@ -53,7 +55,7 @@ public class PetController {
 
     @DeleteMapping("/{id}")
     @PreAuthorize("hasRole('CUSTOMER')")
-    public ResponseEntity<CommonResponse<Void>> deletePet(@PathVariable Integer id, Authentication authentication) {
+    public ResponseEntity<CommonResponse<Void>> deletePet(@PathVariable UUID id, Authentication authentication) {
         petService.deletePet(id, authentication.getName());
         return ResponseUtil.createResponse(HttpStatus.OK, "Successfully deleted pet", null);
     }

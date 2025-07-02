@@ -1,8 +1,8 @@
-
 package com.enigmacamp.pawtner.entity;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -11,6 +11,7 @@ import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 @Data
 @AllArgsConstructor
@@ -21,8 +22,8 @@ import java.time.LocalDateTime;
 public class Pet {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer id;
+    @GeneratedValue(strategy = GenerationType.UUID)
+    private UUID id;
 
     @ManyToOne
     @JoinColumn(name = "owner_id", nullable = false)
@@ -40,8 +41,14 @@ public class Pet {
 
     private LocalDate birthDate;
 
+    @NotNull(message = "Age is required")
+    private Integer age;
+
     @Size(max = 255)
     private String imageUrl;
+
+    @Size(max = 2000)
+    private String notes;
 
     @Builder.Default
     @Column(updatable = false)

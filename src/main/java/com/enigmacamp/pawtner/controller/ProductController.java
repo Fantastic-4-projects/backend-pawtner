@@ -14,6 +14,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.UUID;
+
 @RestController
 @RequestMapping("/api/products")
 @AllArgsConstructor
@@ -29,7 +31,7 @@ public class ProductController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<CommonResponse<ProductResponseDTO>> getProductById(@PathVariable Integer id) {
+    public ResponseEntity<CommonResponse<ProductResponseDTO>> getProductById(@PathVariable UUID id) {
         ProductResponseDTO responseDTO = productService.getProductById(id);
         return ResponseUtil.createResponse(HttpStatus.OK, "Successfully fetched product", responseDTO);
     }
@@ -42,7 +44,7 @@ public class ProductController {
 
     @PutMapping("/{id}")
     @PreAuthorize("hasRole('BUSINESS_OWNER')")
-    public ResponseEntity<CommonResponse<ProductResponseDTO>> updateProduct(@PathVariable Integer id, @Valid @ModelAttribute ProductRequestDTO productRequestDTO) {
+    public ResponseEntity<CommonResponse<ProductResponseDTO>> updateProduct(@PathVariable UUID id, @Valid @ModelAttribute ProductRequestDTO productRequestDTO) {
         productRequestDTO.setId(id);
         ProductResponseDTO responseDTO = productService.updateProduct(productRequestDTO);
         return ResponseUtil.createResponse(HttpStatus.OK, "Successfully updated product", responseDTO);
@@ -50,7 +52,7 @@ public class ProductController {
 
     @DeleteMapping("/{id}")
     @PreAuthorize("hasRole('BUSINESS_OWNER')")
-    public ResponseEntity<CommonResponse<Void>> deleteProduct(@PathVariable Integer id) {
+    public ResponseEntity<CommonResponse<Void>> deleteProduct(@PathVariable UUID id) {
         productService.deleteProduct(id);
         return ResponseUtil.createResponse(HttpStatus.OK, "Successfully deleted product", null);
     }

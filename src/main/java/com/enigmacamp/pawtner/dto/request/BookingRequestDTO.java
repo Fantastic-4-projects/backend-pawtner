@@ -16,10 +16,10 @@ import java.util.UUID;
 @Builder
 public class BookingRequestDTO {
     @NotNull(message = "Pet ID is required")
-    private Integer petId;
+    private UUID petId;
 
     @NotNull(message = "Service ID is required")
-    private Integer serviceId;
+    private UUID serviceId;
 
     @NotNull(message = "Start time is required")
     @FutureOrPresent(message = "Start time must be in the present or future")

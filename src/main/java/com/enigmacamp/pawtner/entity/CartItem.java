@@ -9,6 +9,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 @Data
 @AllArgsConstructor
@@ -21,15 +22,15 @@ import java.time.LocalDateTime;
 public class CartItem {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer id;
+    @GeneratedValue(strategy = GenerationType.UUID)
+    private UUID id;
 
     @ManyToOne
-    @JoinColumn(name = "shopping_cart_id", nullable = false)
+    @JoinColumn(name = "shopping_cart_id", nullable = false, columnDefinition = "uuid")
     private ShoppingCart shoppingCart;
 
     @ManyToOne
-    @JoinColumn(name = "product_id", nullable = false)
+    @JoinColumn(name = "product_id", nullable = false, columnDefinition = "uuid")
     private Product product;
 
     @NotNull(message = "Quantity is required")

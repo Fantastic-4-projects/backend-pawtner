@@ -1,4 +1,3 @@
-
 package com.enigmacamp.pawtner.entity;
 
 import jakarta.persistence.*;
@@ -10,6 +9,7 @@ import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 @Data
 @AllArgsConstructor
@@ -20,11 +20,11 @@ import java.time.LocalDateTime;
 public class Prescription {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer id;
+    @GeneratedValue(strategy = GenerationType.UUID)
+    private UUID id;
 
     @ManyToOne
-    @JoinColumn(name = "pet_id", nullable = false)
+    @JoinColumn(name = "pet_id", nullable = false, columnDefinition = "uuid")
     private Pet pet;
 
     @ManyToOne

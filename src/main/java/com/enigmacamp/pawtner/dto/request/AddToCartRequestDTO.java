@@ -15,7 +15,7 @@ import java.util.UUID;
 @Builder
 public class AddToCartRequestDTO {
     @NotNull(message = "Product ID is required")
-    private Integer productId;
+    private UUID productId;
 
     @NotNull(message = "Quantity is required")
     @Min(value = 1, message = "Quantity must be at least 1")

@@ -1,4 +1,3 @@
-
 package com.enigmacamp.pawtner.entity;
 
 import com.enigmacamp.pawtner.constant.ServiceCategory;
@@ -11,6 +10,7 @@ import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 @Data
 @AllArgsConstructor
@@ -21,8 +21,8 @@ import java.time.LocalDateTime;
 public class Service {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer id;
+    @GeneratedValue(strategy = GenerationType.UUID)
+    private UUID id;
 
     @ManyToOne
     @JoinColumn(name = "business_id", nullable = false, columnDefinition = "uuid")

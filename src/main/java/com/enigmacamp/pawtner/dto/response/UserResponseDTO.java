@@ -8,7 +8,11 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-@Builder
-public class RegisterResponseDTO {
-    String email;
+@Builder(toBuilder = true)
+public class UserResponseDTO {
+    private String id;
+    private String email;
+    private String name;
+    private String address;
+    private String phone;
 }

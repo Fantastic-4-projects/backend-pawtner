@@ -13,7 +13,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 @Repository
-public interface BookingRepository extends JpaRepository<Booking, Integer> {
+public interface BookingRepository extends JpaRepository<Booking, UUID> {
     Page<Booking> findByCustomer(User customer, Pageable pageable);
     Page<Booking> findByServiceBusiness(Business business, Pageable pageable);
     Optional<Booking> findByBookingNumber(String bookingNumber);

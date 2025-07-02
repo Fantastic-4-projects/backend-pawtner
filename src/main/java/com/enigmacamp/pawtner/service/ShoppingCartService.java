@@ -10,6 +10,6 @@ public interface ShoppingCartService {
     ShoppingCartResponseDTO addItemToCart(AddToCartRequestDTO addToCartRequestDTO, String customerEmail);
     ShoppingCartResponseDTO getShoppingCartByCustomerId(String customerEmail);
     ShoppingCartResponseDTO updateCartItemQuantity(UpdateCartItemRequestDTO updateCartItemRequestDTO, String customerEmail);
-    void removeCartItem(Integer cartItemId, String customerEmail);
+    void removeCartItem(UUID cartItemId, String customerEmail);
     void clearShoppingCart(String customerEmail);
 }

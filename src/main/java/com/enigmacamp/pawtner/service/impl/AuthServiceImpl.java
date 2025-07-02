@@ -1,5 +1,6 @@
 package com.enigmacamp.pawtner.service.impl;
 
+import com.enigmacamp.pawtner.config.JwtService;
 import com.enigmacamp.pawtner.constant.UserRole;
 import com.enigmacamp.pawtner.dto.request.*;
 import com.enigmacamp.pawtner.dto.response.LoginResponseDTO;
@@ -7,22 +8,22 @@ import com.enigmacamp.pawtner.dto.response.RegisterResponseDTO;
 import com.enigmacamp.pawtner.entity.User;
 import com.enigmacamp.pawtner.repository.AuthRepository;
 import com.enigmacamp.pawtner.service.AuthService;
-import com.enigmacamp.pawtner.config.JwtService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.security.SecureRandom;
 import java.time.LocalDateTime;
-import java.util.Random;
+import java.util.Optional;
 import java.util.UUID;
 
 @RequiredArgsConstructor
@@ -33,6 +34,9 @@ public class AuthServiceImpl implements AuthService {
     private final AuthenticationManager authenticationManager;
     private final JwtService jwtService;
     private final EmailServiceImpl emailService;
+
+    @Value("${app.pawtner.reset-password-url}")
+    private String resetPasswordUrl;
 
     public RegisterResponseDTO register(RegisterRequestDTO registerRequestDTO) {
         User user = User.builder()
@@ -80,10 +84,10 @@ public class AuthServiceImpl implements AuthService {
     @Override
     public void verify(VerificationRequestDTO requestDTO) {
         User user = authRepository.findByEmail(requestDTO.getEmail())
-                .orElseThrow(() -> new RuntimeException("Pengguna dengan email " + requestDTO.getEmail() + " tidak ditemukan."));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Pengguna dengan email " + requestDTO.getEmail() + " tidak ditemukan."));
 
         if (user.getIsVerified()) {
-            throw new RuntimeException("Akun sudah diverifikasi.");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Akun sudah diverifikasi.");
         }
 
         if (user.getCodeVerification().equals(requestDTO.getVerificationCode())) {
@@ -93,7 +97,7 @@ public class AuthServiceImpl implements AuthService {
                 user.setCodeExpire(null);
                 authRepository.save(user);
             } else {
-                throw new RuntimeException("Kode verifikasi sudah kadaluarsa. Harap memina kode baru.");
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Kode verifikasi sudah kadaluarsa. Harap memina kode baru.");
             }
         } else {
             throw new BadCredentialsException("Kode verifikasi salah.");
@@ -103,10 +107,10 @@ public class AuthServiceImpl implements AuthService {
     @Override
     public void resendVerificationCode(ResendVerificationRequestDTO verificationRequestDTO) {
         User user = authRepository.findByEmail(verificationRequestDTO.getEmail())
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
 
         if (user.getIsVerified()) {
-            throw new RuntimeException("Account already verified");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Account already verified");
         }
 
         String code = generateRandomCode(6);
@@ -120,19 +124,20 @@ public class AuthServiceImpl implements AuthService {
     @Override
     @Transactional
     public void forgotPassword(ForgotPasswordRequestDTO forgotPasswordRequestDTO) {
-        User user = authRepository.findByEmail(forgotPasswordRequestDTO.getEmail())
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Email tidak ditemukan"));
+        Optional<User> optionalUser = authRepository.findByEmail(forgotPasswordRequestDTO.getEmail());
 
-        String token = UUID.randomUUID().toString();
+        if (optionalUser.isPresent()) {
+            User user = optionalUser.get();
+            String token = UUID.randomUUID().toString();
 
-        user.setResetPasswordToken(token);
-        user.setResetPasswordTokenExpire(LocalDateTime.now().plusHours(1));
-        authRepository.save(user);
+            user.setResetPasswordToken(token);
+            user.setResetPasswordTokenExpire(LocalDateTime.now().plusHours(1));
+            authRepository.save(user);
 
-        // Link ini menyesuaikan nanti sama FE
-        String resetLink = "http://example.com?token=" + token;
+            String resetLink = resetPasswordUrl + "?token=" + token;
 
-        emailService.sendPasswordResetEmail(user.getEmail(), user.getName(), resetLink);
+            emailService.sendPasswordResetEmail(user.getEmail(), user.getName(), resetLink);
+        }
     }
 
     @Override
@@ -156,7 +161,7 @@ public class AuthServiceImpl implements AuthService {
     }
 
     private String generateRandomCode(int length) {
-        Random random = new Random();
+        SecureRandom random = new SecureRandom();
         StringBuilder code = new StringBuilder();
         for (int i = 0; i < length; i++) {
             code.append(random.nextInt(10));

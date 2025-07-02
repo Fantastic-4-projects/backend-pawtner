@@ -20,6 +20,7 @@ import org.springframework.web.server.ResponseStatusException;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
@@ -82,8 +83,6 @@ public class ShoppingCartServiceImpl implements ShoppingCartService {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Shopping cart not found for this customer");
         }
 
-        // Assuming one shopping cart per customer for simplicity, or you might need to choose one if multiple exist
-        // For now, let's return the first one found or modify to return a list of carts if needed
         ShoppingCart shoppingCart = shoppingCarts.get(0);
 
         List<CartItem> cartItems = cartItemRepository.findAll().stream()
@@ -131,7 +130,7 @@ public class ShoppingCartServiceImpl implements ShoppingCartService {
 
     @Override
     @Transactional
-    public void removeCartItem(Integer cartItemId, String customerEmail) {
+    public void removeCartItem(UUID cartItemId, String customerEmail) {
         User customer = userService.getUserByEmailForInternal(customerEmail);
         CartItem cartItem = cartItemRepository.findById(cartItemId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Cart item not found"));
@@ -154,7 +153,6 @@ public class ShoppingCartServiceImpl implements ShoppingCartService {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Shopping cart not found for this customer");
         }
 
-        // Assuming one shopping cart per customer for simplicity
         ShoppingCart shoppingCart = shoppingCarts.get(0);
 
         List<CartItem> cartItems = cartItemRepository.findAll().stream()

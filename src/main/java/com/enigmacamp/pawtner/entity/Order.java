@@ -26,7 +26,7 @@ public class Order {
     private UUID id;
 
     @ManyToOne
-    @JoinColumn(name = "customer_id", nullable = false)
+    @JoinColumn(name = "customer_id", nullable = false, columnDefinition = "uuid")
     private User customer;
 
     @ManyToOne

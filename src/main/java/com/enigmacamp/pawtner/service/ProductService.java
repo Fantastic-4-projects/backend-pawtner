@@ -6,11 +6,13 @@ import com.enigmacamp.pawtner.entity.Product;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
+import java.util.UUID;
+
 public interface ProductService {
     ProductResponseDTO createProduct(ProductRequestDTO productRequestDTO);
-    ProductResponseDTO getProductById(Integer id);
+    ProductResponseDTO getProductById(UUID id);
     Page<ProductResponseDTO> getAllProducts(Pageable pageable);
     ProductResponseDTO updateProduct(ProductRequestDTO productRequestDTO);
-    void deleteProduct(Integer id);
-    Product getProductEntityById(Integer id);
+    void deleteProduct(UUID id);
+    Product getProductEntityById(UUID id);
 }

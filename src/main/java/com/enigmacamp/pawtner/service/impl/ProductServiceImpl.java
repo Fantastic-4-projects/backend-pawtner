@@ -16,8 +16,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.io.IOException;
-import java.math.BigDecimal;
-
+import java.util.UUID;
 
 @Service
 @AllArgsConstructor
@@ -28,7 +27,7 @@ public class ProductServiceImpl implements ProductService {
     private final ImageUploadService imageUploadService;
 
     @Override
-    public Product getProductEntityById(Integer id) {
+    public Product getProductEntityById(UUID id) {
         return productRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Product not found"));
     }
@@ -60,7 +59,7 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    public ProductResponseDTO getProductById(Integer id) {
+    public ProductResponseDTO getProductById(UUID id) {
         Product product = productRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Product not found"));
         return mapToResponseDTO(product);
@@ -98,7 +97,7 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    public void deleteProduct(Integer id) {
+    public void deleteProduct(UUID id) {
         Product product = productRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Product not found"));
         product.setIsActive(false);

@@ -1,4 +1,3 @@
-
 package com.enigmacamp.pawtner.entity;
 
 import com.enigmacamp.pawtner.constant.BookingStatus;
@@ -11,6 +10,7 @@ import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 @Data
 @AllArgsConstructor
@@ -21,15 +21,15 @@ import java.time.LocalDateTime;
 public class Booking {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer id;
+    @GeneratedValue(strategy = GenerationType.UUID)
+    private UUID id;
 
     @ManyToOne
     @JoinColumn(name = "customer_id", nullable = false)
     private User customer;
 
     @ManyToOne
-    @JoinColumn(name = "pet_id", nullable = false)
+    @JoinColumn(name = "pet_id", nullable = false, columnDefinition = "uuid")
     private Pet pet;
 
     @ManyToOne

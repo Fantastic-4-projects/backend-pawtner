@@ -8,13 +8,14 @@ import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
 public class BookingResponseDTO {
-    private Integer id;
+    private UUID id;
     private String bookingNumber;
     private String customerName;
     private String petName;

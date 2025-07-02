@@ -17,6 +17,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.io.IOException;
+import java.util.UUID;
 
 @Service
 @AllArgsConstructor
@@ -54,13 +55,13 @@ public class PetServiceImpl implements PetService {
     }
 
     @Override
-    public PetResponseDTO getPetById(Integer id) {
+    public PetResponseDTO getPetById(UUID id) {
         Pet pet = getPetEntityById(id);
         return mapToResponseDTO(pet);
     }
 
     @Override
-    public Pet getPetEntityById(Integer id) {
+    public Pet getPetEntityById(UUID id) {
         return petRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Pet not found"));
     }
@@ -83,8 +84,12 @@ public class PetServiceImpl implements PetService {
         }
 
         String imageUrl = existingPet.getImageUrl();
-        if (petRequestDTO.getImageUrl() != null && !petRequestDTO.getImageUrl().isEmpty()) {
-            imageUrl = petRequestDTO.getImageUrl();
+        if (petRequestDTO.getImage() != null && !petRequestDTO.getImage().isEmpty()) {
+            try {
+                imageUrl = imageUploadService.upload(petRequestDTO.getImage());
+            } catch (IOException e) {
+                throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Failed to upload image");
+            }
         }
 
         existingPet.setName(petRequestDTO.getName());
@@ -100,7 +105,7 @@ public class PetServiceImpl implements PetService {
 
     @Override
     @Transactional
-    public void deletePet(Integer id, String ownerEmail) {
+    public void deletePet(UUID id, String ownerEmail) {
         User owner = userService.getUserByEmailForInternal(ownerEmail);
         Pet pet = getPetEntityById(id);
 
