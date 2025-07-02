@@ -40,8 +40,8 @@ MIDTRANS_CLIENT_KEY=SB-Mid-client-hoO-dwyPyxu-bGXx
 MIDTRANS_IS_PRODUCTION=false
 
 # Google OAuth2 Configuration
-GOOGLE_CLIENT_ID=739333513795-qeorp8uavenl8ru78vhu6g2bhlqgam5t.apps.googleusercontent.com
-GOOGLE_CLIENT_SECRET=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
+GOOGLE_CLIENT_ID=YOUR_GOOGLE_CLIENT_ID
+GOOGLE_CLIENT_SECRET=YOUR_GOOGLE_CLIENT_SECRET
 GOOGLE_SCOPE=openid, profile, email
 GOOGLE_REDIRECT_URI=http://localhost:8080/login/oauth2/code/google
 
