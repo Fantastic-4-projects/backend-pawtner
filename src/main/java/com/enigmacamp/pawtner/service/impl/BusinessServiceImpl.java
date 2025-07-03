@@ -11,6 +11,7 @@ import com.enigmacamp.pawtner.service.BusinessService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
@@ -57,6 +58,23 @@ public class BusinessServiceImpl implements BusinessService {
                 .collect(Collectors.toList());
     }
 
+    @Override
+    public Business getBusinessByIdForInternal(UUID id) {
+        return businessRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Business not found"));
+    }
+
+    @Override
+    public BusinessResponseDTO approveBusiness(UUID businessId, Boolean approved) {
+        Business business = businessRepository.findBusinessById((businessId))
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Business not found"));
+
+        business.setIsApproved(approved);
+        businessRepository.save(business);
+
+        return mapToResponse(business);
+    }
+
     private BusinessResponseDTO mapToResponse(Business business) {
         return BusinessResponseDTO.builder()
                 .businessId(business.getId())
@@ -64,12 +82,11 @@ public class BusinessServiceImpl implements BusinessService {
                 .businessName(business.getName())
                 .businessAddress(business.getAddress())
                 .operationHours(business.getOperationHours())
+                .statusApproved(
+                        business.getIsApproved() == null ? "Pending"
+                                : business.getIsApproved() ? "Approved"
+                                : "Rejected"
+                )
                 .build();
-    }
-
-    @Override
-    public Business getBusinessByIdForInternal(UUID id) {
-        return businessRepository.findById(id)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Business not found"));
     }
 }

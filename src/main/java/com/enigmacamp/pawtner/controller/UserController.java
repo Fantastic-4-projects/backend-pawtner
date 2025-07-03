@@ -4,6 +4,7 @@ import com.enigmacamp.pawtner.dto.request.UserRequestDTO;
 import com.enigmacamp.pawtner.dto.response.CommonResponse;
 import com.enigmacamp.pawtner.dto.response.UserResponseDTO;
 import com.enigmacamp.pawtner.service.UserService;
+import com.enigmacamp.pawtner.util.ResponseUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -11,6 +12,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.UUID;
 
 @RestController
 @RequiredArgsConstructor
@@ -59,4 +61,19 @@ public class UserController {
                 .build();
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
+
+    @PatchMapping("/{id}/status")
+    @PreAuthorize("hasAuthority('ADMIN')")
+    public ResponseEntity<CommonResponse<UserResponseDTO>> updateStatus(
+            @PathVariable UUID id,
+            @RequestParam String action,
+            @RequestParam Boolean value
+    ) {
+        return ResponseUtil.createResponse(
+                HttpStatus.OK,
+                "Berhasil mengubah status " + action + " menjadi " + value,
+                userService.updateUserStatus(id, action, value)
+        );
+    }
+
 }

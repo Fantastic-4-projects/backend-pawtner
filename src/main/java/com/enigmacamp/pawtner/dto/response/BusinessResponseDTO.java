@@ -19,4 +19,5 @@ public class BusinessResponseDTO {
     private String businessName;
     private String businessAddress;
     private OperationHoursDTO operationHours;
+    private String statusApproved = "Pending";
 }

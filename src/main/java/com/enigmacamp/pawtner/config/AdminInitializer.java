@@ -27,6 +27,10 @@ public class AdminInitializer {
                     .address("EnigmaCamp")
                     .isVerified(true)
                     .role(UserRole.ADMIN)
+                    .isEnabled(true)
+                    .isCredentialsNonExpired(true)
+                    .isAccountNonLocked(true)
+                    .isAccountNonExpired(true)
                     .build();
 
             authRepository.save(adminUser);

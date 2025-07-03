@@ -12,4 +12,5 @@ public interface BusinessService {
     BusinessResponseDTO registerBusiness(BusinessRequestDTO businessRequestDTO);
     List<BusinessResponseDTO> viewBusiness();
     Business getBusinessByIdForInternal(UUID id);
+    BusinessResponseDTO approveBusiness(UUID businessId, Boolean approved);
 }
