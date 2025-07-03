@@ -1,36 +1,22 @@
 {
 	"info": {
-		"_postman_id": "a1b2c3d4-e5f6-7890-1234-567890abcdef",
-		"name": "Pawtner Full Test",
-		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-		"_exporter_id": "a1b2c3d4-e5f6-7890-1234-567890abcdef"
+		"_postman_id": "b6a91169-8c42-4ad8-9a86-dbeb3a02fbdf",
+		"name": "Pawtner",
+		"schema": "https://schema.getpostman.com/json/collection/v2.0.0/collection.json",
+		"_exporter_id": "36340488"
 	},
 	"item": [
 		{
-			"name": "Auth",
+			"name": "auth",
 			"item": [
 				{
-					"name": "Register Customer",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"var jsonData = pm.response.json();",
-									"if (jsonData && jsonData.data && jsonData.data.email) {",
-									"    pm.collectionVariables.set(\"user_email\", jsonData.data.email);",
-									"}"
-								],
-								"type": "text/javascript"
-							}
-						}
-					],
+					"name": "Regist Customer",
 					"request": {
 						"method": "POST",
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"email\": \"testuser_{{$randomInt}}@example.com\",\n    \"phoneNumber\": \"081234567890\",\n    \"password\": \"password123\",\n    \"name\": \"Test User\",\n    \"address\": \"Test Address\"\n}",
+							"raw": "{\"email\": \"customer@example.com\",\"phoneNumber\": \"081111111111\",\"password\": \"password123\",\"name\": \"Customer User\",\"address\": \"Customer Address\"}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -42,13 +28,13 @@
 					"response": []
 				},
 				{
-					"name": "Register Business Owner",
+					"name": "Regist Business Owner",
 					"request": {
 						"method": "POST",
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"email\": \"testbusinessowner_{{$randomInt}}@example.com\",\n    \"phoneNumber\": \"081234567891\",\n    \"password\": \"password123\",\n    \"name\": \"Test Business Owner\",\n    \"address\": \"Test Business Owner Address\"\n}",
+							"raw": "{\"email\": \"businessowner@example.com\",\"phoneNumber\": \"082222222222\",\"password\": \"password123\",\"name\": \"Business Owner User\",\"address\": \"Business Address\"}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -60,13 +46,13 @@
 					"response": []
 				},
 				{
-					"name": "Verify Account",
+					"name": "verify",
 					"request": {
 						"method": "POST",
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"email\": \"{{user_email}}\",\n    \"verificationCode\": \"123456\" \n}",
+							"raw": "{\"email\": \"customer@example.com\",\"verificationCode\": \"123456\"}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -78,13 +64,13 @@
 					"response": []
 				},
 				{
-					"name": "Resend Verification Code",
+					"name": "resend-verification",
 					"request": {
 						"method": "POST",
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"email\": \"{{user_email}}\"\n}",
+							"raw": "{\"email\": \"customer@example.com\"}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -96,16 +82,14 @@
 					"response": []
 				},
 				{
-					"name": "Login",
+					"name": "Login Customer",
 					"event": [
 						{
 							"listen": "test",
 							"script": {
 								"exec": [
-									"var jsonData = pm.response.json();",
-									"if (jsonData && jsonData.data && jsonData.data.token) {",
-									"    pm.collectionVariables.set(\"auth_token\", jsonData.data.token);",
-									"}"
+									"var jsonData = JSON.parse(responseBody);",
+									"pm.collectionVariables.set(\"customer_auth_token\", jsonData.data.token);"
 								],
 								"type": "text/javascript"
 							}
@@ -116,7 +100,67 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"email\": \"{{user_email}}\",\n    \"password\": \"password123\"\n}",
+							"raw": "{\"email\": \"customer@example.com\",\"password\": \"password123\"}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": "http://localhost:8080/api/auth/login"
+					},
+					"response": []
+				},
+				{
+					"name": "Login Business Owner",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var jsonData = JSON.parse(responseBody);",
+									"pm.collectionVariables.set(\"bo_auth_token\", jsonData.data.token);"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"email\": \"businessowner@example.com\",\"password\": \"password123\"}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": "http://localhost:8080/api/auth/login"
+					},
+					"response": []
+				},
+				{
+					"name": "Login Admin",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var jsonData = JSON.parse(responseBody);",
+									"pm.collectionVariables.set(\"admin_auth_token\", jsonData.data.token);"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"email\": \"admin@pawtner.com\",\"password\": \"admin123\"}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -134,7 +178,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"email\": \"{{user_email}}\"\n}",
+							"raw": "{\"email\": \"customer@example.com\"}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -146,13 +190,13 @@
 					"response": []
 				},
 				{
-					"name": "Reset Password",
+					"name": "Reset password",
 					"request": {
 						"method": "POST",
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"token\": \"your-reset-token\",\n    \"newPassword\": \"newpassword123\"\n}",
+							"raw": "{\"token\": \"your_reset_token\",\"newPassword\": \"newpassword123\"}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -166,15 +210,15 @@
 			]
 		},
 		{
-			"name": "Users",
+			"name": "users",
 			"item": [
 				{
-					"name": "Get All Users (Admin)",
+					"name": "Get All Users",
 					"request": {
 						"auth": {
 							"type": "bearer",
 							"bearer": {
-								"token": "{{auth_token}}"
+								"token": "{{admin_auth_token}}"
 							}
 						},
 						"method": "GET",
@@ -189,7 +233,7 @@
 						"auth": {
 							"type": "bearer",
 							"bearer": {
-								"token": "{{auth_token}}"
+								"token": "{{admin_auth_token}}"
 							}
 						},
 						"method": "GET",
@@ -204,14 +248,14 @@
 						"auth": {
 							"type": "bearer",
 							"bearer": {
-								"token": "{{auth_token}}"
+								"token": "{{customer_auth_token}}"
 							}
 						},
 						"method": "PUT",
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"name\": \"Updated User Name\",\n    \"address\": \"Updated User Address\",\n    \"phoneNumber\": \"081122334455\"\n}",
+							"raw": "{\"id\": \"{{user_id}}\",\"name\": \"New User Name\",\"address\": \"New User Address\",\"phoneNumber\": \"081234567899\"}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -223,12 +267,12 @@
 					"response": []
 				},
 				{
-					"name": "Delete User (Admin)",
+					"name": "Delete User",
 					"request": {
 						"auth": {
 							"type": "bearer",
 							"bearer": {
-								"token": "{{auth_token}}"
+								"token": "{{admin_auth_token}}"
 							}
 						},
 						"method": "DELETE",
@@ -236,23 +280,59 @@
 						"url": "http://localhost:8080/api/users/{{user_id}}"
 					},
 					"response": []
+				},
+				{
+					"name": "Update User Status",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": {
+								"token": "{{admin_auth_token}}"
+							}
+						},
+						"method": "PATCH",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/api/users/{{user_id}}/status?action=isEnable&value=true",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"users",
+								"{{user_id}}",
+								"status"
+							],
+							"query": [
+								{
+									"key": "action",
+									"value": "isEnable"
+								},
+								{
+									"key": "value",
+									"value": "true"
+								}
+							]
+						}
+					},
+					"response": []
 				}
 			]
 		},
 		{
-			"name": "Business",
+			"name": "business",
 			"item": [
 				{
-					"name": "Register Business",
+					"name": "Regist Business",
 					"event": [
 						{
 							"listen": "test",
 							"script": {
 								"exec": [
-									"var jsonData = pm.response.json();",
-									"if (jsonData && jsonData.data && jsonData.data.id) {",
-									"    pm.collectionVariables.set(\"business_id\", jsonData.data.id);",
-									"}"
+									"var jsonData = JSON.parse(responseBody);",
+									"pm.collectionVariables.set(\"business_id\", jsonData.data.businessId);"
 								],
 								"type": "text/javascript"
 							}
@@ -262,14 +342,14 @@
 						"auth": {
 							"type": "bearer",
 							"bearer": {
-								"token": "{{auth_token}}"
+								"token": "{{bo_auth_token}}"
 							}
 						},
 						"method": "POST",
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n  \"name\": \"Test Business {{$randomInt}}\",\n  \"description\": \"Description for test business.\",\n  \"businessType\": \"PET_SHOP\",\n  \"businessEmail\": \"test.business_{{$randomInt}}@example.com\",\n  \"businessPhone\": \"081234567891\",\n  \"emergencyPhone\": \"081234567892\",\n  \"businessImageUrl\": \"https://example.com/images/test_business.jpg\",\n  \"certificateImageUrl\": \"https://example.com/certificates/test_cert.pdf\",\n  \"address\": \"Test Business Address\",\n  \"latitude\": -6.2,\n  \"longitude\": 106.8,\n  \"operationHours\": {\n    \"monday\": \"09:00-17:00\",\n    \"tuesday\": \"09:00-17:00\"\n  }\n}",
+							"raw": "{\n  \"nameBusiness\": \"Intan Grooming House\",\n  \"descriptionBusiness\": \"Tempat grooming hewan terpercaya dengan layanan ramah dan profesional.\",\n  \"businessType\": \"GROOMING_SALON\",\n  \"businessEmail\": \"intan.grooming@example.com\",\n  \"businessPhone\": \"082112345678\",\n  \"emergencyPhone\": \"081299998888\",\n  \"businessImageUrl\": \"https://example.com/images/grooming-house.jpg\",\n  \"certificateImageUrl\": \"https://example.com/certificates/grooming-cert.pdf\",\n  \"businessAddress\": \"Jl. Anjing Bahagia No. 12, Jakarta Selatan\",\n  \"latitude\": -6.244669,\n  \"longitude\": 106.800293,\n  \"operationHours\": {\n    \"monday\": \"09:00-18:00\",\n    \"tuesday\": \"09:00-18:00\"\n  }\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -281,19 +361,43 @@
 					"response": []
 				},
 				{
-					"name": "Approve Business (Admin)",
+					"name": "View All Business",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": "http://localhost:8080/api/business"
+					},
+					"response": []
+				},
+				{
+					"name": "View My Business",
 					"request": {
 						"auth": {
 							"type": "bearer",
 							"bearer": {
-								"token": "{{auth_token}}"
+								"token": "{{bo_auth_token}}"
+							}
+\t					},
+						"method": "GET",
+						"header": [],
+						"url": "http://localhost:8080/api/business/my-business"
+					},
+					"response": []
+				},
+				{
+					"name": "Approve Business",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": {
+								"token": "{{admin_auth_token}}"
 							}
 						},
 						"method": "PATCH",
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"approve\": true\n}",
+							"raw": "{\"approve\": true}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -303,53 +407,21 @@
 						"url": "http://localhost:8080/api/business/{{business_id}}"
 					},
 					"response": []
-				},
-				{
-					"name": "View All Businesses (Admin)",
-					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": {
-								"token": "{{auth_token}}"
-							}
-						},
-						"method": "GET",
-						"header": [],
-						"url": "http://localhost:8080/api/business"
-					},
-					"response": []
-				},
-				{
-					"name": "View My Businesses",
-					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": {
-								"token": "{{auth_token}}"
-							}
-						},
-						"method": "GET",
-						"header": [],
-						"url": "http://localhost:8080/api/business/my-business"
-					},
-					"response": []
 				}
 			]
 		},
 		{
-			"name": "Products",
+			"name": "pets",
 			"item": [
 				{
-					"name": "Create Product",
+					"name": "Create Pet",
 					"event": [
 						{
 							"listen": "test",
 							"script": {
 								"exec": [
-									"var jsonData = pm.response.json();",
-									"if (jsonData && jsonData.data && jsonData.data.id) {",
-									"    pm.collectionVariables.set(\"product_id\", jsonData.data.id);",
-									"}"
+									"var jsonData = JSON.parse(responseBody);",
+									"pm.collectionVariables.set(\"pet_id\", jsonData.data.id);"
 								],
 								"type": "text/javascript"
 							}
@@ -359,7 +431,117 @@
 						"auth": {
 							"type": "bearer",
 							"bearer": {
-								"token": "{{auth_token}}"
+								"token": "{{customer_auth_token}}"
+							}
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"name\": \"Doggy\",\"species\": \"Dog\",\"breed\": \"Golden Retriever\",\"gender\": \"MALE\",\"dateOfBirth\": \"2022-01-15\",\"colour\": \"Golden\",\"weight\": 25.5}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": "http://localhost:8080/api/pets"
+					},
+					"response": []
+				},
+				{
+					"name": "Get My Pets",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": {
+								"token": "{{customer_auth_token}}"
+							}
+						},
+						"method": "GET",
+						"header": [],
+						"url": "http://localhost:8080/api/pets"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Pet By ID",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": {
+								"token": "{{customer_auth_token}}"
+							}
+						},
+						"method": "GET",
+						"header": [],
+						"url": "http://localhost:8080/api/pets/{{pet_id}}"
+					},
+					"response": []
+				},
+				{
+					"name": "Update Pet",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": {
+								"token": "{{customer_auth_token}}"
+							}
+						},
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"name\": \"Doggy Updated\",\"species\": \"Dog\",\"breed\": \"Golden Retriever\",\"gender\": \"MALE\",\"dateOfBirth\": \"2022-01-15\",\"colour\": \"Dark Golden\",\"weight\": 26.0}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": "http://localhost:8080/api/pets/{{pet_id}}"
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Pet",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": {
+								"token": "{{customer_auth_token}}"
+							}
+						},
+						"method": "DELETE",
+						"header": [],
+						"url": "http://localhost:8080/api/pets/{{pet_id}}"
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "products",
+			"item": [
+				{
+					"name": "Create Product",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var jsonData = JSON.parse(responseBody);",
+									"pm.collectionVariables.set(\"product_id\", jsonData.data.id);"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": {
+								"token": "{{bo_auth_token}}"
 							}
 						},
 						"method": "POST",
@@ -369,22 +551,22 @@
 							"formdata": [
 								{
 									"key": "name",
-									"value": "Test Product {{$randomInt}}",
+									"value": "Royal Canin Adult",
 									"type": "text"
 								},
 								{
 									"key": "description",
-									"value": "Description for test product.",
+									"value": "Makanan anjing dewasa",
 									"type": "text"
 								},
 								{
 									"key": "price",
-									"value": "100000",
+									"value": "150000",
 									"type": "text"
 								},
 								{
 									"key": "stockQuantity",
-									"value": "50",
+									"value": "100",
 									"type": "text"
 								},
 								{
@@ -400,7 +582,7 @@
 								{
 									"key": "productImage",
 									"type": "file",
-									"src": []
+									"src": "/path/to/your/image.jpg"
 								}
 							]
 						},
@@ -432,7 +614,7 @@
 						"auth": {
 							"type": "bearer",
 							"bearer": {
-								"token": "{{auth_token}}"
+								"token": "{{bo_auth_token}}"
 							}
 						},
 						"method": "PUT",
@@ -442,27 +624,22 @@
 							"formdata": [
 								{
 									"key": "name",
-									"value": "Updated Product {{$randomInt}}",
+									"value": "Royal Canin Adult Updated",
 									"type": "text"
 								},
 								{
 									"key": "description",
-									"value": "Updated description for test product.",
+									"value": "Makanan anjing dewasa terbaru",
 									"type": "text"
 								},
 								{
 									"key": "price",
-									"value": "120000",
+									"value": "160000",
 									"type": "text"
 								},
 								{
 									"key": "stockQuantity",
-									"value": "40",
-									"type": "text"
-								},
-								{
-									"key": "category",
-									"value": "TOYS",
+									"value": "90",
 									"type": "text"
 								},
 								{
@@ -473,7 +650,7 @@
 								{
 									"key": "productImage",
 									"type": "file",
-									"src": []
+									"src": "/path/to/your/image.jpg"
 								}
 							]
 						},
@@ -487,7 +664,7 @@
 						"auth": {
 							"type": "bearer",
 							"bearer": {
-								"token": "{{auth_token}}"
+								"token": "{{bo_auth_token}}"
 							}
 						},
 						"method": "DELETE",
@@ -499,7 +676,7 @@
 			]
 		},
 		{
-			"name": "Services",
+			"name": "services",
 			"item": [
 				{
 					"name": "Create Service",
@@ -508,10 +685,8 @@
 							"listen": "test",
 							"script": {
 								"exec": [
-									"var jsonData = pm.response.json();",
-									"if (jsonData && jsonData.data && jsonData.data.id) {",
-									"    pm.collectionVariables.set(\"service_id\", jsonData.data.id);",
-									"}"
+									"var jsonData = JSON.parse(responseBody);",
+									"pm.collectionVariables.set(\"service_id\", jsonData.data.id);"
 								],
 								"type": "text/javascript"
 							}
@@ -521,7 +696,7 @@
 						"auth": {
 							"type": "bearer",
 							"bearer": {
-								"token": "{{auth_token}}"
+								"token": "{{bo_auth_token}}"
 							}
 						},
 						"method": "POST",
@@ -531,12 +706,17 @@
 							"formdata": [
 								{
 									"key": "name",
-									"value": "Test Service {{$randomInt}}",
+									"value": "Grooming Kucing",
+									"type": "text"
+								},
+								{
+									"key": "description",
+									"value": "Layanan grooming lengkap untuk kucing",
 									"type": "text"
 								},
 								{
 									"key": "basePrice",
-									"value": "50000",
+									"value": "75000",
 									"type": "text"
 								},
 								{
@@ -552,7 +732,7 @@
 								{
 									"key": "serviceImage",
 									"type": "file",
-									"src": []
+									"src": "/path/to/your/service_image.jpg"
 								}
 							]
 						},
@@ -584,7 +764,7 @@
 						"auth": {
 							"type": "bearer",
 							"bearer": {
-								"token": "{{auth_token}}"
+								"token": "{{bo_auth_token}}"
 							}
 						},
 						"method": "PUT",
@@ -594,17 +774,22 @@
 							"formdata": [
 								{
 									"key": "name",
-									"value": "Updated Service {{$randomInt}}",
+									"value": "Grooming Kucing Premium",
+									"type": "text"
+								},
+								{
+									"key": "description",
+									"value": "Layanan grooming lengkap untuk kucing dengan tambahan spa",
 									"type": "text"
 								},
 								{
 									"key": "basePrice",
-									"value": "60000",
+									"value": "100000",
 									"type": "text"
 								},
 								{
 									"key": "category",
-									"value": "VETERINARY",
+									"value": "GROOMING",
 									"type": "text"
 								},
 								{
@@ -615,7 +800,7 @@
 								{
 									"key": "serviceImage",
 									"type": "file",
-									"src": []
+									"src": "/path/to/your/updated_service_image.jpg"
 								}
 							]
 						},
@@ -629,7 +814,7 @@
 						"auth": {
 							"type": "bearer",
 							"bearer": {
-								"token": "{{auth_token}}"
+								"token": "{{bo_auth_token}}"
 							}
 						},
 						"method": "DELETE",
@@ -641,18 +826,20 @@
 			]
 		},
 		{
-			"name": "Shopping Cart",
+			"name": "cart & order",
 			"item": [
 				{
-					"name": "Add Item to Cart",
+					"name": "Add to Cart",
 					"event": [
 						{
 							"listen": "test",
 							"script": {
 								"exec": [
-									"var jsonData = pm.response.json();",
-									"if (jsonData && jsonData.data && jsonData.data.cartItems && jsonData.data.cartItems.length > 0) {",
-									"    pm.collectionVariables.set(\"cart_item_id\", jsonData.data.cartItems[0].id);",
+									"var jsonData = JSON.parse(responseBody);",
+									"// Assuming the cart item ID is in the last item of the cart",
+									"var cartItems = jsonData.data.cartItems;",
+									"if (cartItems && cartItems.length > 0) {",
+									"    pm.collectionVariables.set(\"cart_item_id\", cartItems[cartItems.length - 1].id);",
 									"}"
 								],
 								"type": "text/javascript"
@@ -663,14 +850,14 @@
 						"auth": {
 							"type": "bearer",
 							"bearer": {
-								"token": "{{auth_token}}"
+								"token": "{{customer_auth_token}}"
 							}
 						},
 						"method": "POST",
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"productId\": \"{{product_id}}\",\n    \"quantity\": 1,\n    \"businessId\": \"{{business_id}}\"\n}",
+							"raw": "{\"productId\": \"{{product_id}}\",\"businessId\": \"{{business_id}}\",\"quantity\": 1}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -687,7 +874,7 @@
 						"auth": {
 							"type": "bearer",
 							"bearer": {
-								"token": "{{auth_token}}"
+								"token": "{{customer_auth_token}}"
 							}
 						},
 						"method": "GET",
@@ -697,19 +884,19 @@
 					"response": []
 				},
 				{
-					"name": "Update Cart Item Quantity",
+					"name": "Update Cart Item",
 					"request": {
 						"auth": {
 							"type": "bearer",
 							"bearer": {
-								"token": "{{auth_token}}"
+								"token": "{{customer_auth_token}}"
 							}
 						},
 						"method": "PUT",
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"cartItemId\": \"{{cart_item_id}}\",\n    \"quantity\": 2\n}",
+							"raw": "{\"cartItemId\": \"{{cart_item_id}}\",\"quantity\": 2}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -726,7 +913,7 @@
 						"auth": {
 							"type": "bearer",
 							"bearer": {
-								"token": "{{auth_token}}"
+								"token": "{{customer_auth_token}}"
 							}
 						},
 						"method": "DELETE",
@@ -736,12 +923,12 @@
 					"response": []
 				},
 				{
-					"name": "Clear Shopping Cart",
+					"name": "Clear Cart",
 					"request": {
 						"auth": {
 							"type": "bearer",
 							"bearer": {
-								"token": "{{auth_token}}"
+								"token": "{{customer_auth_token}}"
 							}
 						},
 						"method": "DELETE",
@@ -749,23 +936,17 @@
 						"url": "http://localhost:8080/api/cart"
 					},
 					"response": []
-				}
-			]
-		},
-		{
-			"name": "Pets",
-			"item": [
+				},
 				{
-					"name": "Create Pet",
+					"name": "Checkout",
 					"event": [
 						{
 							"listen": "test",
 							"script": {
 								"exec": [
-									"var jsonData = pm.response.json();",
-									"if (jsonData && jsonData.data && jsonData.data.id) {",
-									"    pm.collectionVariables.set(\"pet_id\", jsonData.data.id);",
-									"}"
+									"var jsonData = JSON.parse(responseBody);",
+									"pm.collectionVariables.set(\"snap_token\", jsonData.data.snapToken);",
+									"pm.collectionVariables.set(\"order_id\", jsonData.data.orderId);"
 								],
 								"type": "text/javascript"
 							}
@@ -775,119 +956,7 @@
 						"auth": {
 							"type": "bearer",
 							"bearer": {
-								"token": "{{auth_token}}"
-							}
-						},
-						"method": "POST",
-						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n    \"name\": \"Test Pet {{$randomInt}}\",\n    \"species\": \"Dog\",\n    \"breed\": \"Golden Retriever\",\n    \"birthDate\": \"2023-01-01T00:00:00Z\",\n    \"imageUrl\": \"https://example.com/images/test_pet.jpg\"\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": "http://localhost:8080/api/pets"
-					},
-					"response": []
-				},
-				{
-					"name": "Get Pet By ID",
-					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": {
-								"token": "{{auth_token}}"
-							}
-						},
-						"method": "GET",
-						"header": [],
-						"url": "http://localhost:8080/api/pets/{{pet_id}}"
-					},
-					"response": []
-				},
-				{
-					"name": "Get My Pets",
-					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": {
-								"token": "{{auth_token}}"
-							}
-						},
-						"method": "GET",
-						"header": [],
-						"url": "http://localhost:8080/api/pets"
-					},
-					"response": []
-				},
-				{
-					"name": "Update Pet",
-					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": {
-								"token": "{{auth_token}}"
-							}
-						},
-						"method": "PUT",
-						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n    \"name\": \"Updated Pet {{$randomInt}}\",\n    \"species\": \"Cat\",\n    \"breed\": \"Siamese\",\n    \"birthDate\": \"2022-05-10T00:00:00Z\",\n    \"imageUrl\": \"https://example.com/images/updated_pet.jpg\"\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": "http://localhost:8080/api/pets/{{pet_id}}"
-					},
-					"response": []
-				},
-				{
-					"name": "Delete Pet",
-					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": {
-								"token": "{{auth_token}}"
-							}
-						},
-						"method": "DELETE",
-						"header": [],
-						"url": "http://localhost:8080/api/pets/{{pet_id}}"
-					},
-					"response": []
-				}
-			]
-		},
-		{
-			"name": "Orders",
-			"item": [
-				{
-					"name": "Checkout (Create Order from Cart)",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"var jsonData = pm.response.json();",
-									"if (jsonData && jsonData.data && jsonData.data.id) {",
-									"    pm.collectionVariables.set(\"order_id\", jsonData.data.id);",
-									"}"
-								],
-								"type": "text/javascript"
-							}
-						}
-					],
-					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": {
-								"token": "{{auth_token}}"
+								"token": "{{customer_auth_token}}"
 							}
 						},
 						"method": "POST",
@@ -902,7 +971,7 @@
 						"auth": {
 							"type": "bearer",
 							"bearer": {
-								"token": "{{auth_token}}"
+								"token": "{{customer_auth_token}}"
 							}
 						},
 						"method": "GET",
@@ -917,7 +986,7 @@
 						"auth": {
 							"type": "bearer",
 							"bearer": {
-								"token": "{{auth_token}}"
+								"token": "{{customer_auth_token}}"
 							}
 						},
 						"method": "GET",
@@ -925,23 +994,39 @@
 						"url": "http://localhost:8080/api/orders"
 					},
 					"response": []
+				},
+				{
+					"name": "Payment Webhook",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"order_id\": \"<your_order_number>\",\"transaction_status\": \"settlement\",\"fraud_status\": \"accept\"}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": "http://localhost:8080/api/payments/webhook"
+					},
+					"response": []
 				}
 			]
 		},
 		{
-			"name": "Bookings",
+			"name": "prescriptions",
 			"item": [
 				{
-					"name": "Create Booking",
+					"name": "Create Prescription",
 					"event": [
 						{
 							"listen": "test",
 							"script": {
 								"exec": [
-									"var jsonData = pm.response.json();",
-									"if (jsonData && jsonData.data && jsonData.data.id) {",
-									"    pm.collectionVariables.set(\"booking_id\", jsonData.data.id);",
-									"}"
+									"var jsonData = JSON.parse(responseBody);",
+									"pm.collectionVariables.set(\"prescription_id\", jsonData.data.id);"
 								],
 								"type": "text/javascript"
 							}
@@ -951,97 +1036,73 @@
 						"auth": {
 							"type": "bearer",
 							"bearer": {
-								"token": "{{auth_token}}"
+								"token": "{{bo_auth_token}}"
 							}
 						},
 						"method": "POST",
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"petId\": \"{{pet_id}}\",\n    \"serviceId\": \"{{service_id}}\",\n    \"startTime\": \"2025-12-24T10:00:00\",\n    \"endTime\": \"2025-12-26T10:00:00\"\n}",
+							"raw": "{\n    \"petId\": \"{{pet_id}}\",\n    \"issuingBusinessId\": \"{{business_id}}\",\n    \"issueDate\": \"2024-07-03\",\n    \"notes\": \"Daily medication for pet\",\n    \"prescriptionItems\": [\n        {\n            \"medicationName\": \"Medication A\",\n            \"dosage\": \"10mg\",\n            \"frequency\": \"Once daily\",\n            \"durationDays\": 30,\n            \"instructions\": \"Give with food\"\n        },\n        {\n            \"medicationName\": \"Medication B\",\n            \"dosage\": \"5ml\",\n            \"frequency\": \"Twice daily\",\n            \"durationDays\": 15,\n            \"instructions\": \"Administer orally\"\n        }\n    ]\n}",
 							"options": {
 								"raw": {
 									"language": "json"
 								}
 							}
 						},
-						"url": "http://localhost:8080/api/bookings"
+						"url": "http://localhost:8080/api/prescriptions"
 					},
 					"response": []
 				},
 				{
-					"name": "Get Booking By ID",
+					"name": "Get Prescription By ID",
 					"request": {
 						"auth": {
 							"type": "bearer",
 							"bearer": {
-								"token": "{{auth_token}}"
+								"token": "{{customer_auth_token}}"
 							}
 						},
 						"method": "GET",
 						"header": [],
-						"url": "http://localhost:8080/api/bookings/{{booking_id}}"
+						"url": "http://localhost:8080/api/prescriptions/{{prescription_id}}"
 					},
 					"response": []
 				},
 				{
-					"name": "Get All Bookings",
+					"name": "Get All Prescriptions",
 					"request": {
 						"auth": {
 							"type": "bearer",
 							"bearer": {
-								"token": "{{auth_token}}"
+								"token": "{{bo_auth_token}}"
 							}
 						},
 						"method": "GET",
 						"header": [],
-						"url": "http://localhost:8080/api/bookings"
+						"url": "http://localhost:8080/api/prescriptions"
 					},
 					"response": []
 				},
 				{
-					"name": "Update Booking Status (Owner)",
+					"name": "Delete Prescription",
 					"request": {
 						"auth": {
 							"type": "bearer",
 							"bearer": {
-								"token": "{{auth_token}}"
-							}
-						},
-						"method": "PUT",
-						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": "confirmed",
-							"options": {
-								"raw": {
-									"language": "text"
-								}
-							}
-						},
-						"url": "http://localhost:8080/api/bookings/{{booking_id}}/status"
-					},
-					"response": []
-				},
-				{
-					"name": "Cancel Booking",
-					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": {
-								"token": "{{auth_token}}"
+								"token": "{{bo_auth_token}}"
 							}
 						},
 						"method": "DELETE",
 						"header": [],
-						"url": "http://localhost:8080/api/bookings/{{booking_id}}"
+						"url": "http://localhost:8080/api/prescriptions/{{prescription_id}}"
 					},
 					"response": []
 				}
 			]
 		},
 		{
-			"name": "Reviews",
+			"name": "reviews",
 			"item": [
 				{
 					"name": "Create Review",
@@ -1050,10 +1111,8 @@
 							"listen": "test",
 							"script": {
 								"exec": [
-									"var jsonData = pm.response.json();",
-									"if (jsonData && jsonData.data && jsonData.data.id) {",
-									"    pm.collectionVariables.set(\"review_id\", jsonData.data.id);",
-									"}"
+									"var jsonData = JSON.parse(responseBody);",
+									"pm.collectionVariables.set(\"review_id\", jsonData.data.id);"
 								],
 								"type": "text/javascript"
 							}
@@ -1063,20 +1122,29 @@
 						"auth": {
 							"type": "bearer",
 							"bearer": {
-								"token": "{{auth_token}}"
+								"token": "{{customer_auth_token}}"
 							}
 						},
 						"method": "POST",
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"businessId\": \"{{business_id}}\",\n    \"rating\": 5,\n    \"comment\": \"Excellent service!\"\n}",
+							"raw": "{\n    \"rating\": 5,\n    \"comment\": \"Great service!\",\n    \"businessId\": \"{{business_id}}\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
 								}
 							}
 						},
+						"url": "http://localhost:8080/api/reviews"
+					},
+					"response": []
+				},
+				{
+					"name": "Get All Reviews",
+					"request": {
+						"method": "GET",
+						"header": [],
 						"url": "http://localhost:8080/api/reviews"
 					},
 					"response": []
@@ -1091,28 +1159,19 @@
 					"response": []
 				},
 				{
-					"name": "Get All Reviews",
-					"request": {
-						"method": "GET",
-						"header": [],
-						"url": "http://localhost:8080/api/reviews"
-					},
-					"response": []
-				},
-				{
 					"name": "Update Review",
 					"request": {
 						"auth": {
 							"type": "bearer",
 							"bearer": {
-								"token": "{{auth_token}}"
+								"token": "{{customer_auth_token}}"
 							}
 						},
 						"method": "PUT",
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"rating\": 4,\n    \"comment\": \"Still great, but a bit slow this time.\"\n}",
+							"raw": "{\n    \"rating\": 4,\n    \"comment\": \"Good service, but can be improved.\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -1129,7 +1188,7 @@
 						"auth": {
 							"type": "bearer",
 							"bearer": {
-								"token": "{{auth_token}}"
+								"token": "{{admin_auth_token}}"
 							}
 						},
 						"method": "DELETE",
@@ -1141,23 +1200,110 @@
 			]
 		},
 		{
-			"name": "Payments",
+			"name": "bookings",
 			"item": [
 				{
-					"name": "Webhook Handler",
+					"name": "Create Booking",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var jsonData = JSON.parse(responseBody);",
+									"pm.collectionVariables.set(\"booking_id\", jsonData.data.id);"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
 					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": {
+								"token": "{{customer_auth_token}}"
+							}
+						},
 						"method": "POST",
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"transaction_status\": \"settlement\",\n    \"order_id\": \"{{order_id}}\",\n    \"gross_amount\": \"100000.00\",\n    \"payment_type\": \"credit_card\"\n}",
+							"raw": "{\n    \"businessId\": \"{{business_id}}\",\n    \"petId\": \"{{pet_id}}\",\n    \"serviceId\": \"{{service_id}}\",\n    \"bookingDate\": \"2024-07-10T10:00:00\",\n    \"notes\": \"My pet is very active.\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
 								}
 							}
 						},
-						"url": "http://localhost:8080/api/payments/webhook"
+						"url": "http://localhost:8080/api/bookings"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Booking By ID",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": {
+								"token": "{{customer_auth_token}}"
+							}
+						},
+						"method": "GET",
+						"header": [],
+						"url": "http://localhost:8080/api/bookings/{{booking_id}}"
+					},
+					"response": []
+				},
+				{
+					"name": "Get All Bookings",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": {
+								"token": "{{customer_auth_token}}"
+							}
+						},
+						"method": "GET",
+						"header": [],
+						"url": "http://localhost:8080/api/bookings"
+					},
+					"response": []
+				},
+				{
+					"name": "Update Booking Status",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": {
+								"token": "{{bo_auth_token}}"
+							}
+						},
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "\"CONFIRMED\"",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": "http://localhost:8080/api/bookings/{{booking_id}}/status"
+					},
+					"response": []
+				},
+				{
+					"name": "Cancel Booking",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": {
+								"token": "{{customer_auth_token}}"
+							}
+						},
+						"method": "DELETE",
+						"header": [],
+						"url": "http://localhost:8080/api/bookings/{{booking_id}}"
 					},
 					"response": []
 				}
@@ -1166,11 +1312,19 @@
 	],
 	"variable": [
 		{
-			"key": "auth_token",
+			"key": "customer_auth_token",
 			"value": ""
 		},
 		{
-			"key": "user_email",
+			"key": "bo_auth_token",
+			"value": ""
+		},
+		{
+			"key": "admin_auth_token",
+			"value": ""
+		},
+		{
+			"key": "business_id",
 			"value": ""
 		},
 		{
@@ -1178,7 +1332,7 @@
 			"value": ""
 		},
 		{
-			"key": "business_id",
+			"key": "pet_id",
 			"value": ""
 		},
 		{
@@ -1190,10 +1344,6 @@
 			"value": ""
 		},
 		{
-			"key": "pet_id",
-			"value": ""
-		},
-		{
 			"key": "cart_item_id",
 			"value": ""
 		},
@@ -1202,7 +1352,11 @@
 			"value": ""
 		},
 		{
-			"key": "booking_id",
+			"key": "snap_token",
+			"value": ""
+		},
+		{
+			"key": "prescription_id",
 			"value": ""
 		},
 		{
@@ -1210,11 +1364,7 @@
 			"value": ""
 		},
 		{
-			"key": "payment_id",
-			"value": ""
-		},
-		{
-			"key": "prescription_id",
+			"key": "booking_id",
 			"value": ""
 		}
 	]

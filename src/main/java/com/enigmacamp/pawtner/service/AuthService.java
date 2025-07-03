@@ -5,7 +5,7 @@ import com.enigmacamp.pawtner.dto.request.*;
 import com.enigmacamp.pawtner.dto.response.LoginResponseDTO;
 import com.enigmacamp.pawtner.dto.response.RegisterResponseDTO;
 import com.enigmacamp.pawtner.entity.User;
-import com.enigmacamp.pawtner.repository.AuthRepository;
+import com.enigmacamp.pawtner.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;

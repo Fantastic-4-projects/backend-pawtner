@@ -5,7 +5,7 @@ import com.enigmacamp.pawtner.dto.request.BusinessRequestDTO;
 import com.enigmacamp.pawtner.dto.response.BusinessResponseDTO;
 import com.enigmacamp.pawtner.entity.Business;
 import com.enigmacamp.pawtner.entity.User;
-import com.enigmacamp.pawtner.repository.AuthRepository;
+import com.enigmacamp.pawtner.repository.UserRepository;
 import com.enigmacamp.pawtner.repository.BusinessRepository;
 import com.enigmacamp.pawtner.service.BusinessService;
 import jakarta.transaction.Transactional;

@@ -1,6 +1,6 @@
 package com.enigmacamp.pawtner.config;
 
-import com.enigmacamp.pawtner.repository.AuthRepository;
+import com.enigmacamp.pawtner.repository.UserRepository;
 import com.enigmacamp.pawtner.service.UserService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;

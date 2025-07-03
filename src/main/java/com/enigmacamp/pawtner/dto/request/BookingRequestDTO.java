@@ -1,6 +1,6 @@
 package com.enigmacamp.pawtner.dto.request;
 
-import jakarta.validation.constraints.FutureOrPresent;
+import jakarta.validation.constraints.Future;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -22,10 +22,10 @@ public class BookingRequestDTO {
     private UUID serviceId;
 
     @NotNull(message = "Start time is required")
-    @FutureOrPresent(message = "Start time must be in the present or future")
+    @Future(message = "Start time must be in the future")
     private LocalDateTime startTime;
 
     @NotNull(message = "End time is required")
-    @FutureOrPresent(message = "End time must be in the present or future")
+    @Future(message = "End time must be in the future")
     private LocalDateTime endTime;
 }
