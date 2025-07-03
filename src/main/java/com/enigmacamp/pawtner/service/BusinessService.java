@@ -11,6 +11,7 @@ import com.enigmacamp.pawtner.entity.Business;
 public interface BusinessService {
     BusinessResponseDTO registerBusiness(BusinessRequestDTO businessRequestDTO);
     List<BusinessResponseDTO> viewBusiness();
+    List<BusinessResponseDTO> viewMyBusiness();
     Business getBusinessByIdForInternal(UUID id);
     BusinessResponseDTO approveBusiness(UUID businessId, Boolean approved);
 }

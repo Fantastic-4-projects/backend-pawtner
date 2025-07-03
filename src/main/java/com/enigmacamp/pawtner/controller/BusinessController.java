@@ -23,7 +23,6 @@ import java.util.UUID;
 public class BusinessController {
 
     private final BusinessService businessService;
-    private final ServiceService serviceService;
 
     @PostMapping("/register")
     @PreAuthorize("hasAuthority('BUSINESS_OWNER')")
@@ -51,11 +50,21 @@ public class BusinessController {
     }
 
     @GetMapping
+    @PreAuthorize("hasAuthority('ADMIN')")
     public ResponseEntity<CommonResponse<List<BusinessResponseDTO>>> viewBusiness(){
         return ResponseUtil.createResponse(
                 HttpStatus.OK,
                 "Profil bisnis didapatkan",
                 businessService.viewBusiness()
+        );
+    }
+
+    @GetMapping("/my-business")
+    public ResponseEntity<CommonResponse<List<BusinessResponseDTO>>> viewMyBusiness(){
+        return ResponseUtil.createResponse(
+                HttpStatus.OK,
+                "Profil bisnis didapatkan",
+                businessService.viewMyBusiness()
         );
     }
 }
