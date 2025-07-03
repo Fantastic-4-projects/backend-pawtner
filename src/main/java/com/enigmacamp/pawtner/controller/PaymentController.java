@@ -1,6 +1,8 @@
 package com.enigmacamp.pawtner.controller;
 
+import com.enigmacamp.pawtner.dto.response.CommonResponse;
 import com.enigmacamp.pawtner.service.OrderService;
+import com.enigmacamp.pawtner.util.ResponseUtil;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -19,8 +21,8 @@ public class PaymentController {
     private final OrderService orderService;
 
     @PostMapping("/webhook")
-    public ResponseEntity<String> handleWebhook(@RequestBody Map<String, Object> payload) {
+    public ResponseEntity<CommonResponse<String>> handleWebhook(@RequestBody Map<String, Object> payload) {
         orderService.handleWebhook(payload);
-        return new ResponseEntity<>("Webhook received", HttpStatus.OK);
+        return ResponseUtil.createResponse(HttpStatus.OK, "Webhook received", null);
     }
 }
