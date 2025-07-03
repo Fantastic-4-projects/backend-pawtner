@@ -5,128 +5,108 @@ import com.enigmacamp.pawtner.dto.request.BookingRequestDTO;
 import com.enigmacamp.pawtner.dto.response.BookingResponseDTO;
 import com.enigmacamp.pawtner.entity.Booking;
 import com.enigmacamp.pawtner.entity.Pet;
-import com.enigmacamp.pawtner.entity.Service;
 import com.enigmacamp.pawtner.entity.User;
 import com.enigmacamp.pawtner.repository.BookingRepository;
+import com.enigmacamp.pawtner.repository.PetRepository;
+import com.enigmacamp.pawtner.repository.ServiceRepository;
+import com.enigmacamp.pawtner.repository.UserRepository;
 import com.enigmacamp.pawtner.service.BookingService;
-import com.enigmacamp.pawtner.service.PetService;
-import com.enigmacamp.pawtner.service.ServiceService;
-import com.enigmacamp.pawtner.service.UserService;
-import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
-import org.springframework.transaction.annotation.Transactional;
+import org.springframework.security.core.Authentication;
+import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.time.LocalDateTime;
 import java.util.UUID;
 
-@org.springframework.stereotype.Service
-@AllArgsConstructor
+@Service
+@RequiredArgsConstructor
 public class BookingServiceImpl implements BookingService {
 
+    private final UserRepository userRepository;
+    private final PetRepository petRepository;
+    private final ServiceRepository serviceRepository;
     private final BookingRepository bookingRepository;
-    private final UserService userService;
-    private final PetService petService;
-    private final ServiceService serviceService;
 
     @Override
-    @Transactional
-    public BookingResponseDTO createBooking(BookingRequestDTO bookingRequestDTO, String customerEmail) {
-        User customer = userService.getUserByEmailForInternal(customerEmail);
-        Pet pet = petService.getPetEntityById(bookingRequestDTO.getPetId());
-        Service service = serviceService.getServiceEntityById(bookingRequestDTO.getServiceId());
+    public BookingResponseDTO createBooking(BookingRequestDTO requestDTO, String customerEmail) {
+        User customer = userRepository.findByEmail(customerEmail)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
 
-        if (!pet.getOwner().getId().equals(customer.getId())) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Pet does not belong to the authenticated user");
-        }
+        Pet pet = petRepository.findById(requestDTO.getPetId())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Pet not found"));
 
-        if (bookingRequestDTO.getStartTime().isAfter(bookingRequestDTO.getEndTime())) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Start time cannot be after end time");
-        }
+        com.enigmacamp.pawtner.entity.Service service = serviceRepository.findById(requestDTO.getServiceId())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Service not found"));
 
         Booking booking = Booking.builder()
                 .customer(customer)
                 .pet(pet)
                 .service(service)
-                .bookingNumber(generateBookingNumber())
-                .startTime(bookingRequestDTO.getStartTime())
-                .endTime(bookingRequestDTO.getEndTime())
-                .totalPrice(service.getBasePrice())
+                .bookingNumber("BOOK-" + UUID.randomUUID().toString())
+                .startTime(requestDTO.getStartTime())
+                .endTime(requestDTO.getEndTime())
+                .totalPrice(service.getBasePrice()) // Simplified for now
                 .status(BookingStatus.REQUESTED)
+                .createdAt(LocalDateTime.now())
                 .build();
-        bookingRepository.save(booking);
 
-        return mapToResponseDTO(booking);
+        bookingRepository.save(booking);
+        return toBookingResponseDTO(booking);
     }
 
     @Override
     public BookingResponseDTO getBookingById(UUID id) {
         Booking booking = bookingRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Booking not found"));
-        return mapToResponseDTO(booking);
+        return toBookingResponseDTO(booking);
     }
 
     @Override
-    public Page<BookingResponseDTO> getAllBookingsByCustomerId(String customerEmail, Pageable pageable) {
-        User customer = userService.getUserByEmailForInternal(customerEmail);
-        Page<Booking> bookings = bookingRepository.findByCustomer(customer, pageable);
-        return bookings.map(this::mapToResponseDTO);
+    public Page<BookingResponseDTO> getAllBookings(Authentication authentication, Pageable pageable) {
+        // This logic can be expanded based on roles
+        User user = userRepository.findByEmail(authentication.getName())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
+        return bookingRepository.findAll(pageable).map(this::toBookingResponseDTO);
     }
 
     @Override
-    public Page<BookingResponseDTO> getAllBookingsByBusinessId(UUID businessId, Pageable pageable) {
-        throw new ResponseStatusException(HttpStatus.NOT_IMPLEMENTED, "Fetching bookings by business ID is not yet fully implemented.");
-    }
-
-    @Override
-    @Transactional
     public BookingResponseDTO updateBookingStatus(UUID id, String status) {
         Booking booking = bookingRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Booking not found"));
-        try {
-            booking.setStatus(BookingStatus.valueOf(status.toUpperCase()));
-        } catch (IllegalArgumentException e) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid booking status: " + status);
-        }
+        booking.setStatus(BookingStatus.valueOf(status.toUpperCase()));
         bookingRepository.save(booking);
-        return mapToResponseDTO(booking);
+        return toBookingResponseDTO(booking);
     }
 
     @Override
-    @Transactional
     public void cancelBooking(UUID id, String customerEmail) {
-        User customer = userService.getUserByEmailForInternal(customerEmail);
         Booking booking = bookingRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Booking not found"));
-
-        if (!booking.getCustomer().getId().equals(customer.getId())) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Booking does not belong to the authenticated user");
+        if (!booking.getCustomer().getEmail().equals(customerEmail)) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "You are not authorized to cancel this booking");
         }
-
-        if (booking.getStatus() == BookingStatus.COMPLETED || booking.getStatus() == BookingStatus.CANCELLED) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Cannot cancel a completed or already cancelled booking");
-        }
-
-        booking.setStatus(BookingStatus.CANCELLED);
-        bookingRepository.save(booking);
+        bookingRepository.delete(booking);
     }
 
-    private String generateBookingNumber() {
-        return "BKG-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase();
-    }
-
-    private BookingResponseDTO mapToResponseDTO(Booking booking) {
+    private BookingResponseDTO toBookingResponseDTO(Booking booking) {
         return BookingResponseDTO.builder()
                 .id(booking.getId())
-                .bookingNumber(booking.getBookingNumber())
-                .customerName(booking.getCustomer().getName())
+                .customerId(booking.getCustomer().getId())
+                .petId(booking.getPet().getId())
                 .petName(booking.getPet().getName())
+                .serviceId(booking.getService().getId())
                 .serviceName(booking.getService().getName())
+                .businessId(booking.getService().getBusiness().getId())
+                .businessName(booking.getService().getBusiness().getName())
+                .bookingNumber(booking.getBookingNumber())
                 .startTime(booking.getStartTime())
                 .endTime(booking.getEndTime())
-                .totalPrice(booking.getTotalPrice())
-                .status(booking.getStatus())
+                .totalPrice(booking.getTotalPrice().doubleValue())
+                .status(booking.getStatus().name())
                 .createdAt(booking.getCreatedAt())
                 .build();
     }

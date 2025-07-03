@@ -19,7 +19,7 @@ All Java entity classes located in `src/main/java/com/enigmacamp/pawtner/entity/
 
 ## 3. Introduction of Enums for Type Safety
 
-To enhance type safety and readability, several fields were converted from `String` types to custom Java `enum` types in the `com.enigmacamp.pawtner.constant` package.
+To enhance type safety and readability, several fields were converted from `String` types to custom Java `enum` types in the `com.enigmacamp.pawtner/constant` package.
 
 ## 4. Completed Development Tasks
 
@@ -50,33 +50,44 @@ Based on the MVP plan in `README.md`, the following core features have been impl
 - **`CommonResponse.java`**: The response structure was adjusted to explicitly include the HTTP status code, alongside the message and data.
 - **`ResponseUtil.java`**: Updated to correctly populate the `status` field in `CommonResponse`.
 
-## 5. Current Status of APIs
+### e. Global Exception Handling Framework
+- **Goal**: To build a robust, centralized error handling mechanism that ensures API stability and provides consistent, developer-friendly error responses, which is crucial for building the "trustworthy" platform described in `README.md`.
+- **`ErrorController.java`**: A new controller using `@RestControllerAdvice` was created to intercept exceptions application-wide.
+- **Standardized Responses**: All error responses now use the existing `CommonResponse` DTO for consistency.
+- **Specific Handlers Implemented**:
+    - **`MethodArgumentNotValidException`**: Handles validation failures from `@Valid` on request bodies, returning a `400 Bad Request` with a map of fields and error messages.
+    - **`DataIntegrityViolationException`**: Catches database errors like unique constraint failures (e.g., duplicate email). Returns a clear `409 Conflict` instead of a generic server error.
+    - **`ResponseStatusException`**: Allows services to throw exceptions with specific HTTP statuses (e.g., `404 Not Found`) for business logic failures.
+    - **Spring Security Exceptions**: Handles `AuthenticationException` (`401 Unauthorized`) for login failures and `AccessDeniedException` (`403 Forbidden`) for authorization issues.
+    - **`Exception` (Catch-All)**: A safety net that catches any other unhandled exception and returns a `500 Internal Server Error`, preventing application crashes.
+- **Logging**: Integrated SLF4J logging into `ErrorController` to record detailed error information on the server, which is essential for debugging.
 
-- **Product and Service APIs**: Still in progress. While the backend code and Postman collection have been updated, a "403 Forbidden" error is currently preventing successful product/service creation. This indicates an authorization issue.
+## 5. Unresolved Problems & Next Steps
 
-## 6. Next Steps
+While the foundational structure and error handling are now very strong, several key pieces of business logic and integration described in `README.md` are still pending implementation.
 
-With the foundation for managing products and services now in place, the next logical steps are to resolve the current authorization issue and then implement the core e-commerce and booking workflows as defined in the MVP.
+### a. Core Business Logic Implementation
+The error handling framework is in place, but the actual business logic that *triggers* these errors needs to be written inside the service layer.
+- **Task**: Implement checks within services, such as:
+    - Validating `services.capacity_per_day` before confirming a booking.
+    - Checking `products.stock_quantity` before allowing a checkout.
+    - Throwing `new ResponseStatusException(HttpStatus.CONFLICT, "...")` when business rules are violated.
 
-### a. Resolve 403 Forbidden Error for Product/Service Creation
-The "403 Forbidden" error indicates that the authenticated user does not have the required `BUSINESS_OWNER` role to perform these actions.
+### b. "Petshop Nearby" & Emergency Assistance Feature
+This is a major unsolved feature that is critical to the problem statement in `README.md`.
+- **Problem**: The backend logic to calculate distances and find nearby businesses based on `latitude` and `longitude` has not been implemented.
+- **Task**:
+    - Investigate and implement a geospatial solution, likely using the **PostGIS** extension for PostgreSQL.
+    - Create the specific repository methods and service logic to handle queries like `findNearest(user_lat, user_lon)`.
 
-**Recommended Action for Testing:**
-- **Manually update user role in the database**: Connect to your PostgreSQL database and update the `role` of your test user (the one you are logging in with via Postman) to `'BUSINESS_OWNER'` in the `users` table. After updating, log in again via Postman to obtain a new JWT token that reflects the updated role.
+### c. Full Payment & Transactional Flow
+The `README.md` outlines a complete e-commerce and booking workflow that is heavily dependent on payment integration.
+- **Problem**: The actual integration with the Midtrans API is not yet implemented.
+- **Task**:
+    - Implement the `PaymentService` to make API calls to Midtrans for creating transactions and receiving a `snap_token`.
+    - Implement the `POST /api/payments/webhook` endpoint to securely handle and process incoming notifications from Midtrans.
+    - Ensure that a successful payment webhook correctly updates the status of `Orders` and `Bookings` and adjusts product stock.
 
-### b. Implement Shopping Cart Functionality
-- Create `CartService` and `CartController` to allow customers to add products to a shopping cart.
-- Implement logic for adding, removing, and clearing cart items.
-
-### c. Implement Order and Checkout Process
-- Create `OrderService` and `OrderController` to allow customers to convert their cart into an order.
-- Implement the main `createOrderFromCart` method.
-
-### d. Implement Payment Integration (Midtrans)
-- Create `PaymentService` and `PaymentController`.
-- Integrate with the Midtrans API to create transactions and handle webhooks.
-
-### e. Implement Booking Functionality
-- Create `BookingService` and `BookingController` to allow customers to book services.
-- Implement logic for checking availability and creating bookings.
-- Integrate with the `PaymentService` to handle payments for bookings.
+### d. Resolve 403 Forbidden Error for Testing
+The authorization issue mentioned previously still needs to be addressed for efficient development and testing.
+- **Recommended Action**: For any developer needing to test `business_owner` endpoints, manually update their user's `role` in the database to `'BUSINESS_OWNER'` and then re-login to get a new JWT.

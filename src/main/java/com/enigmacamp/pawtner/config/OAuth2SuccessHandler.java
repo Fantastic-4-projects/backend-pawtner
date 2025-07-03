@@ -2,7 +2,7 @@ package com.enigmacamp.pawtner.config;
 
 import com.enigmacamp.pawtner.constant.UserRole;
 import com.enigmacamp.pawtner.entity.User;
-import com.enigmacamp.pawtner.repository.AuthRepository;
+import com.enigmacamp.pawtner.repository.UserRepository;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -22,7 +22,7 @@ import java.io.IOException;
 public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler {
 
     private final JwtService jwtService;
-    private final AuthRepository authRepository;
+    private final UserRepository userRepository;
 
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException, ServletException {
@@ -30,7 +30,7 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
         String email = oauth2User.getAttribute("email");
         log.info("Successfully authenticated user via Google with email: {}", email);
 
-        User user = authRepository.findByEmail(email).orElseGet(() -> {
+        User user = userRepository.findByEmail(email).orElseGet(() -> {
             log.info("User with email {} not found. Creating a new user.", email);
             User newUser = User.builder()
                     .email(email)
@@ -43,7 +43,7 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
                     .build();
 
             log.info(oauth2User.toString());
-            return authRepository.save(newUser);
+            return userRepository.save(newUser);
         });
 
         String token = jwtService.generateToken(user);

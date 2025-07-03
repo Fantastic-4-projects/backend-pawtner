@@ -1,7 +1,3 @@
-# Development Notes by Gemini CLI (Huda's Branch)
-
-This document summarizes the changes made by the Gemini CLI agent related to authentication, security, and email verification.
-
 ## 1. New Features and Modules Implemented
 
 - **Authentication and Authorization**: Implemented core authentication and authorization functionalities using Spring Security and JWT.

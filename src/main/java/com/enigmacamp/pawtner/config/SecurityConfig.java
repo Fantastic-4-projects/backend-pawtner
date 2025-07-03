@@ -59,7 +59,8 @@ public class SecurityConfig {
                         // Endpoints requiring authentication (any role)
                         .requestMatchers(
                                 "/api/reviews", // GET all reviews
-                                "/api/reviews/{id}" // GET review by ID
+                                "/api/reviews/{id}", // GET review by ID
+                                "/api/users" // PUT update user
                         ).authenticated()
 
                         // Endpoints for BUSINESS_OWNER
@@ -68,7 +69,8 @@ public class SecurityConfig {
                                 "/api/products/{id}", // PUT update product, DELETE delete product
                                 "/api/services", // POST create service
                                 "/api/services/{id}", // PUT update service, DELETE delete service
-                                "/api/business/register" // POST register business
+                                "/api/business/register", // POST register business
+                                "/api/business/my-business" // GET my business
                         ).hasAuthority(UserRole.BUSINESS_OWNER.name())
 
                         // Endpoints for CUSTOMER
