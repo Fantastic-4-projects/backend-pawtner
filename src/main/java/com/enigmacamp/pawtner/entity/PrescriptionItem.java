@@ -1,16 +1,11 @@
 package com.enigmacamp.pawtner.entity;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
-import jakarta.validation.constraints.Min;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-
-import java.util.UUID;
 
 @Data
 @AllArgsConstructor
@@ -19,31 +14,27 @@ import java.util.UUID;
 @Entity
 @Table(name = "prescription_items")
 public class PrescriptionItem {
-
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
-    private UUID id;
+    private String id;
 
     @ManyToOne
-    @JoinColumn(name = "prescription_id", nullable = false, columnDefinition = "uuid")
+    @JoinColumn(name = "prescription_id")
+    @JsonBackReference
     private Prescription prescription;
 
-    @NotBlank(message = "Medication name is required")
-    @Size(max = 255)
+    @Column(name = "medication_name", nullable = false)
     private String medicationName;
 
-    @NotBlank(message = "Dosage is required")
-    @Size(max = 255)
+    @Column(name = "dosage", nullable = false)
     private String dosage;
 
-    @NotBlank(message = "Frequency is required")
-    @Size(max = 255)
+    @Column(name = "frequency", nullable = false)
     private String frequency;
 
-    @NotNull(message = "Duration in days is required")
-    @Min(value = 1, message = "Duration must be at least 1 day")
+    @Column(name = "duration_days", nullable = false)
     private Integer durationDays;
 
-    @Lob
+    @Column(name = "instructions", columnDefinition = "TEXT")
     private String instructions;
 }
