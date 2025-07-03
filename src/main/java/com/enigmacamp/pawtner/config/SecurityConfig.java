@@ -23,6 +23,7 @@ public class SecurityConfig {
 
     private final AuthTokenFilter authTokenFilter;
     private final OAuth2SuccessHandler oAuth2SuccessHandler;
+    private final CustomAuthenticationEntryPoint customAuthenticationEntryPoint; // Inject the custom entry point
 
     @Bean
     public PasswordEncoder passwordEncoder() {
@@ -41,9 +42,57 @@ public class SecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable)
                 .httpBasic(AbstractHttpConfigurer::disable)
                 .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .exceptionHandling(exception -> exception.authenticationEntryPoint(customAuthenticationEntryPoint)) // Use custom entry point
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/auth/**", "/oauth2/**", "/login/oauth2/code/**").permitAll()
-                        .anyRequest().authenticated()
+                        // Public endpoints
+                        .requestMatchers("/api/auth/**", "/oauth2/**", "/login/oauth2/code/**", "/api/payments/**").permitAll()
+                        .requestMatchers(
+                                "/api/products", // GET all products
+                                "/api/products/{id}", // GET product by ID
+                                "/api/services", // GET all services
+                                "/api/services/{id}", // GET service by ID
+                                "/api/business", // GET all businesses
+                                "/api/business/{id}", // GET business by ID
+                                "/api/users/{id}" // GET user by ID (public for now, adjust if needed)
+                        ).permitAll() // Publicly accessible GET endpoints
+
+                        // Endpoints requiring authentication (any role)
+                        .requestMatchers(
+                                "/api/reviews", // GET all reviews
+                                "/api/reviews/{id}" // GET review by ID
+                        ).authenticated()
+
+                        // Endpoints for BUSINESS_OWNER
+                        .requestMatchers(
+                                "/api/products", // POST create product
+                                "/api/products/{id}", // PUT update product, DELETE delete product
+                                "/api/services", // POST create service
+                                "/api/services/{id}", // PUT update service, DELETE delete service
+                                "/api/business/register" // POST register business
+                        ).hasAuthority(UserRole.BUSINESS_OWNER.name())
+
+                        // Endpoints for CUSTOMER
+                        .requestMatchers(
+                                "/api/cart/**", // All cart operations
+                                "/api/orders/checkout", // Checkout
+                                "/api/orders", // GET my orders
+                                "/api/orders/{id}", // GET order by ID (customer specific)
+                                "/api/pets/**", // All pet operations
+                                "/api/reviews" // POST create review, PUT update review
+                        ).hasAuthority(UserRole.CUSTOMER.name())
+
+                        // Endpoints for ADMIN
+                        .requestMatchers(
+                                "/api/users", // GET all users, DELETE user by ID
+                                "/api/users/{id}", // DELETE user by ID, PATCH update user status
+                                "/api/users/{id}/status", // PATCH update user status
+                                "/api/auth/user/set-role", // PATCH set user role
+                                "/api/orders/{id}", // PUT update order status, DELETE delete order
+                                "/api/reviews/{id}", // DELETE review
+                                "/api/business/{id}" // PATCH approve business
+                        ).hasAuthority(UserRole.ADMIN.name())
+
+                        .anyRequest().authenticated() // Fallback for any other authenticated requests
                 )
                 .addFilterBefore(authTokenFilter, UsernamePasswordAuthenticationFilter.class)
                 .oauth2Login(oauth2 ->

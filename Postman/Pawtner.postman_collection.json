@@ -16,7 +16,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"email\": \"muhhudaibi11@gmail.com\",\n    \"phoneNumber\": \"085589231880\",\n    \"password\": \"hudahuda\",\n    \"name\": \"Muhammad Hudaibi\",\n    \"address\": \"Sumedang\"\n}",
+							"raw": "{\n    \"email\": \"customer@example.com\",\n    \"phoneNumber\": \"081111111111\",\n    \"password\": \"password123\",\n    \"name\": \"Customer User\",\n    \"address\": \"Customer Address\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -33,14 +33,14 @@
 						"method": "POST",
 						"header": [],
 						"body": {
-                            "mode": "raw",
-                            "raw": "{\n    \"email\": \"businessowner@example.com\",\n    \"phoneNumber\": \"081234567890\",\n    \"password\": \"password123\",\n    \"name\": \"Business Owner Name\",\n    \"address\": \"Business Address\"\n}",
-                            "options": {
-                                "raw": {
-                                    "language": "json"
-                                }
-                            }
-                        },
+							"mode": "raw",
+							"raw": "{\n    \"email\": \"businessowner@example.com\",\n    \"phoneNumber\": \"082222222222\",\n    \"password\": \"password123\",\n    \"name\": \"Business Owner User\",\n    \"address\": \"Business Address\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
 						"url": "http://localhost:8080/api/auth/register/business-owner"
 					},
 					"response": []
@@ -52,7 +52,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"email\": \"muhhudaibi11@gmail.com\",\n    \"verificationCode\": \"216992\"\n}",
+							"raw": "{\n    \"email\": \"customer@example.com\",\n    \"verificationCode\": \"123456\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -65,24 +65,12 @@
 				},
 				{
 					"name": "resend-verification",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									""
-								],
-								"type": "text/javascript",
-								"packages": {}
-							}
-						}
-					],
 					"request": {
 						"method": "POST",
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"email\": \"muhammadhudaibi098@gmail.com\"\n}",
+							"raw": "{\n    \"email\": \"customer@example.com\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -94,14 +82,14 @@
 					"response": []
 				},
 				{
-					"name": "Login",
+					"name": "Login Customer",
 					"event": [
 						{
 							"listen": "test",
 							"script": {
 								"exec": [
 									"var jsonData = JSON.parse(responseBody);",
-									"pm.collectionVariables.set(\"auth_token\", jsonData.data.token);"
+									"pm.collectionVariables.set(\"customer_auth_token\", jsonData.data.token);"
 								],
 								"type": "text/javascript"
 							}
@@ -112,7 +100,67 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"email\": \"muhhudaibi11@gmail.com\",\n    \"password\": \"hudahuda\"\n}",
+							"raw": "{\n    \"email\": \"customer@example.com\",\n    \"password\": \"password123\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": "http://localhost:8080/api/auth/login"
+					},
+					"response": []
+				},
+				{
+					"name": "Login Business Owner",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var jsonData = JSON.parse(responseBody);",
+									"pm.collectionVariables.set(\"bo_auth_token\", jsonData.data.token);"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"email\": \"businessowner@example.com\",\n    \"password\": \"password123\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": "http://localhost:8080/api/auth/login"
+					},
+					"response": []
+				},
+				{
+					"name": "Login Admin",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var jsonData = JSON.parse(responseBody);",
+									"pm.collectionVariables.set(\"admin_auth_token\", jsonData.data.token);"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"email\": \"admin@pawtner.com\",\n    \"password\": \"admin123\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -130,7 +178,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"email\": \"muhhudaibi11@gmail.com\"\n}",
+							"raw": "{\n    \"email\": \"customer@example.com\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -148,7 +196,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"token\": \"af243986-3b74-4418-aded-ed4dc217dafe\",\n    \"newPassword\": \"aduhhuda\"\n}",
+							"raw": "{\n    \"token\": \"your_reset_token\",\n    \"newPassword\": \"newpassword123\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -158,22 +206,116 @@
 						"url": "http://localhost:8080/api/auth/reset-password"
 					},
 					"response": []
+				}
+			]
+		},
+		{
+			"name": "users",
+			"item": [
+				{
+					"name": "Get All Users",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": {
+								"token": "{{admin_auth_token}}"
+							}
+						},
+						"method": "GET",
+						"header": [],
+						"url": "http://localhost:8080/api/users"
+					},
+					"response": []
 				},
 				{
-					"name": "Set User Role",
+					"name": "Get User By ID",
 					"request": {
-						"method": "PATCH",
+						"auth": {
+							"type": "bearer",
+							"bearer": {
+								"token": "{{admin_auth_token}}"
+							}
+						},
+						"method": "GET",
+						"header": [],
+						"url": "http://localhost:8080/api/users/{{user_id}}"
+					},
+					"response": []
+				},
+				{
+					"name": "Update User",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": {
+								"token": "{{customer_auth_token}}"
+							}
+						},
+						"method": "PUT",
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"email\": \"muhhudaibi11@gmail.com\",\n    \"role\": \"BUSINESS_OWNER\"\n}",
+							"raw": "{\n    \"id\": \"{{user_id}}\",\n    \"name\": \"New User Name\",\n    \"address\": \"New User Address\",\n    \"phoneNumber\": \"081234567899\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
 								}
 							}
 						},
-						"url": "http://localhost:8080/api/auth/user/set-role"
+						"url": "http://localhost:8080/api/users"
+					},
+					"response": []
+				},
+				{
+					"name": "Delete User",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": {
+								"token": "{{admin_auth_token}}"
+							}
+						},
+						"method": "DELETE",
+						"header": [],
+						"url": "http://localhost:8080/api/users/{{user_id}}"
+					},
+					"response": []
+				},
+				{
+					"name": "Update User Status",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": {
+								"token": "{{admin_auth_token}}"
+							}
+						},
+						"method": "PATCH",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/api/users/{{user_id}}/status?action=isEnable&value=true",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"users",
+								"{{user_id}}",
+								"status"
+							],
+							"query": [
+								{
+									"key": "action",
+									"value": "isEnable"
+								},
+								{
+									"key": "value",
+									"value": "true"
+								}
+							]
+						}
 					},
 					"response": []
 				}
@@ -200,7 +342,7 @@
 						"auth": {
 							"type": "bearer",
 							"bearer": {
-								"token": "{{auth_token}}"
+								"token": "{{bo_auth_token}}"
 							}
 						},
 						"method": "POST",
@@ -219,17 +361,145 @@
 					"response": []
 				},
 				{
-					"name": "View Business",
+					"name": "View All Business",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": "http://localhost:8080/api/business"
+					},
+					"response": []
+				},
+				{
+					"name": "Approve Business",
 					"request": {
 						"auth": {
 							"type": "bearer",
 							"bearer": {
-								"token": "{{auth_token}}"
+								"token": "{{admin_auth_token}}"
+							}
+						},
+						"method": "PATCH",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"approve\": true\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": "http://localhost:8080/api/business/{{business_id}}"
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "pets",
+			"item": [
+				{
+					"name": "Create Pet",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var jsonData = JSON.parse(responseBody);",
+									"pm.collectionVariables.set(\"pet_id\", jsonData.data.id);"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": {
+								"token": "{{customer_auth_token}}"
+							}
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"Doggy\",\n    \"species\": \"Dog\",\n    \"breed\": \"Golden Retriever\",\n    \"gender\": \"MALE\",\n    \"dateOfBirth\": \"2022-01-15\",\n    \"colour\": \"Golden\",\n    \"weight\": 25.5\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": "http://localhost:8080/api/pets"
+					},
+					"response": []
+				},
+				{
+					"name": "Get My Pets",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": {
+								"token": "{{customer_auth_token}}"
 							}
 						},
 						"method": "GET",
 						"header": [],
-						"url": "http://localhost:8080/api/business"
+						"url": "http://localhost:8080/api/pets"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Pet By ID",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": {
+								"token": "{{customer_auth_token}}"
+							}
+						},
+						"method": "GET",
+						"header": [],
+						"url": "http://localhost:8080/api/pets/{{pet_id}}"
+					},
+					"response": []
+				},
+				{
+					"name": "Update Pet",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": {
+								"token": "{{customer_auth_token}}"
+							}
+						},
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"Doggy Updated\",\n    \"species\": \"Dog\",\n    \"breed\": \"Golden Retriever\",\n    \"gender\": \"MALE\",\n    \"dateOfBirth\": \"2022-01-15\",\n    \"colour\": \"Dark Golden\",\n    \"weight\": 26.0\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": "http://localhost:8080/api/pets/{{pet_id}}"
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Pet",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": {
+								"token": "{{customer_auth_token}}"
+							}
+						},
+						"method": "DELETE",
+						"header": [],
+						"url": "http://localhost:8080/api/pets/{{pet_id}}"
 					},
 					"response": []
 				}
@@ -240,11 +510,23 @@
 			"item": [
 				{
 					"name": "Create Product",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var jsonData = JSON.parse(responseBody);",
+									"pm.collectionVariables.set(\"product_id\", jsonData.data.id);"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
 					"request": {
 						"auth": {
 							"type": "bearer",
 							"bearer": {
-								"token": "{{auth_token}}"
+								"token": "{{bo_auth_token}}"
 							}
 						},
 						"method": "POST",
@@ -317,7 +599,7 @@
 						"auth": {
 							"type": "bearer",
 							"bearer": {
-								"token": "{{auth_token}}"
+								"token": "{{bo_auth_token}}"
 							}
 						},
 						"method": "PUT",
@@ -367,7 +649,7 @@
 						"auth": {
 							"type": "bearer",
 							"bearer": {
-								"token": "{{auth_token}}"
+								"token": "{{bo_auth_token}}"
 							}
 						},
 						"method": "DELETE",
@@ -383,11 +665,23 @@
 			"item": [
 				{
 					"name": "Create Service",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var jsonData = JSON.parse(responseBody);",
+									"pm.collectionVariables.set(\"service_id\", jsonData.data.id);"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
 					"request": {
 						"auth": {
 							"type": "bearer",
 							"bearer": {
-								"token": "{{auth_token}}"
+								"token": "{{bo_auth_token}}"
 							}
 						},
 						"method": "POST",
@@ -436,7 +730,7 @@
 					"request": {
 						"method": "GET",
 						"header": [],
-						"url": "http://localhost:8080/api/services/1"
+						"url": "http://localhost:8080/api/services/{{service_id}}"
 					},
 					"response": []
 				},
@@ -455,7 +749,7 @@
 						"auth": {
 							"type": "bearer",
 							"bearer": {
-								"token": "{{auth_token}}"
+								"token": "{{bo_auth_token}}"
 							}
 						},
 						"method": "PUT",
@@ -495,7 +789,7 @@
 								}
 							]
 						},
-						"url": "http://localhost:8080/api/services/1"
+						"url": "http://localhost:8080/api/services/{{service_id}}"
 					},
 					"response": []
 				},
@@ -505,12 +799,12 @@
 						"auth": {
 							"type": "bearer",
 							"bearer": {
-								"token": "{{auth_token}}"
+								"token": "{{bo_auth_token}}"
 							}
 						},
 						"method": "DELETE",
 						"header": [],
-						"url": "http://localhost:8080/api/services/1"
+						"url": "http://localhost:8080/api/services/{{service_id}}"
 					},
 					"response": []
 				}
@@ -521,18 +815,34 @@
 			"item": [
 				{
 					"name": "Add to Cart",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var jsonData = JSON.parse(responseBody);",
+									"// Assuming the cart item ID is in the last item of the cart",
+									"var cartItems = jsonData.data.cartItems;",
+									"if (cartItems && cartItems.length > 0) {",
+									"    pm.collectionVariables.set(\"cart_item_id\", cartItems[cartItems.length - 1].id);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
 					"request": {
 						"auth": {
 							"type": "bearer",
 							"bearer": {
-								"token": "{{auth_token}}"
+								"token": "{{customer_auth_token}}"
 							}
 						},
 						"method": "POST",
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"productId\": \"<your_product_id>\",\n    \"businessId\": \"{{business_id}}\",\n    \"quantity\": 1\n}",
+							"raw": "{\n    \"productId\": \"{{product_id}}\",\n    \"businessId\": \"{{business_id}}\",\n    \"quantity\": 1\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -549,7 +859,7 @@
 						"auth": {
 							"type": "bearer",
 							"bearer": {
-								"token": "{{auth_token}}"
+								"token": "{{customer_auth_token}}"
 							}
 						},
 						"method": "GET",
@@ -564,14 +874,14 @@
 						"auth": {
 							"type": "bearer",
 							"bearer": {
-								"token": "{{auth_token}}"
+								"token": "{{customer_auth_token}}"
 							}
 						},
 						"method": "PUT",
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"cartItemId\": \"<your_cart_item_id>\",\n    \"quantity\": 2\n}",
+							"raw": "{\n    \"cartItemId\": \"{{cart_item_id}}\",\n    \"quantity\": 2\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -588,12 +898,12 @@
 						"auth": {
 							"type": "bearer",
 							"bearer": {
-								"token": "{{auth_token}}"
+								"token": "{{customer_auth_token}}"
 							}
 						},
 						"method": "DELETE",
 						"header": [],
-						"url": "http://localhost:8080/api/cart/<your_cart_item_id>"
+						"url": "http://localhost:8080/api/cart/{{cart_item_id}}"
 					},
 					"response": []
 				},
@@ -603,7 +913,7 @@
 						"auth": {
 							"type": "bearer",
 							"bearer": {
-								"token": "{{auth_token}}"
+								"token": "{{customer_auth_token}}"
 							}
 						},
 						"method": "DELETE",
@@ -620,7 +930,8 @@
 							"script": {
 								"exec": [
 									"var jsonData = JSON.parse(responseBody);",
-									"pm.collectionVariables.set(\"snap_token\", jsonData.data.snapToken);"
+									"pm.collectionVariables.set(\"snap_token\", jsonData.data.snapToken);",
+									"pm.collectionVariables.set(\"order_id\", jsonData.data.orderId);"
 								],
 								"type": "text/javascript"
 							}
@@ -630,7 +941,7 @@
 						"auth": {
 							"type": "bearer",
 							"bearer": {
-								"token": "{{auth_token}}"
+								"token": "{{customer_auth_token}}"
 							}
 						},
 						"method": "POST",
@@ -645,12 +956,12 @@
 						"auth": {
 							"type": "bearer",
 							"bearer": {
-								"token": "{{auth_token}}"
+								"token": "{{customer_auth_token}}"
 							}
 						},
 						"method": "GET",
 						"header": [],
-						"url": "http://localhost:8080/api/orders/<your_order_id>"
+						"url": "http://localhost:8080/api/orders/{{order_id}}"
 					},
 					"response": []
 				},
@@ -660,7 +971,7 @@
 						"auth": {
 							"type": "bearer",
 							"bearer": {
-								"token": "{{auth_token}}"
+								"token": "{{customer_auth_token}}"
 							}
 						},
 						"method": "GET",
@@ -692,11 +1003,43 @@
 	],
 	"variable": [
 		{
-			"key": "auth_token",
+			"key": "customer_auth_token",
+			"value": ""
+		},
+		{
+			"key": "bo_auth_token",
+			"value": ""
+		},
+		{
+			"key": "admin_auth_token",
 			"value": ""
 		},
 		{
 			"key": "business_id",
+			"value": ""
+		},
+		{
+			"key": "user_id",
+			"value": ""
+		},
+		{
+			"key": "pet_id",
+			"value": ""
+		},
+		{
+			"key": "product_id",
+			"value": ""
+		},
+		{
+			"key": "service_id",
+			"value": ""
+		},
+		{
+			"key": "cart_item_id",
+			"value": ""
+		},
+		{
+			"key": "order_id",
 			"value": ""
 		},
 		{
