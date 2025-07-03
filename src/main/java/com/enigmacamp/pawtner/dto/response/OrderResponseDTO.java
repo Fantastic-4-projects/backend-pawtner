@@ -26,4 +26,5 @@ public class OrderResponseDTO {
     private OrderStatus status;
     private LocalDateTime createdAt;
     private List<OrderItemResponseDTO> items;
+    private String snapToken;
 }

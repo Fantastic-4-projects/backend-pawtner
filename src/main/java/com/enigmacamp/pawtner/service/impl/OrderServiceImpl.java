@@ -1,16 +1,14 @@
 package com.enigmacamp.pawtner.service.impl;
 
 import com.enigmacamp.pawtner.constant.OrderStatus;
+import com.enigmacamp.pawtner.constant.PaymentStatus;
 import com.enigmacamp.pawtner.dto.response.OrderItemResponseDTO;
 import com.enigmacamp.pawtner.dto.response.OrderResponseDTO;
 import com.enigmacamp.pawtner.dto.response.ShoppingCartResponseDTO;
 import com.enigmacamp.pawtner.entity.*;
 import com.enigmacamp.pawtner.repository.OrderItemRepository;
 import com.enigmacamp.pawtner.repository.OrderRepository;
-import com.enigmacamp.pawtner.service.OrderService;
-import com.enigmacamp.pawtner.service.ProductService;
-import com.enigmacamp.pawtner.service.ShoppingCartService;
-import com.enigmacamp.pawtner.service.UserService;
+import com.enigmacamp.pawtner.service.*;
 import lombok.AllArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -23,6 +21,7 @@ import java.math.BigDecimal;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
+import java.util.Map;
 
 @Service
 @AllArgsConstructor
@@ -33,6 +32,7 @@ public class OrderServiceImpl implements OrderService {
     private final ShoppingCartService shoppingCartService;
     private final UserService userService;
     private final ProductService productService;
+    private final PaymentService paymentService;
 
     @Override
     @Transactional
@@ -80,10 +80,20 @@ public class OrderServiceImpl implements OrderService {
             orderItemRepository.save(orderItem);
         });
 
+        // Create payment
+        Payment payment = Payment.builder()
+                .order(order)
+                .amount(order.getTotalAmount())
+                .status(PaymentStatus.PENDING)
+                .build();
+        payment = paymentService.createPayment(payment);
+
         // Clear the shopping cart after successful order creation
         shoppingCartService.clearShoppingCart(customerEmail);
 
-        return mapToOrderResponseDTO(order, orderItems);
+        OrderResponseDTO responseDTO = mapToOrderResponseDTO(order, orderItems);
+        responseDTO.setSnapToken(payment.getSnapToken());
+        return responseDTO;
     }
 
     @Override
@@ -99,6 +109,28 @@ public class OrderServiceImpl implements OrderService {
         User customer = userService.getUserByEmailForInternal(customerEmail);
         Page<Order> orders = orderRepository.findByCustomer(customer, pageable);
         return orders.map(order -> mapToOrderResponseDTO(order, orderItemRepository.findByOrder(order)));
+    }
+
+    @Override
+    public void handleWebhook(Map<String, Object> payload) {
+        String orderId = (String) payload.get("order_id");
+        String transactionStatus = (String) payload.get("transaction_status");
+        String fraudStatus = (String) payload.get("fraud_status");
+
+        Order order = orderRepository.findByOrderNumber(orderId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Order not found"));
+
+        if (transactionStatus.equals("capture")) {
+            if (fraudStatus.equals("accept")) {
+                order.setStatus(OrderStatus.PROCESSING);
+            }
+        } else if (transactionStatus.equals("settlement")) {
+            order.setStatus(OrderStatus.COMPLETED);
+        } else if (transactionStatus.equals("cancel") || transactionStatus.equals("deny") || transactionStatus.equals("expire")) {
+            order.setStatus(OrderStatus.CANCELLED);
+        }
+
+        orderRepository.save(order);
     }
 
     private String generateOrderNumber() {

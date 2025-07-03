@@ -23,7 +23,25 @@
 								}
 							}
 						},
-						"url": "http://localhost:8080/api/auth/register"
+						"url": "http://localhost:8080/api/auth/register/customer"
+					},
+					"response": []
+				},
+				{
+					"name": "Regist Business Owner",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"email\": \"businessowner@example.com\",\n    \"phoneNumber\": \"081234567890\",\n    \"password\": \"password123\",\n    \"name\": \"Business Owner Name\",\n    \"address\": \"Business Address\"\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        },
+						"url": "http://localhost:8080/api/auth/register/business-owner"
 					},
 					"response": []
 				},
@@ -142,20 +160,20 @@
 					"response": []
 				},
 				{
-					"name": "Regist Business Owner",
+					"name": "Set User Role",
 					"request": {
-						"method": "POST",
+						"method": "PATCH",
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"email\": \"muhhudaibi11@gmail.com\",\n    \"phoneNumber\": \"085589231880\",\n    \"password\": \"hudahuda\",\n    \"name\": \"Muhammad Hudaibi\",\n    \"address\": \"Sumedang\"\n}",
+							"raw": "{\n    \"email\": \"muhhudaibi11@gmail.com\",\n    \"role\": \"BUSINESS_OWNER\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
 								}
 							}
 						},
-						"url": "http://localhost:8080/api/auth/register/business-owner"
+						"url": "http://localhost:8080/api/auth/user/set-role"
 					},
 					"response": []
 				}
@@ -280,7 +298,7 @@
 					"request": {
 						"method": "GET",
 						"header": [],
-						"url": "http://localhost:8080/api/products/1"
+						"url": "http://localhost:8080/api/products/{{product_id}}"
 					},
 					"response": []
 				},
@@ -339,7 +357,22 @@
 								}
 							]
 						},
-						"url": "http://localhost:8080/api/products/1"
+						"url": "http://localhost:8080/api/products/{{product_id}}"
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Product",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": {
+								"token": "{{auth_token}}"
+							}
+						},
+						"method": "DELETE",
+						"header": [],
+						"url": "http://localhost:8080/api/products/{{product_id}}"
 					},
 					"response": []
 				}
@@ -465,6 +498,194 @@
 						"url": "http://localhost:8080/api/services/1"
 					},
 					"response": []
+				},
+				{
+					"name": "Delete Service",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": {
+								"token": "{{auth_token}}"
+							}
+						},
+						"method": "DELETE",
+						"header": [],
+						"url": "http://localhost:8080/api/services/1"
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "cart & order",
+			"item": [
+				{
+					"name": "Add to Cart",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": {
+								"token": "{{auth_token}}"
+							}
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"productId\": \"<your_product_id>\",\n    \"businessId\": \"{{business_id}}\",\n    \"quantity\": 1\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": "http://localhost:8080/api/cart"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Shopping Cart",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": {
+								"token": "{{auth_token}}"
+							}
+						},
+						"method": "GET",
+						"header": [],
+						"url": "http://localhost:8080/api/cart"
+					},
+					"response": []
+				},
+				{
+					"name": "Update Cart Item",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": {
+								"token": "{{auth_token}}"
+							}
+						},
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"cartItemId\": \"<your_cart_item_id>\",\n    \"quantity\": 2\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": "http://localhost:8080/api/cart"
+					},
+					"response": []
+				},
+				{
+					"name": "Remove Cart Item",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": {
+								"token": "{{auth_token}}"
+							}
+						},
+						"method": "DELETE",
+						"header": [],
+						"url": "http://localhost:8080/api/cart/<your_cart_item_id>"
+					},
+					"response": []
+				},
+				{
+					"name": "Clear Cart",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": {
+								"token": "{{auth_token}}"
+							}
+						},
+						"method": "DELETE",
+						"header": [],
+						"url": "http://localhost:8080/api/cart"
+					},
+					"response": []
+				},
+				{
+					"name": "Checkout",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var jsonData = JSON.parse(responseBody);",
+									"pm.collectionVariables.set(\"snap_token\", jsonData.data.snapToken);"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": {
+								"token": "{{auth_token}}"
+							}
+						},
+						"method": "POST",
+						"header": [],
+						"url": "http://localhost:8080/api/orders/checkout"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Order By ID",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": {
+								"token": "{{auth_token}}"
+							}
+						},
+						"method": "GET",
+						"header": [],
+						"url": "http://localhost:8080/api/orders/<your_order_id>"
+					},
+					"response": []
+				},
+				{
+					"name": "Get My Orders",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": {
+								"token": "{{auth_token}}"
+							}
+						},
+						"method": "GET",
+						"header": [],
+						"url": "http://localhost:8080/api/orders"
+					},
+					"response": []
+				},
+				{
+					"name": "Payment Webhook",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"order_id\": \"<your_order_number>\",\n    \"transaction_status\": \"settlement\",\n    \"fraud_status\": \"accept\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": "http://localhost:8080/api/payments/webhook"
+					},
+					"response": []
 				}
 			]
 		}
@@ -476,6 +697,10 @@
 		},
 		{
 			"key": "business_id",
+			"value": ""
+		},
+		{
+			"key": "snap_token",
 			"value": ""
 		}
 	]

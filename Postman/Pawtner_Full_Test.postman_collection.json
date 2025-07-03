@@ -37,7 +37,25 @@
 								}
 							}
 						},
-						"url": "http://localhost:8080/api/auth/register"
+						"url": "http://localhost:8080/api/auth/register/customer"
+					},
+					"response": []
+				},
+				{
+					"name": "Regist Business Owner",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"email\": \"testbusinessowner_{{$randomInt}}@example.com\",\n    \"phoneNumber\": \"081234567891\",\n    \"password\": \"password123\",\n    \"name\": \"Test Business Owner\",\n    \"address\": \"Test Business Owner Address\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": "http://localhost:8080/api/auth/register/business-owner"
 					},
 					"response": []
 				},
@@ -142,6 +160,24 @@
 							}
 						},
 						"url": "http://localhost:8080/api/auth/reset-password"
+					},
+					"response": []
+				},
+				{
+					"name": "Set User Role",
+					"request": {
+						"method": "PATCH",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"email\": \"{{user_email}}\",\n    \"role\": \"BUSINESS_OWNER\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": "http://localhost:8080/api/auth/user/set-role"
 					},
 					"response": []
 				}
@@ -303,7 +339,7 @@
 							"bearer": {
 								"token": "{{auth_token}}"
 							}
-\t					},
+						},
 						"method": "PUT",
 						"header": [],
 						"body": {
@@ -854,167 +890,8 @@
 			]
 		},
 		{
-			"name": "Bookings",
-			"item": [
-				{
-					"name": "Create Booking",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"var jsonData = pm.response.json();",
-									"if (jsonData && jsonData.data && jsonData.data.id) {",
-									"    pm.collectionVariables.set(\"booking_id\", jsonData.data.id);",
-									"}"
-								],
-								"type": "text/javascript"
-							}
-						}
-					],
-					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": {
-								"token": "{{auth_token}}"
-							}
-						},
-						"method": "POST",
-						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n    \"petId\": \"{{pet_id}}\",\n    \"serviceId\": \"{{service_id}}\",\n    \"startTime\": \"2025-07-03T10:00:00\",\n    \"endTime\": \"2025-07-03T11:00:00\",\n    \"totalPrice\": 75000\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": "http://localhost:8080/api/bookings"
-					},
-					"response": []
-				},
-				{
-					"name": "Get Booking By ID",
-					"request": {
-						"method": "GET",
-						"header": [],
-						"url": "http://localhost:8080/api/bookings/{{booking_id}}"
-					},
-					"response": []
-				},
-				{
-					"name": "Get All Bookings By Customer ID",
-					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": {
-								"token": "{{auth_token}}"
-							}
-						},
-						"method": "GET",
-						"header": [],
-						"url": "http://localhost:8080/api/bookings/customer"
-					},
-					"response": []
-				},
-				{
-					"name": "Get All Bookings By Business ID",
-					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": {
-								"token": "{{auth_token}}"
-							}
-						},
-						"method": "GET",
-						"header": [],
-						"url": "http://localhost:8080/api/bookings/business/{{business_id}}"
-					},
-					"response": []
-				},
-				{
-					"name": "Update Booking Status",
-					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": {
-								"token": "{{auth_token}}"
-							}
-						},
-						"method": "PUT",
-						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n    \"status\": \"CONFIRMED\"\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": "http://localhost:8080/api/bookings/{{booking_id}}/status"
-					},
-					"response": []
-				},
-				{
-					"name": "Cancel Booking",
-					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": {
-								"token": "{{auth_token}}"
-							}
-						},
-						"method": "DELETE",
-						"header": [],
-						"url": "http://localhost:8080/api/bookings/{{booking_id}}"
-					},
-					"response": []
-				}
-			]
-		},
-		{
 			"name": "Payments",
 			"item": [
-				{
-					"name": "Create Payment",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"var jsonData = pm.response.json();",
-									"if (jsonData && jsonData.data && jsonData.data.id) {",
-									"    pm.collectionVariables.set(\"payment_id\", jsonData.data.id);",
-									"}"
-								],
-								"type": "text/javascript"
-							}
-						}
-					],
-					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": {
-								"token": "{{auth_token}}"
-							}
-						},
-						"method": "POST",
-						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n    \"orderId\": \"{{order_id}}\",\n    \"paymentGatewayRefId\": \"ref_{{$randomInt}}\",\n    \"amount\": 100000,\n    \"paymentMethod\": \"Midtrans\",\n    \"status\": \"PENDING\"\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": "http://localhost:8080/api/payments"
-					},
-					"response": []
-				},
 				{
 					"name": "Get Payment By ID",
 					"request": {
