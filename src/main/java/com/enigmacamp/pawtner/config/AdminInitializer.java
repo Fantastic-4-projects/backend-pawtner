@@ -35,7 +35,7 @@ public class AdminInitializer {
 
             authRepository.save(adminUser);
 
-            System.out.println("User admin berhasil dibuat: admin / admin123");
+            System.out.println("User admin berhasil dibuat email: " + adminUser.getEmail() + " Password: admin123");
         }
     }
 }

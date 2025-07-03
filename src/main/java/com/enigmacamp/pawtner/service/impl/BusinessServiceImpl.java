@@ -52,6 +52,13 @@ public class BusinessServiceImpl implements BusinessService {
 
     @Override
     public List<BusinessResponseDTO> viewBusiness() {
+        return businessRepository.findAll()
+                .stream().map(this::mapToResponse)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<BusinessResponseDTO> viewMyBusiness() {
         User currentUser = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         return businessRepository.findAllByOwner_Id(currentUser.getId())
                 .stream().map(this::mapToResponse)
