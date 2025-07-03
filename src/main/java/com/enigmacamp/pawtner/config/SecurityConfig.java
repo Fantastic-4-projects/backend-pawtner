@@ -43,7 +43,6 @@ public class SecurityConfig {
                 .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/auth/**", "/oauth2/**", "/login/oauth2/code/**").permitAll()
-                        .requestMatchers("api/business/**").hasAuthority(UserRole.BUSINESS_OWNER.name())
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(authTokenFilter, UsernamePasswordAuthenticationFilter.class)

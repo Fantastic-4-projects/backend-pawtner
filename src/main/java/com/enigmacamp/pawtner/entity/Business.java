@@ -74,9 +74,6 @@ public class Business {
     @Digits(integer = 9, fraction = 6)
     private BigDecimal longitude;
 
-    @Builder.Default
-    private Boolean isVerified = false;
-
     @Convert(converter = OperationHoursConverter.class)
     @Column(columnDefinition = "TEXT")
     private OperationHoursDTO operationHours;
@@ -84,6 +81,9 @@ public class Business {
     @Builder.Default
     @Enumerated(EnumType.STRING)
     private BusinessStatus statusRealtime = BusinessStatus.CLOSED;
+
+    @Builder.Default
+    private Boolean isApproved = null;
 
     @Builder.Default
     @Column(updatable = false)

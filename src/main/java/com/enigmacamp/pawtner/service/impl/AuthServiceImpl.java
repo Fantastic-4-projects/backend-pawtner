@@ -52,6 +52,10 @@ public class AuthServiceImpl implements AuthService {
                 .role(userRole)
                 .codeExpire(LocalDateTime.now().plusMinutes(3))
                 .codeVerification(generateRandomCode(6))
+                .isEnabled(true)
+                .isCredentialsNonExpired(true)
+                .isAccountNonLocked(true)
+                .isAccountNonExpired(true)
                 .build();
         authRepository.save(user);
 

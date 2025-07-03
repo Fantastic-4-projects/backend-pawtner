@@ -82,6 +82,13 @@ public class User implements UserDetails {
     @Column(updatable = false)
     private LocalDateTime createdAt = LocalDateTime.now();
 
+    private Boolean isAccountNonExpired;
+    private Boolean isAccountNonLocked;
+    private Boolean isCredentialsNonExpired;
+    private Boolean isEnabled;
+
+
+
     @PrePersist
     protected void onCreate() {
         if (createdAt == null) {
@@ -106,21 +113,21 @@ public class User implements UserDetails {
 
     @Override
     public boolean isAccountNonExpired() {
-        return true;
+        return isAccountNonExpired;
     }
 
     @Override
     public boolean isAccountNonLocked() {
-        return true;
+        return isAccountNonLocked;
     }
 
     @Override
     public boolean isCredentialsNonExpired() {
-        return true;
+        return isCredentialsNonExpired;
     }
 
     @Override
     public boolean isEnabled() {
-        return true;
+        return isEnabled;
     }
 }

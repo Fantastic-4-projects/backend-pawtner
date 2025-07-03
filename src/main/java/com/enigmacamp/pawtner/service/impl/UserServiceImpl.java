@@ -36,14 +36,9 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public UserResponseDTO getUserById(String id) {
-        User user = authRepository.findById(UUID.fromString(id)).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
-        return UserResponseDTO.builder()
-                .id(user.getId().toString())
-                .email(user.getEmail())
-                .name(user.getName())
-                .address(user.getAddress())
-                .phone(user.getPhoneNumber())
-                .build();
+        User user = authRepository.findById(UUID.fromString(id))
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
+        return mapToResponse(user);
     }
 
     @Override
@@ -56,6 +51,38 @@ public class UserServiceImpl implements UserService {
         user.setPhoneNumber(userRequestDTO.getPhone());
         authRepository.save(user);
 
+        return mapToResponse(user);
+    }
+
+    @Override
+    public List<UserResponseDTO> getAllUser() {
+        List<User> users = authRepository.findAll();
+        return users.stream().map(this::mapToResponse).collect(Collectors.toList());
+    }
+
+    @Override
+    public UserResponseDTO updateUserStatus(UUID id, String action, Boolean value) {
+        User user = authRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
+
+        switch (action.toLowerCase()) {
+            case "ban" -> user.setIsEnabled(!value);
+            case "suspend" -> user.setIsAccountNonLocked(!value);
+            default -> throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid action");
+        }
+
+        authRepository.save(user);
+        return mapToResponse(user);
+    }
+
+
+    @Override
+    public void deleteUser(String id) {
+        User user = authRepository.findById(UUID.fromString(id)).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
+        authRepository.delete(user);
+    }
+
+    private UserResponseDTO mapToResponse(User user) {
         return UserResponseDTO.builder()
                 .id(user.getId().toString())
                 .email(user.getEmail())
@@ -63,23 +90,5 @@ public class UserServiceImpl implements UserService {
                 .address(user.getAddress())
                 .phone(user.getPhoneNumber())
                 .build();
-    }
-
-    @Override
-    public List<UserResponseDTO> getAllUser() {
-        List<User> users = authRepository.findAll();
-        return users.stream().map(user -> UserResponseDTO.builder()
-                .id(user.getId().toString())
-                .email(user.getEmail())
-                .name(user.getName())
-                .address(user.getAddress())
-                .phone(user.getPhoneNumber())
-                .build()).collect(Collectors.toList());
-    }
-
-    @Override
-    public void deleteUser(String id) {
-        User user = authRepository.findById(UUID.fromString(id)).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
-        authRepository.delete(user);
     }
 }
