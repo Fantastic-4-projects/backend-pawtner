@@ -29,9 +29,9 @@ public class OrderController {
         return ResponseUtil.createResponse(HttpStatus.CREATED, "Order created successfully", responseDTO);
     }
 
-    @GetMapping("/{id}")
+    @GetMapping("/{order_id}")
     @PreAuthorize("hasAuthority('CUSTOMER') or hasAuthority('BUSINESS_OWNER') or hasAuthority('ADMIN')")
-    public ResponseEntity<CommonResponse<OrderResponseDTO>> getOrderById(@PathVariable UUID id) {
+    public ResponseEntity<CommonResponse<OrderResponseDTO>> getOrderById(@PathVariable(name = "order_id") UUID id) {
         OrderResponseDTO responseDTO = orderService.getOrderById(id);
         return ResponseUtil.createResponse(HttpStatus.OK, "Successfully fetched order", responseDTO);
     }

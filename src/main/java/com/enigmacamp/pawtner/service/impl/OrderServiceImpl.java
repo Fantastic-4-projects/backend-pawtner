@@ -97,6 +97,7 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public OrderResponseDTO getOrderById(UUID id) {
         Order order = orderRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Order not found"));
@@ -105,6 +106,7 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public Page<OrderResponseDTO> getAllOrdersByCustomerId(String customerEmail, Pageable pageable) {
         User customer = userService.getUserByEmailForInternal(customerEmail);
         Page<Order> orders = orderRepository.findByCustomer(customer, pageable);
@@ -112,6 +114,7 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
+    @Transactional
     public void handleWebhook(Map<String, Object> payload) {
         String orderId = (String) payload.get("order_id");
         String transactionStatus = (String) payload.get("transaction_status");
