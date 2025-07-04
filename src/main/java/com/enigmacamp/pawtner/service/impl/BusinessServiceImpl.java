@@ -32,14 +32,22 @@ public class BusinessServiceImpl implements BusinessService {
     private final BusinessRepository businessRepository;
     private final ImageUploadService imageUploadService;
 
-    @Transactional(rollbackOn =  Exception.class)
+    @Transactional(rollbackOn = Exception.class)
     @Override
     public void registerBusiness(BusinessRequestDTO businessRequestDTO, MultipartFile businessImage, MultipartFile certificateImage) {
         User currentUser = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
         try {
-            String businessImageUrl = imageUploadService.upload(businessImage);
-            String certificateImageUrl = imageUploadService.upload(certificateImage);
+            String businessImageUrl = null;
+            String certificateImageUrl = null;
+
+            if (businessImage != null && !businessImage.isEmpty()) {
+                businessImageUrl = imageUploadService.upload(businessImage);
+            }
+
+            if (certificateImage != null && !certificateImage.isEmpty()) {
+                certificateImageUrl = imageUploadService.upload(certificateImage);
+            }
 
             Business newBusiness = Business.builder()
                     .owner(currentUser)
@@ -49,8 +57,8 @@ public class BusinessServiceImpl implements BusinessService {
                     .businessType(businessRequestDTO.getBusinessType())
                     .businessEmail(businessRequestDTO.getBusinessEmail())
                     .businessPhone(businessRequestDTO.getBusinessPhone())
-                    .businessImageUrl(businessImageUrl)
-                    .certificateImageUrl(certificateImageUrl)
+                    .businessImageUrl(businessImageUrl) // boleh null
+                    .certificateImageUrl(certificateImageUrl) // boleh null
                     .latitude(businessRequestDTO.getLatitude())
                     .longitude(businessRequestDTO.getLongitude())
                     .operationHours(businessRequestDTO.getOperationHours())
@@ -61,6 +69,7 @@ public class BusinessServiceImpl implements BusinessService {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Failed to upload image");
         }
     }
+
 
     @Override
     public List<BusinessResponseDTO> viewBusiness() {
