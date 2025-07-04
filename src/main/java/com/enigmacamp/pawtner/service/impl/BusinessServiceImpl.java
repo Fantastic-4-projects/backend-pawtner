@@ -20,34 +20,46 @@ import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+import com.enigmacamp.pawtner.service.ImageUploadService;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.io.IOException;
+
 @Service
 @RequiredArgsConstructor
 public class BusinessServiceImpl implements BusinessService {
 
     private final BusinessRepository businessRepository;
+    private final ImageUploadService imageUploadService;
 
     @Transactional(rollbackOn =  Exception.class)
     @Override
-    public BusinessResponseDTO registerBusiness(BusinessRequestDTO businessRequestDTO) {
+    public void registerBusiness(BusinessRequestDTO businessRequestDTO, MultipartFile businessImage, MultipartFile certificateImage) {
         User currentUser = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        Business newBusiness = Business.builder()
-                .owner(currentUser)
-                .name(businessRequestDTO.getNameBusiness())
-                .description(businessRequestDTO.getDescriptionBusiness())
-                .address(businessRequestDTO.getBusinessAddress())
-                .businessType(businessRequestDTO.getBusinessType())
-                .businessEmail(businessRequestDTO.getBusinessEmail())
-                .businessPhone(businessRequestDTO.getBusinessPhone())
-                .businessImageUrl(businessRequestDTO.getBusinessImageUrl())
-                .certificateImageUrl(businessRequestDTO.getCertificateImageUrl())
-                .latitude(businessRequestDTO.getLatitude())
-                .longitude(businessRequestDTO.getLongitude())
-                .operationHours(businessRequestDTO.getOperationHours())
-                .build();
 
-        businessRepository.save(newBusiness);
+        try {
+            String businessImageUrl = imageUploadService.upload(businessImage);
+            String certificateImageUrl = imageUploadService.upload(certificateImage);
 
-        return mapToResponse(newBusiness);
+            Business newBusiness = Business.builder()
+                    .owner(currentUser)
+                    .name(businessRequestDTO.getNameBusiness())
+                    .description(businessRequestDTO.getDescriptionBusiness())
+                    .address(businessRequestDTO.getBusinessAddress())
+                    .businessType(businessRequestDTO.getBusinessType())
+                    .businessEmail(businessRequestDTO.getBusinessEmail())
+                    .businessPhone(businessRequestDTO.getBusinessPhone())
+                    .businessImageUrl(businessImageUrl)
+                    .certificateImageUrl(certificateImageUrl)
+                    .latitude(businessRequestDTO.getLatitude())
+                    .longitude(businessRequestDTO.getLongitude())
+                    .operationHours(businessRequestDTO.getOperationHours())
+                    .build();
+
+            businessRepository.save(newBusiness);
+        } catch (IOException e) {
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Failed to upload image");
+        }
     }
 
     @Override

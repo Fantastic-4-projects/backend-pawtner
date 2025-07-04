@@ -19,8 +19,6 @@ public class BusinessRequestDTO {
     private String businessEmail;
     private String businessPhone;
     private String emergencyPhone;
-    private String businessImageUrl;
-    private String certificateImageUrl;
     private String businessAddress;
     private BigDecimal latitude;
     private BigDecimal longitude;

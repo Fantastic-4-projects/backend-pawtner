@@ -9,6 +9,7 @@ import com.enigmacamp.pawtner.util.ResponseUtil;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -17,6 +18,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
+import org.springframework.web.multipart.MultipartFile;
+
 @RestController
 @RequestMapping("/api/business")
 @RequiredArgsConstructor
@@ -24,15 +27,18 @@ public class BusinessController {
 
     private final BusinessService businessService;
 
-    @PostMapping("/register")
+    @PostMapping(value = "/register", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @PreAuthorize("hasAuthority('BUSINESS_OWNER')")
     public ResponseEntity<CommonResponse<BusinessResponseDTO>> createBusiness(
-            @Valid @RequestBody BusinessRequestDTO businessRequestDTO
+            @RequestPart(required = false, name = "business") BusinessRequestDTO businessRequestDTO,
+            @RequestPart(required = false, name = "businessImage") MultipartFile businessImage,
+            @RequestPart(required = false, name = "certificateImage") MultipartFile certificateImage
     ) {
+        businessService.registerBusiness(businessRequestDTO, businessImage, certificateImage);
         return ResponseUtil.createResponse(
                 HttpStatus.CREATED,
                 "Profil bisnis berhasil dibuat",
-                businessService.registerBusiness(businessRequestDTO)
+                null
         );
     }
 
