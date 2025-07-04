@@ -17,11 +17,17 @@ import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+import com.enigmacamp.pawtner.service.ImageUploadService;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.io.IOException;
+
 @Service
 @RequiredArgsConstructor
 public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
+    private final ImageUploadService imageUploadService;
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
@@ -42,9 +48,16 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public UserResponseDTO updateUser(UserRequestDTO userRequestDTO) {
+    public UserResponseDTO updateUser(UserRequestDTO userRequestDTO, MultipartFile profileImage) {
         UserDetails userDetails = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         User user = userRepository.findByEmail(userDetails.getUsername()).get();
+
+        try {
+            String imageUrl = imageUploadService.upload(profileImage);
+            user.setImageUrl(imageUrl);
+        } catch (IOException e) {
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Failed to upload image");
+        }
 
         user.setName(userRequestDTO.getName());
         user.setAddress(userRequestDTO.getAddress());
@@ -89,6 +102,7 @@ public class UserServiceImpl implements UserService {
                 .name(user.getName())
                 .address(user.getAddress())
                 .phone(user.getPhoneNumber())
+                .imageUrl(user.getImageUrl())
                 .build();
     }
 }

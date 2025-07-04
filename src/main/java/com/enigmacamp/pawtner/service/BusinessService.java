@@ -8,8 +8,10 @@ import java.util.UUID;
 
 import com.enigmacamp.pawtner.entity.Business;
 
+import org.springframework.web.multipart.MultipartFile;
+
 public interface BusinessService {
-    BusinessResponseDTO registerBusiness(BusinessRequestDTO businessRequestDTO);
+    void registerBusiness(BusinessRequestDTO businessRequestDTO, MultipartFile businessImage, MultipartFile certificateImage);
     List<BusinessResponseDTO> viewBusiness();
     List<BusinessResponseDTO> viewMyBusiness();
     Business getBusinessByIdForInternal(UUID id);

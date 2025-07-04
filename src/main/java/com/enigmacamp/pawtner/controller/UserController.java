@@ -14,6 +14,8 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.UUID;
 
+import org.springframework.web.multipart.MultipartFile;
+
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/users")
@@ -31,9 +33,12 @@ public class UserController {
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
-    @PutMapping
-    public ResponseEntity<?> updateUser(@RequestBody UserRequestDTO userRequestDTO) {
-        UserResponseDTO userResponseDTO = userService.updateUser(userRequestDTO);
+    @PutMapping(consumes = "multipart/form-data")
+    public ResponseEntity<?> updateUser(
+            @RequestPart("user") UserRequestDTO userRequestDTO,
+            @RequestPart("profileImage") MultipartFile profileImage
+    ) {
+        UserResponseDTO userResponseDTO = userService.updateUser(userRequestDTO, profileImage);
         CommonResponse<UserResponseDTO> response = CommonResponse.<UserResponseDTO>builder()
                 .message("Successfully update user")
                 .data(userResponseDTO)
