@@ -1,4 +1,443 @@
 
+## Auth Endpoints (`/api/auth`)
+
+### 1. Register Customer
+Registers a new customer account.
+
+- **URL:** `/api/auth/register/customer`
+- **Method:** `POST`
+- **Authentication:** None
+- **Request Body:** `RegisterRequestDTO`
+    ```json
+    {
+      "email": "newcustomer@example.com",
+      "password": "password123",
+      "name": "New Customer",
+      "address": "123 Customer St",
+      "phone": "081234567890"
+    }
+    ```
+    - `email` (String): User's email address.
+    - `password` (String): User's password.
+    - `name` (String): User's full name.
+    - `address` (String): User's address.
+    - `phone` (String): User's phone number.
+- **Response Body:** `RegisterResponseDTO`
+    ```json
+    {
+      "statusCode": "CREATED",
+      "message": "Selamat datang di Pawtner. Kode verifikasi telah dikirim ke email Anda.",
+      "data": {
+        "id": "u1s2e3r4-i5d6-7890-1234-567890abcdef",
+        "email": "newcustomer@example.com",
+        "name": "New Customer"
+      }
+    }
+    ```
+    - `id` (UUID): Unique identifier for the registered user.
+    - `email` (String): Registered user's email.
+    - `name` (String): Registered user's name.
+
+### 2. Register Business Owner
+Registers a new business owner account.
+
+- **URL:** `/api/auth/register/business-owner`
+- **Method:** `POST`
+- **Authentication:** None
+- **Request Body:** `RegisterRequestDTO` (Same as Register Customer)
+- **Response Body:** `RegisterResponseDTO` (Same as Register Customer)
+
+### 3. Login
+Authenticates a user and returns a JWT token.
+
+- **URL:** `/api/auth/login`
+- **Method:** `POST`
+- **Authentication:** None
+- **Request Body:** `LoginRequestDTO`
+    ```json
+    {
+      "email": "user@example.com",
+      "password": "password123"
+    }
+    ```
+    - `email` (String): User's email address.
+    - `password` (String): User's password.
+- **Response Body:** `LoginResponseDTO`
+    ```json
+    {
+      "statusCode": "OK",
+      "message": "Anda berhasil login.",
+      "data": {
+        "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+        "email": "user@example.com",
+        "role": "CUSTOMER"
+      }
+    }
+    ```
+    - `token` (String): JWT authentication token.
+    - `email` (String): User's email.
+    - `role` (UserRole Enum): User's role.
+
+### 4. Set User Role
+Sets or updates the role of a user.
+
+- **URL:** `/api/auth/user/set-role`
+- **Method:** `PATCH`
+- **Authentication:** Requires authenticated user token.
+- **Request Body:** `RegisterRequestDTO` (Only `email` and `role` might be relevant here, but the controller uses the full DTO)
+    ```json
+    {
+      "email": "user@example.com",
+      "role": "BUSINESS_OWNER"
+    }
+    ```
+    - `email` (String): User's email.
+    - `role` (UserRole Enum): The new role to set for the user.
+- **Response Body:** `CommonResponse<UserRole>`
+    ```json
+    {
+      "statusCode": "OK",
+      "message": "Role berhasil diubah.",
+      "data": "BUSINESS_OWNER"
+    }
+    ```
+
+### 5. Verify Account
+Verifies a user's account using a verification code.
+
+- **URL:** `/api/auth/verify`
+- **Method:** `POST`
+- **Authentication:** None
+- **Request Body:** `VerificationRequestDTO`
+    ```json
+    {
+      "email": "user@example.com",
+      "verificationCode": "123456"
+    }
+    ```
+    - `email` (String): User's email.
+    - `verificationCode` (String): The verification code received by email.
+- **Response Body:** `CommonResponse<String>`
+    ```json
+    {
+      "statusCode": "OK",
+      "message": "Akun berhasil diverifikasi.",
+      "data": null
+    }
+    ```
+
+### 6. Resend Verification Code
+Resends a verification code to the user's email.
+
+- **URL:** `/api/auth/resend-verification`
+- **Method:** `POST`
+- **Authentication:** None
+- **Request Body:** `ResendVerificationRequestDTO`
+    ```json
+    {
+      "email": "user@example.com"
+    }
+    ```
+    - `email` (String): User's email.
+- **Response Body:** `CommonResponse<String>`
+    ```json
+    {
+      "statusCode": "OK",
+      "message": "Kode verifikasi telah dikirim ke email Anda.",
+      "data": null
+    }
+    ```
+
+### 7. Forgot Password
+Initiates the forgot password process by sending a reset link to the user's email.
+
+- **URL:** `/api/auth/forgot-password`
+- **Method:** `POST`
+- **Authentication:** None
+- **Request Body:** `ForgotPasswordRequestDTO`
+    ```json
+    {
+      "email": "user@example.com"
+    }
+    ```
+    - `email` (String): User's email.
+- **Response Body:** `CommonResponse<String>`
+    ```json
+    {
+      "statusCode": "OK",
+      "message": "Jika email terdaftar, link untuk reset password telah dikirim.",
+      "data": null
+    }
+    ```
+
+### 8. Reset Password
+Resets the user's password using a reset token.
+
+- **URL:** `/api/auth/reset-password`
+- **Method:** `POST`
+- **Authentication:** None
+- **Request Body:** `ResetPasswordRequestDTO`
+    ```json
+    {
+      "email": "user@example.com",
+      "resetToken": "some_reset_token",
+      "newPassword": "new_secure_password"
+    }
+    ```
+    - `email` (String): User's email.
+    - `resetToken` (String): The reset token received by email.
+    - `newPassword` (String): The new password for the user.
+- **Response Body:** `CommonResponse<String>`
+    ```json
+    {
+      "statusCode": "OK",
+      "message": "Password berhasil diubah.",
+      "data": null
+    }
+    ```
+
+## Booking Endpoints (`/api/bookings`)
+
+### 1. Create Booking
+Creates a new booking for a service.
+
+- **URL:** `/api/bookings`
+- **Method:** `POST`
+- **Authentication:** Requires Customer token.
+- **Request Body:** `BookingRequestDTO`
+    ```json
+    {
+      "serviceId": "{{service_id}}",
+      "petId": "{{pet_id}}",
+      "bookingDate": "2024-07-10",
+      "bookingTime": "10:00",
+      "notes": "Pet needs extra care"
+    }
+    ```
+    - `serviceId` (UUID): ID of the service being booked.
+    - `petId` (UUID): ID of the pet for which the service is booked.
+    - `bookingDate` (String): Date of the booking in "YYYY-MM-DD" format.
+    - `bookingTime` (String): Time of the booking in "HH:MM" format.
+    - `notes` (String, optional): Any additional notes for the booking.
+- **Response Body:** `BookingResponseDTO`
+    ```json
+    {
+      "statusCode": "CREATED",
+      "message": "Successfully created booking",
+      "data": {
+        "id": "b1o2o3k4-i5n6-7890-1234-567890abcdef",
+        "serviceName": "Grooming Kucing",
+        "petName": "Doggy",
+        "customerName": "Customer User",
+        "businessName": "Intan Grooming House",
+        "bookingDate": "2024-07-10",
+        "bookingTime": "10:00",
+        "status": "PENDING",
+        "notes": "Pet needs extra care",
+        "createdAt": "2024-07-03T10:00:00"
+      }
+    }
+    ```
+    - `id` (UUID): Unique identifier for the booking.
+    - `serviceName` (String): Name of the booked service.
+    - `petName` (String): Name of the pet for the booking.
+    - `customerName` (String): Name of the customer who made the booking.
+    - `businessName` (String): Name of the business providing the service.
+    - `bookingDate` (String): Date of the booking.
+    - `bookingTime` (String): Time of the booking.
+    - `status` (BookingStatus Enum): Current status of the booking (e.g., `PENDING`, `CONFIRMED`, `COMPLETED`, `CANCELLED`).
+    - `notes` (String): Notes for the booking.
+    - `createdAt` (LocalDateTime): Timestamp when the booking was created.
+
+### 2. Get Booking By ID
+Retrieves a specific booking by its ID.
+
+- **URL:** `/api/bookings/{id}`
+- **Method:** `GET`
+- **Authentication:** Requires Customer, Business Owner, or Admin token.
+- **Path Variable:**
+    - `id` (UUID): The ID of the booking to retrieve.
+- **Request Body:** None
+- **Response Body:** `BookingResponseDTO` (Same as Create Booking response)
+
+### 3. Get All Bookings
+Retrieves a paginated list of all bookings.
+
+- **URL:** `/api/bookings`
+- **Method:** `GET`
+- **Authentication:** Requires Customer, Business Owner, or Admin token.
+- **Query Parameters (Pageable):**
+    - `page` (Integer, optional): Page number (0-indexed). Default is 0.
+    - `size` (Integer, optional): Number of items per page. Default is 10.
+    - `sort` (String, optional): Sorting criteria in the format `property,(asc|desc)`. Default is `createdAt,desc`.
+- **Request Body:** None
+- **Response Body:** `CommonResponse<Page<BookingResponseDTO>>`
+    ```json
+    {
+      "statusCode": "OK",
+      "message": "Successfully fetched all bookings",
+      "data": {
+        "content": [
+          // List of BookingResponseDTO objects
+        ],
+        "pageable": {
+          "pageNumber": 0,
+          "pageSize": 10,
+          "sort": {
+            "empty": false,
+            "sorted": true,
+            "unsorted": false
+          },
+          "offset": 0,
+          "paged": true,
+          "unpaged": false
+        },
+        "last": true,
+        "totalPages": 1,
+        "totalElements": 1,
+        "size": 10,
+        "number": 0,
+        "sort": {
+          "empty": false,
+          "sorted": true,
+          "unsorted": false
+        },
+        "first": true,
+        "numberOfElements": 1,
+        "empty": false
+      }
+    }
+    ```
+
+### 4. Update Booking Status
+Updates the status of a specific booking.
+
+- **URL:** `/api/bookings/{id}/status`
+- **Method:** `PUT`
+- **Authentication:** Requires Business Owner token.
+- **Path Variable:**
+    - `id` (UUID): The ID of the booking to update.
+- **Request Body:** `String` (e.g., `"CONFIRMED"`, `"COMPLETED"`, `"CANCELLED"`)
+    ```json
+    "CONFIRMED"
+    ```
+- **Response Body:** `BookingResponseDTO` (Same as Create Booking response)
+
+### 5. Cancel Booking
+Cancels a specific booking.
+
+- **URL:** `/api/bookings/{id}`
+- **Method:** `DELETE`
+- **Authentication:** Requires Customer or Admin token.
+- **Path Variable:**
+    - `id` (UUID): The ID of the booking to cancel.
+- **Request Body:** None
+- **Response Body:** `CommonResponse<Void>`
+    ```json
+    {
+      "statusCode": "OK",
+      "message": "Successfully cancelled booking",
+      "data": null
+    }
+    ```
+
+## Business Endpoints (`/api/business`)
+
+### 1. Register Business
+Registers a new business profile for a business owner.
+
+- **URL:** `/api/business/register`
+- **Method:** `POST`
+- **Authentication:** Requires Business Owner token.
+- **Request Body:** `BusinessRequestDTO`
+    ```json
+    {
+      "name": "My Pet Shop",
+      "address": "456 Pet Lane",
+      "phone": "081234567891",
+      "description": "A friendly pet shop offering various services.",
+      "latitude": -6.2088,
+      "longitude": 106.8456
+    }
+    ```
+    - `name` (String): Name of the business.
+    - `address` (String): Address of the business.
+    - `phone` (String): Phone number of the business.
+    - `description` (String, optional): Description of the business.
+    - `latitude` (Double, optional): Latitude coordinate of the business location.
+    - `longitude` (Double, optional): Longitude coordinate of the business location.
+- **Response Body:** `BusinessResponseDTO`
+    ```json
+    {
+      "statusCode": "CREATED",
+      "message": "Profil bisnis berhasil dibuat",
+      "data": {
+        "id": "b1u2s3i4-n5e6-7890-1234-567890abcdef",
+        "name": "My Pet Shop",
+        "address": "456 Pet Lane",
+        "phone": "081234567891",
+        "description": "A friendly pet shop offering various services.",
+        "latitude": -6.2088,
+        "longitude": 106.8456,
+        "isApproved": false,
+        "ownerName": "Business Owner User"
+      }
+    }
+    ```
+    - `id` (UUID): Unique identifier for the business.
+    - `name` (String): Name of the business.
+    - `address` (String): Address of the business.
+    - `phone` (String): Phone number of the business.
+    - `description` (String): Description of the business.
+    - `latitude` (Double): Latitude coordinate.
+    - `longitude` (Double): Longitude coordinate.
+    - `isApproved` (Boolean): Approval status of the business.
+    - `ownerName` (String): Name of the business owner.
+
+### 2. Approve Business
+Approves or unapproves a business.
+
+- **URL:** `/api/business/{id}`
+- **Method:** `PATCH`
+- **Authentication:** Requires Admin token.
+- **Path Variable:**
+    - `id` (UUID): The ID of the business to approve/unapprove.
+- **Request Body:** `Map<String, Boolean>`
+    ```json
+    {
+      "approve": true
+    }
+    ```
+    - `approve` (Boolean): `true` to approve, `false` to unapprove.
+- **Response Body:** `BusinessResponseDTO` (Same as Register Business response)
+
+### 3. View All Businesses
+Retrieves a list of all registered businesses.
+
+- **URL:** `/api/business`
+- **Method:** `GET`
+- **Authentication:** Requires Admin token.
+- **Request Body:** None
+- **Response Body:** `CommonResponse<List<BusinessResponseDTO>>`
+    ```json
+    {
+      "statusCode": "OK",
+      "message": "Profil bisnis didapatkan",
+      "data": [
+        // List of BusinessResponseDTO objects
+      ]
+    }
+    ```
+
+### 4. View My Business
+Retrieves a list of businesses owned by the authenticated business owner.
+
+- **URL:** `/api/business/my-business`
+- **Method:** `GET`
+- **Authentication:** Requires authenticated user token (implicitly, likely Business Owner).
+- **Request Body:** None
+- **Response Body:** `CommonResponse<List<BusinessResponseDTO>>` (Same as View All Businesses response)
+
 ## Order Endpoints (`/api/orders`)
 
 ### 1. Checkout
@@ -112,6 +551,146 @@ Retrieves a paginated list of orders for the authenticated customer.
         "numberOfElements": 1,
         "empty": false
       }
+    }
+    ```
+
+## Review Endpoints (`/api/reviews`)
+
+### 1. Create Review
+Creates a new review for a product or service.
+
+- **URL:** `/api/reviews`
+- **Method:** `POST`
+- **Authentication:** Requires Customer token.
+- **Request Body:** `ReviewRequestDTO`
+    ```json
+    {
+      "productId": "{{product_id}}",
+      "serviceId": null,
+      "rating": 5,
+      "comment": "Excellent product, my pet loves it!"
+    }
+    ```
+    - `productId` (UUID, optional): ID of the product being reviewed.
+    - `serviceId` (UUID, optional): ID of the service being reviewed.
+    - `rating` (Integer): Rating from 1 to 5.
+    - `comment` (String, optional): Review comment.
+- **Response Body:** `ReviewResponseDTO`
+    ```json
+    {
+      "statusCode": "CREATED",
+      "message": "Successfully submitted review",
+      "data": {
+        "id": "r1e2v3i4-e5w6-7890-1234-567890abcdef",
+        "productId": "p1q2r3s4-t5u6-7890-1234-567890abcdef",
+        "serviceId": null,
+        "customerName": "Customer User",
+        "rating": 5,
+        "comment": "Excellent product, my pet loves it!",
+        "createdAt": "2024-07-03T10:00:00"
+      }
+    }
+    ```
+    - `id` (UUID): Unique identifier for the review.
+    - `productId` (UUID): ID of the reviewed product.
+    - `serviceId` (UUID): ID of the reviewed service.
+    - `customerName` (String): Name of the customer who submitted the review.
+    - `rating` (Integer): Rating given.
+    - `comment` (String): Review comment.
+    - `createdAt` (LocalDateTime): Timestamp when the review was created.
+
+### 2. Get All Reviews
+Retrieves a paginated list of all reviews.
+
+- **URL:** `/api/reviews`
+- **Method:** `GET`
+- **Authentication:** None
+- **Query Parameters (Pageable):**
+    - `page` (Integer, optional): Page number (0-indexed). Default is 0.
+    - `size` (Integer, optional): Number of items per page. Default is 10.
+    - `sort` (String, optional): Sorting criteria in the format `property,(asc|desc)`. Default is `createdAt,desc`.
+- **Request Body:** None
+- **Response Body:** `CommonResponse<Page<ReviewResponseDTO>>`
+    ```json
+    {
+      "statusCode": "OK",
+      "message": "Successfully fetched all reviews",
+      "data": {
+        "content": [
+          // List of ReviewResponseDTO objects
+        ],
+        "pageable": {
+          "pageNumber": 0,
+          "pageSize": 10,
+          "sort": {
+            "empty": false,
+            "sorted": true,
+            "unsorted": false
+          },
+          "offset": 0,
+          "paged": true,
+          "unpaged": false
+        },
+        "last": true,
+        "totalPages": 1,
+        "totalElements": 1,
+        "size": 10,
+        "number": 0,
+        "sort": {
+          "empty": false,
+          "sorted": true,
+          "unsorted": false
+        },
+        "first": true,
+        "numberOfElements": 1,
+        "empty": false
+      }
+    }
+    ```
+
+### 3. Get Review By ID
+Retrieves a specific review by its ID.
+
+- **URL:** `/api/reviews/{id}`
+- **Method:** `GET`
+- **Authentication:** None
+- **Path Variable:**
+    - `id` (UUID): The ID of the review to retrieve.
+- **Request Body:** None
+- **Response Body:** `ReviewResponseDTO` (Same as Create Review response)
+
+### 4. Update Review
+Updates an existing review.
+
+- **URL:** `/api/reviews/{id}`
+- **Method:** `PUT`
+- **Authentication:** Requires Customer token.
+- **Path Variable:**
+    - `id` (UUID): The ID of the review to update.
+- **Request Body:** `ReviewRequestDTO` (All fields are optional for update, but typically you'd send the fields you want to change)
+    ```json
+    {
+      "rating": 4,
+      "comment": "Good product, but could be better."
+    }
+    ```
+- **Response Body:** `ReviewResponseDTO` (Same as Create Review response)
+
+### 5. Delete Review
+Deletes a review by its ID.
+
+- **URL:** `/api/reviews/{id}`
+- **Method:** `DELETE`
+- **Authentication:** Requires Customer or Admin token.
+- **Path Variable:**
+    - `id` (UUID): The ID of the review to delete.
+- **Request Body:** None
+- **Response Body:** `CommonResponse<Void>`
+    ```json
+    {
+      "statusCode": "OK",
+      "message": "Successfully deleted review",
+      "data": null
     }
     ```
 
