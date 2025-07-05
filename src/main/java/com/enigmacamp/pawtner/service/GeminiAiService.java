@@ -71,7 +71,7 @@ public class GeminiAiService {
                 "Provide factual, helpful, and concise information. " +
                 "IMPORTANT: Do not provide any medical advice, diagnosis, or treatment suggestions. " +
                 "If a question seems medical, gently refuse and recommend consulting a professional veterinarian. " +
-                "Answer in Indonesian.";
+                "answer the question with the same language as the question";
 
         String fullMessage = systemInstruction + "\n\nUser Question: " + userMessage;
 
