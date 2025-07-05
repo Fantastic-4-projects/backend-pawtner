@@ -1,1443 +1,518 @@
-
-## Auth Endpoints (`/api/auth`)
-
-### 1. Register Customer
-Registers a new customer account.
-
-- **URL:** `/api/auth/register/customer`
-- **Method:** `POST`
-- **Authentication:** None
-- **Request Body:** `RegisterRequestDTO`
-    ```json
-    {
-      "email": "newcustomer@example.com",
-      "password": "password123",
-      "name": "New Customer",
-      "address": "123 Customer St",
-      "phone": "081234567890"
-    }
-    ```
-    - `email` (String): User's email address.
-    - `password` (String): User's password.
-    - `name` (String): User's full name.
-    - `address` (String): User's address.
-    - `phone` (String): User's phone number.
-- **Response Body:** `RegisterResponseDTO`
-    ```json
-    {
-      "statusCode": "CREATED",
-      "message": "Selamat datang di Pawtner. Kode verifikasi telah dikirim ke email Anda.",
-      "data": {
-        "id": "u1s2e3r4-i5d6-7890-1234-567890abcdef",
-        "email": "newcustomer@example.com",
-        "name": "New Customer"
-      }
-    }
-    ```
-    - `id` (UUID): Unique identifier for the registered user.
-    - `email` (String): Registered user's email.
-    - `name` (String): Registered user's name.
-
-### 2. Register Business Owner
-Registers a new business owner account.
-
-- **URL:** `/api/auth/register/business-owner`
-- **Method:** `POST`
-- **Authentication:** None
-- **Request Body:** `RegisterRequestDTO` (Same as Register Customer)
-- **Response Body:** `RegisterResponseDTO` (Same as Register Customer)
-
-### 3. Login
-Authenticates a user and returns a JWT token.
-
-- **URL:** `/api/auth/login`
-- **Method:** `POST`
-- **Authentication:** None
-- **Request Body:** `LoginRequestDTO`
-    ```json
-    {
-      "email": "user@example.com",
-      "password": "password123"
-    }
-    ```
-    - `email` (String): User's email address.
-    - `password` (String): User's password.
-- **Response Body:** `LoginResponseDTO`
-    ```json
-    {
-      "statusCode": "OK",
-      "message": "Anda berhasil login.",
-      "data": {
-        "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
-        "email": "user@example.com",
-        "role": "CUSTOMER"
-      }
-    }
-    ```
-    - `token` (String): JWT authentication token.
-    - `email` (String): User's email.
-    - `role` (UserRole Enum): User's role.
-
-### 4. Set User Role
-Sets or updates the role of a user.
-
-- **URL:** `/api/auth/user/set-role`
-- **Method:** `PATCH`
-- **Authentication:** Requires authenticated user token.
-- **Request Body:** `RegisterRequestDTO` (Only `email` and `role` might be relevant here, but the controller uses the full DTO)
-    ```json
-    {
-      "email": "user@example.com",
-      "role": "BUSINESS_OWNER"
-    }
-    ```
-    - `email` (String): User's email.
-    - `role` (UserRole Enum): The new role to set for the user.
-- **Response Body:** `CommonResponse<UserRole>`
-    ```json
-    {
-      "statusCode": "OK",
-      "message": "Role berhasil diubah.",
-      "data": "BUSINESS_OWNER"
-    }
-    ```
-
-### 5. Verify Account
-Verifies a user's account using a verification code.
-
-- **URL:** `/api/auth/verify`
-- **Method:** `POST`
-- **Authentication:** None
-- **Request Body:** `VerificationRequestDTO`
-    ```json
-    {
-      "email": "user@example.com",
-      "verificationCode": "123456"
-    }
-    ```
-    - `email` (String): User's email.
-    - `verificationCode` (String): The verification code received by email.
-- **Response Body:** `CommonResponse<String>`
-    ```json
-    {
-      "statusCode": "OK",
-      "message": "Akun berhasil diverifikasi.",
-      "data": null
-    }
-    ```
-
-### 6. Resend Verification Code
-Resends a verification code to the user's email.
-
-- **URL:** `/api/auth/resend-verification`
-- **Method:** `POST`
-- **Authentication:** None
-- **Request Body:** `ResendVerificationRequestDTO`
-    ```json
-    {
-      "email": "user@example.com"
-    }
-    ```
-    - `email` (String): User's email.
-- **Response Body:** `CommonResponse<String>`
-    ```json
-    {
-      "statusCode": "OK",
-      "message": "Kode verifikasi telah dikirim ke email Anda.",
-      "data": null
-    }
-    ```
-
-### 7. Forgot Password
-Initiates the forgot password process by sending a reset link to the user's email.
-
-- **URL:** `/api/auth/forgot-password`
-- **Method:** `POST`
-- **Authentication:** None
-- **Request Body:** `ForgotPasswordRequestDTO`
-    ```json
-    {
-      "email": "user@example.com"
-    }
-    ```
-    - `email` (String): User's email.
-- **Response Body:** `CommonResponse<String>`
-    ```json
-    {
-      "statusCode": "OK",
-      "message": "Jika email terdaftar, link untuk reset password telah dikirim.",
-      "data": null
-    }
-    ```
-
-### 8. Reset Password
-Resets the user's password using a reset token.
-
-- **URL:** `/api/auth/reset-password`
-- **Method:** `POST`
-- **Authentication:** None
-- **Request Body:** `ResetPasswordRequestDTO`
-    ```json
-    {
-      "email": "user@example.com",
-      "resetToken": "some_reset_token",
-      "newPassword": "new_secure_password"
-    }
-    ```
-    - `email` (String): User's email.
-    - `resetToken` (String): The reset token received by email.
-    - `newPassword` (String): The new password for the user.
-- **Response Body:** `CommonResponse<String>`
-    ```json
-    {
-      "statusCode": "OK",
-      "message": "Password berhasil diubah.",
-      "data": null
-    }
-    ```
-
-## Booking Endpoints (`/api/bookings`)
-
-### 1. Create Booking
-Creates a new booking for a service.
-
-- **URL:** `/api/bookings`
-- **Method:** `POST`
-- **Authentication:** Requires Customer token.
-- **Request Body:** `BookingRequestDTO`
-    ```json
-    {
-      "serviceId": "{{service_id}}",
-      "petId": "{{pet_id}}",
-      "bookingDate": "2024-07-10",
-      "bookingTime": "10:00",
-      "notes": "Pet needs extra care"
-    }
-    ```
-    - `serviceId` (UUID): ID of the service being booked.
-    - `petId` (UUID): ID of the pet for which the service is booked.
-    - `bookingDate` (String): Date of the booking in "YYYY-MM-DD" format.
-    - `bookingTime` (String): Time of the booking in "HH:MM" format.
-    - `notes` (String, optional): Any additional notes for the booking.
-- **Response Body:** `BookingResponseDTO`
-    ```json
-    {
-      "statusCode": "CREATED",
-      "message": "Successfully created booking",
-      "data": {
-        "id": "b1o2o3k4-i5n6-7890-1234-567890abcdef",
-        "serviceName": "Grooming Kucing",
-        "petName": "Doggy",
-        "customerName": "Customer User",
-        "businessName": "Intan Grooming House",
-        "bookingDate": "2024-07-10",
-        "bookingTime": "10:00",
-        "status": "PENDING",
-        "notes": "Pet needs extra care",
-        "createdAt": "2024-07-03T10:00:00"
-      }
-    }
-    ```
-    - `id` (UUID): Unique identifier for the booking.
-    - `serviceName` (String): Name of the booked service.
-    - `petName` (String): Name of the pet for the booking.
-    - `customerName` (String): Name of the customer who made the booking.
-    - `businessName` (String): Name of the business providing the service.
-    - `bookingDate` (String): Date of the booking.
-    - `bookingTime` (String): Time of the booking.
-    - `status` (BookingStatus Enum): Current status of the booking (e.g., `PENDING`, `CONFIRMED`, `COMPLETED`, `CANCELLED`).
-    - `notes` (String): Notes for the booking.
-    - `createdAt` (LocalDateTime): Timestamp when the booking was created.
-
-### 2. Get Booking By ID
-Retrieves a specific booking by its ID.
-
-- **URL:** `/api/bookings/{id}`
-- **Method:** `GET`
-- **Authentication:** Requires Customer, Business Owner, or Admin token.
-- **Path Variable:**
-    - `id` (UUID): The ID of the booking to retrieve.
-- **Request Body:** None
-- **Response Body:** `BookingResponseDTO` (Same as Create Booking response)
-
-### 3. Get All Bookings
-Retrieves a paginated list of all bookings.
-
-- **URL:** `/api/bookings`
-- **Method:** `GET`
-- **Authentication:** Requires Customer, Business Owner, or Admin token.
-- **Query Parameters (Pageable):**
-    - `page` (Integer, optional): Page number (0-indexed). Default is 0.
-    - `size` (Integer, optional): Number of items per page. Default is 10.
-    - `sort` (String, optional): Sorting criteria in the format `property,(asc|desc)`. Default is `createdAt,desc`.
-- **Request Body:** None
-- **Response Body:** `CommonResponse<Page<BookingResponseDTO>>`
-    ```json
-    {
-      "statusCode": "OK",
-      "message": "Successfully fetched all bookings",
-      "data": {
-        "content": [
-          // List of BookingResponseDTO objects
-        ],
-        "pageable": {
-          "pageNumber": 0,
-          "pageSize": 10,
-          "sort": {
-            "empty": false,
-            "sorted": true,
-            "unsorted": false
-          },
-          "offset": 0,
-          "paged": true,
-          "unpaged": false
-        },
-        "last": true,
-        "totalPages": 1,
-        "totalElements": 1,
-        "size": 10,
-        "number": 0,
-        "sort": {
-          "empty": false,
-          "sorted": true,
-          "unsorted": false
-        },
-        "first": true,
-        "numberOfElements": 1,
-        "empty": false
-      }
-    }
-    ```
-
-### 4. Update Booking Status
-Updates the status of a specific booking.
-
-- **URL:** `/api/bookings/{id}/status`
-- **Method:** `PUT`
-- **Authentication:** Requires Business Owner token.
-- **Path Variable:**
-    - `id` (UUID): The ID of the booking to update.
-- **Request Body:** `String` (e.g., `"CONFIRMED"`, `"COMPLETED"`, `"CANCELLED"`)
-    ```json
-    "CONFIRMED"
-    ```
-- **Response Body:** `BookingResponseDTO` (Same as Create Booking response)
-
-### 5. Cancel Booking
-Cancels a specific booking.
-
-- **URL:** `/api/bookings/{id}`
-- **Method:** `DELETE`
-- **Authentication:** Requires Customer or Admin token.
-- **Path Variable:**
-    - `id` (UUID): The ID of the booking to cancel.
-- **Request Body:** None
-- **Response Body:** `CommonResponse<Void>`
-    ```json
-    {
-      "statusCode": "OK",
-      "message": "Successfully cancelled booking",
-      "data": null
-    }
-    ```
-
-## Business Endpoints (`/api/business`)
-
-### 1. Register Business
-Registers a new business profile for a business owner.
-
-- **URL:** `/api/business/register`
-- **Method:** `POST`
-- **Authentication:** Requires Business Owner token.
-- **Request Body:** `BusinessRequestDTO`
-    ```json
-    {
-      "name": "My Pet Shop",
-      "address": "456 Pet Lane",
-      "phone": "081234567891",
-      "description": "A friendly pet shop offering various services.",
-      "latitude": -6.2088,
-      "longitude": 106.8456
-    }
-    ```
-    - `name` (String): Name of the business.
-    - `address` (String): Address of the business.
-    - `phone` (String): Phone number of the business.
-    - `description` (String, optional): Description of the business.
-    - `latitude` (Double, optional): Latitude coordinate of the business location.
-    - `longitude` (Double, optional): Longitude coordinate of the business location.
-- **Response Body:** `BusinessResponseDTO`
-    ```json
-    {
-      "statusCode": "CREATED",
-      "message": "Profil bisnis berhasil dibuat",
-      "data": {
-        "id": "b1u2s3i4-n5e6-7890-1234-567890abcdef",
-        "name": "My Pet Shop",
-        "address": "456 Pet Lane",
-        "phone": "081234567891",
-        "description": "A friendly pet shop offering various services.",
-        "latitude": -6.2088,
-        "longitude": 106.8456,
-        "isApproved": false,
-        "ownerName": "Business Owner User"
-      }
-    }
-    ```
-    - `id` (UUID): Unique identifier for the business.
-    - `name` (String): Name of the business.
-    - `address` (String): Address of the business.
-    - `phone` (String): Phone number of the business.
-    - `description` (String): Description of the business.
-    - `latitude` (Double): Latitude coordinate.
-    - `longitude` (Double): Longitude coordinate.
-    - `isApproved` (Boolean): Approval status of the business.
-    - `ownerName` (String): Name of the business owner.
-
-### 2. Approve Business
-Approves or unapproves a business.
-
-- **URL:** `/api/business/{id}`
-- **Method:** `PATCH`
-- **Authentication:** Requires Admin token.
-- **Path Variable:**
-    - `id` (UUID): The ID of the business to approve/unapprove.
-- **Request Body:** `Map<String, Boolean>`
-    ```json
-    {
-      "approve": true
-    }
-    ```
-    - `approve` (Boolean): `true` to approve, `false` to unapprove.
-- **Response Body:** `BusinessResponseDTO` (Same as Register Business response)
-
-### 3. View All Businesses
-Retrieves a list of all registered businesses.
-
-- **URL:** `/api/business`
-- **Method:** `GET`
-- **Authentication:** Requires Admin token.
-- **Request Body:** None
-- **Response Body:** `CommonResponse<List<BusinessResponseDTO>>`
-    ```json
-    {
-      "statusCode": "OK",
-      "message": "Profil bisnis didapatkan",
-      "data": [
-        // List of BusinessResponseDTO objects
-      ]
-    }
-    ```
-
-### 4. View My Business
-Retrieves a list of businesses owned by the authenticated business owner.
-
-- **URL:** `/api/business/my-business`
-- **Method:** `GET`
-- **Authentication:** Requires authenticated user token (implicitly, likely Business Owner).
-- **Request Body:** None
-- **Response Body:** `CommonResponse<List<BusinessResponseDTO>>` (Same as View All Businesses response)
-
-## Order Endpoints (`/api/orders`)
-
-### 1. Checkout
-Creates an order from the user's shopping cart.
-
-- **URL:** `/api/orders/checkout`
-- **Method:** `POST`
-- **Authentication:** Requires Customer token.
-- **Request Body:** None
-- **Response Body:** `OrderResponseDTO`
-    ```json
-    {
-      "statusCode": "CREATED",
-      "message": "Order created successfully",
-      "data": {
-        "id": "a1b2c3d4-e5f6-7890-1234-567890abcdef",
-        "orderNumber": "ORD-20240703-0001",
-        "customerId": "c1d2e3f4-g5h6-7890-1234-567890abcdef",
-        "customerName": "Customer User",
-        "businessId": "b1c2d3e4-f5g6-7890-1234-567890abcdef",
-        "businessName": "Intan Grooming House",
-        "totalAmount": 150000.00,
-        "status": "PENDING",
-        "createdAt": "2024-07-03T10:00:00",
-        "items": [
-          {
-            "id": "i1j2k3l4-m5n6-7890-1234-567890abcdef",
-            "productId": "p1q2r3s4-t5u6-7890-1234-567890abcdef",
-            "productName": "Royal Canin Adult",
-            "quantity": 1,
-            "pricePerUnit": 150000.00,
-            "subTotal": 150000.00
-          }
-        ],
-        "snapToken": "a_midtrans_snap_token"
-      }
-    }
-    ```
-    - `id` (UUID): Unique identifier for the order.
-    - `orderNumber` (String): Unique order number.
-    - `customerId` (UUID): ID of the customer who placed the order.
-    - `customerName` (String): Name of the customer.
-    - `businessId` (UUID): ID of the business associated with the order.
-    - `businessName` (String): Name of the business.
-    - `totalAmount` (BigDecimal): Total amount of the order.
-    - `status` (OrderStatus Enum): Current status of the order (e.g., `PENDING`, `COMPLETED`, `CANCELLED`).
-    - `createdAt` (LocalDateTime): Timestamp when the order was created.
-    - `items` (List<OrderItemResponseDTO>): List of items in the order.
-        - `id` (UUID): Unique identifier for the order item.
-        - `productId` (UUID): ID of the product.
-        - `productName` (String): Name of the product.
-        - `quantity` (Integer): Quantity of the product.
-        - `pricePerUnit` (BigDecimal): Price per unit of the product.
-        - `subTotal` (BigDecimal): Subtotal for the order item.
-    - `snapToken` (String): Midtrans Snap token for payment (if applicable).
-
-### 2. Get Order By ID
-Retrieves a specific order by its ID.
-
-- **URL:** `/api/orders/{order_id}`
-- **Method:** `GET`
-- **Authentication:** Requires Customer, Business Owner, or Admin token.
-- **Path Variable:**
-    - `order_id` (UUID): The ID of the order to retrieve.
-- **Request Body:** None
-- **Response Body:** `OrderResponseDTO` (Same as Checkout response)
-
-### 3. Get My Orders
-Retrieves a paginated list of orders for the authenticated customer.
-
-- **URL:** `/api/orders`
-- **Method:** `GET`
-- **Authentication:** Requires Customer token.
-- **Query Parameters (Pageable):**
-    - `page` (Integer, optional): Page number (0-indexed). Default is 0.
-    - `size` (Integer, optional): Number of items per page. Default is 10.
-    - `sort` (String, optional): Sorting criteria in the format `property,(asc|desc)`. Default is `createdAt,desc`.
-- **Request Body:** None
-- **Response Body:** `CommonResponse<Page<OrderResponseDTO>>`
-    ```json
-    {
-      "statusCode": "OK",
-      "message": "Successfully fetched all orders",
-      "data": {
-        "content": [
-          // List of OrderResponseDTO objects
-        ],
-        "pageable": {
-          "pageNumber": 0,
-          "pageSize": 10,
-          "sort": {
-            "empty": false,
-            "sorted": true,
-            "unsorted": false
-          },
-          "offset": 0,
-          "paged": true,
-          "unpaged": false
-        },
-        "last": true,
-        "totalPages": 1,
-        "totalElements": 1,
-        "size": 10,
-        "number": 0,
-        "sort": {
-          "empty": false,
-          "sorted": true,
-          "unsorted": false
-        },
-        "first": true,
-        "numberOfElements": 1,
-        "empty": false
-      }
-    }
-    ```
-
-## Review Endpoints (`/api/reviews`)
-
-### 1. Create Review
-Creates a new review for a product or service.
-
-- **URL:** `/api/reviews`
-- **Method:** `POST`
-- **Authentication:** Requires Customer token.
-- **Request Body:** `ReviewRequestDTO`
-    ```json
-    {
-      "productId": "{{product_id}}",
-      "serviceId": null,
-      "rating": 5,
-      "comment": "Excellent product, my pet loves it!"
-    }
-    ```
-    - `productId` (UUID, optional): ID of the product being reviewed.
-    - `serviceId` (UUID, optional): ID of the service being reviewed.
-    - `rating` (Integer): Rating from 1 to 5.
-    - `comment` (String, optional): Review comment.
-- **Response Body:** `ReviewResponseDTO`
-    ```json
-    {
-      "statusCode": "CREATED",
-      "message": "Successfully submitted review",
-      "data": {
-        "id": "r1e2v3i4-e5w6-7890-1234-567890abcdef",
-        "productId": "p1q2r3s4-t5u6-7890-1234-567890abcdef",
-        "serviceId": null,
-        "customerName": "Customer User",
-        "rating": 5,
-        "comment": "Excellent product, my pet loves it!",
-        "createdAt": "2024-07-03T10:00:00"
-      }
-    }
-    ```
-    - `id` (UUID): Unique identifier for the review.
-    - `productId` (UUID): ID of the reviewed product.
-    - `serviceId` (UUID): ID of the reviewed service.
-    - `customerName` (String): Name of the customer who submitted the review.
-    - `rating` (Integer): Rating given.
-    - `comment` (String): Review comment.
-    - `createdAt` (LocalDateTime): Timestamp when the review was created.
-
-### 2. Get All Reviews
-Retrieves a paginated list of all reviews.
-
-- **URL:** `/api/reviews`
-- **Method:** `GET`
-- **Authentication:** None
-- **Query Parameters (Pageable):**
-    - `page` (Integer, optional): Page number (0-indexed). Default is 0.
-    - `size` (Integer, optional): Number of items per page. Default is 10.
-    - `sort` (String, optional): Sorting criteria in the format `property,(asc|desc)`. Default is `createdAt,desc`.
-- **Request Body:** None
-- **Response Body:** `CommonResponse<Page<ReviewResponseDTO>>`
-    ```json
-    {
-      "statusCode": "OK",
-      "message": "Successfully fetched all reviews",
-      "data": {
-        "content": [
-          // List of ReviewResponseDTO objects
-        ],
-        "pageable": {
-          "pageNumber": 0,
-          "pageSize": 10,
-          "sort": {
-            "empty": false,
-            "sorted": true,
-            "unsorted": false
-          },
-          "offset": 0,
-          "paged": true,
-          "unpaged": false
-        },
-        "last": true,
-        "totalPages": 1,
-        "totalElements": 1,
-        "size": 10,
-        "number": 0,
-        "sort": {
-          "empty": false,
-          "sorted": true,
-          "unsorted": false
-        },
-        "first": true,
-        "numberOfElements": 1,
-        "empty": false
-      }
-    }
-    ```
-
-### 3. Get Review By ID
-Retrieves a specific review by its ID.
-
-- **URL:** `/api/reviews/{id}`
-- **Method:** `GET`
-- **Authentication:** None
-- **Path Variable:**
-    - `id` (UUID): The ID of the review to retrieve.
-- **Request Body:** None
-- **Response Body:** `ReviewResponseDTO` (Same as Create Review response)
-
-### 4. Update Review
-Updates an existing review.
-
-- **URL:** `/api/reviews/{id}`
-- **Method:** `PUT`
-- **Authentication:** Requires Customer token.
-- **Path Variable:**
-    - `id` (UUID): The ID of the review to update.
-- **Request Body:** `ReviewRequestDTO` (All fields are optional for update, but typically you'd send the fields you want to change)
-    ```json
-    {
-      "rating": 4,
-      "comment": "Good product, but could be better."
-    }
-    ```
-- **Response Body:** `ReviewResponseDTO` (Same as Create Review response)
-
-### 5. Delete Review
-Deletes a review by its ID.
-
-- **URL:** `/api/reviews/{id}`
-- **Method:** `DELETE`
-- **Authentication:** Requires Customer or Admin token.
-- **Path Variable:**
-    - `id` (UUID): The ID of the review to delete.
-- **Request Body:** None
-- **Response Body:** `CommonResponse<Void>`
-    ```json
-    {
-      "statusCode": "OK",
-      "message": "Successfully deleted review",
-      "data": null
-    }
-    ```
-
-## Payment Endpoints (`/api/payments`)
-
-### 1. Payment Webhook
-Handles incoming payment webhooks from the payment gateway (e.g., Midtrans).
-
-- **URL:** `/api/payments/webhook`
-- **Method:** `POST`
-- **Authentication:** None (This endpoint is typically secured by the payment gateway's own mechanisms, e.g., IP whitelisting or signature verification, which are handled internally by the backend).
-- **Request Body:** `Map<String, Object>` (The structure depends on the payment gateway. Below is an example for Midtrans.)
-    ```json
-    {
-      "transaction_time": "2024-07-03 10:30:00",
-      "transaction_status": "settlement",
-      "transaction_id": "a1b2c3d4-e5f6-7890-1234-567890abcdef",
-      "status_message": "Success, transaction is settled",
-      "status_code": "200",
-      "signature_key": "your_signature_key",
-      "payment_type": "bank_transfer",
-      "order_id": "ORD-20240703-0001",
-      "merchant_id": "your_merchant_id",
-      "gross_amount": "150000.00",
-      "fraud_status": "accept",
-      "currency": "IDR"
-    }
-    ```
-    - The fields in the request body will vary based on the payment gateway's webhook payload. The backend will parse this map.
-- **Response Body:** `CommonResponse<String>`
-    ```json
-    {
-      "statusCode": "OK",
-      "message": "Webhook received",
-      "data": null
-    }
-    ```
-
-## Pet Endpoints (`/api/pets`)
-
-### 1. Create Pet
-Registers a new pet for the authenticated customer.
-
-- **URL:** `/api/pets`
-- **Method:** `POST`
-- **Authentication:** Requires Customer token.
-- **Request Body:** `PetRequestDTO`
-    ```json
-    {
-      "name": "Doggy",
-      "species": "Dog",
-      "breed": "Golden Retriever",
-      "gender": "MALE",
-      "dateOfBirth": "2022-01-15",
-      "colour": "Golden",
-      "weight": 25.5
-    }
-    ```
-    - `name` (String): Name of the pet.
-    - `species` (String): Species of the pet (e.g., "Dog", "Cat").
-    - `breed` (String): Breed of the pet.
-    - `gender` (String Enum): Gender of the pet (e.g., "MALE", "FEMALE").
-    - `dateOfBirth` (String): Date of birth of the pet in "YYYY-MM-DD" format.
-    - `colour` (String): Color of the pet.
-    - `weight` (Double): Weight of the pet.
-- **Response Body:** `PetResponseDTO`
-    ```json
-    {
-      "statusCode": "CREATED",
-      "message": "Successfully created pet",
-      "data": {
-        "id": "p1e2t3i4-d5e6-7890-1234-567890abcdef",
-        "name": "Doggy",
-        "species": "Dog",
-        "breed": "Golden Retriever",
-        "age": 2,
-        "imageUrl": null,
-        "notes": null,
-        "ownerName": "Customer User"
-      }
-    }
-    ```
-    - `id` (UUID): Unique identifier for the pet.
-    - `name` (String): Name of the pet.
-    - `species` (String): Species of the pet.
-    - `breed` (String): Breed of the pet.
-    - `age` (Integer): Age of the pet in years.
-    - `imageUrl` (String): URL of the pet's image.
-    - `notes` (String): Additional notes about the pet.
-    - `ownerName` (String): Name of the pet's owner.
-
-### 2. Get Pet By ID
-Retrieves a specific pet by its ID.
-
-- **URL:** `/api/pets/{id}`
-- **Method:** `GET`
-- **Authentication:** Requires Customer, Business Owner, or Admin token.
-- **Path Variable:**
-    - `id` (UUID): The ID of the pet to retrieve.
-- **Request Body:** None
-- **Response Body:** `PetResponseDTO` (Same as Create Pet response)
-
-### 3. Get My Pets
-Retrieves a paginated list of pets owned by the authenticated customer.
-
-- **URL:** `/api/pets`
-- **Method:** `GET`
-- **Authentication:** Requires Customer token.
-- **Query Parameters (Pageable):**
-    - `page` (Integer, optional): Page number (0-indexed). Default is 0.
-    - `size` (Integer, optional): Number of items per page. Default is 10.
-    - `sort` (String, optional): Sorting criteria in the format `property,(asc|desc)`. Default is `id,asc`.
-- **Request Body:** None
-- **Response Body:** `CommonResponse<Page<PetResponseDTO>>` (Similar to Get My Orders response structure, but with `PetResponseDTO` content)
-
-### 4. Update Pet
-Updates an existing pet's information.
-
-- **URL:** `/api/pets/{id}`
-- **Method:** `PUT`
-- **Authentication:** Requires Customer token.
-- **Path Variable:**
-    - `id` (UUID): The ID of the pet to update.
-- **Request Body:** `PetRequestDTO` (All fields are optional for update, but typically you'd send the fields you want to change)
-    ```json
-    {
-      "name": "Doggy Updated",
-      "species": "Dog",
-      "breed": "Golden Retriever",
-      "gender": "MALE",
-      "dateOfBirth": "2022-01-15",
-      "colour": "Dark Golden",
-      "weight": 26.0
-    }
-    ```
-- **Response Body:** `PetResponseDTO` (Same as Create Pet response)
-
-### 5. Delete Pet
-Deletes a pet by its ID.
-
-- **URL:** `/api/pets/{id}`
-- **Method:** `DELETE`
-- **Authentication:** Requires Customer token.
-- **Path Variable:**
-    - `id` (UUID): The ID of the pet to delete.
-- **Request Body:** None
-- **Response Body:** `CommonResponse<Void>`
-    ```json
-    {
-      "statusCode": "OK",
-      "message": "Successfully deleted pet",
-      "data": null
-    }
-    ```
-
-## Prescription Endpoints (`/api/prescriptions`)
-
-### 1. Create Prescription
-Creates a new prescription.
-
-- **URL:** `/api/prescriptions`
-- **Method:** `POST`
-- **Authentication:** Requires Business Owner or Admin token.
-- **Request Body:** `PrescriptionRequestDTO`
-    ```json
-    {
-      "petId": "{{pet_id}}",
-      "issuingBusinessId": "{{business_id}}",
-      "issueDate": "2024-07-03",
-      "notes": "Daily medication for pet",
-      "prescriptionItems": [
-        {
-          "medicationName": "Medication A",
-          "dosage": "10mg",
-          "frequency": "Once daily",
-          "durationDays": 30,
-          "instructions": "Give with food"
-        },
-        {
-          "medicationName": "Medication B",
-          "dosage": "5ml",
-          "frequency": "Twice daily",
-          "durationDays": 15,
-          "instructions": "Administer orally"
-        }
-      ]
-    }
-    ```
-    - `petId` (String): ID of the pet for which the prescription is issued.
-    - `issuingBusinessId` (String): ID of the business issuing the prescription.
-    - `issueDate` (String): Date the prescription was issued in "YYYY-MM-DD" format.
-    - `notes` (String, optional): Any additional notes for the prescription.
-    - `prescriptionItems` (List<PrescriptionItemRequestDTO>): List of medication items in the prescription.
-        - `medicationName` (String): Name of the medication.
-        - `dosage` (String): Dosage of the medication (e.g., "10mg", "5ml").
-        - `frequency` (String): Frequency of medication (e.g., "Once daily", "Twice daily").
-        - `durationDays` (Integer): Duration of medication in days.
-        - `instructions` (String, optional): Specific instructions for administering the medication.
-- **Response Body:** `PrescriptionResponseDTO`
-    ```json
-    {
-      "statusCode": "CREATED",
-      "message": "Successfully created prescription",
-      "data": {
-        "id": "p1r2e3s4-c5r6-7890-1234-567890abcdef",
-        "pet": {
-          "id": "{{pet_id}}",
-          "name": "Doggy"
-        },
-        "issuingBusiness": {
-          "businessId": "{{business_id}}",
-          "businessName": "Intan Grooming House"
-        },
-        "issueDate": "2024-07-03",
-        "notes": "Daily medication for pet",
-        "prescriptionItems": [
-          {
-            "id": "item1-id",
-            "medicationName": "Medication A",
-            "dosage": "10mg",
-            "frequency": "Once daily",
-            "durationDays": 30,
-            "instructions": "Give with food"
-          },
-          {
-            "id": "item2-id",
-            "medicationName": "Medication B",
-            "dosage": "5ml",
-            "frequency": "Twice daily",
-            "durationDays": 15,
-            "instructions": "Administer orally"
-          }
-        ],
-        "createdAt": "2024-07-03T10:00:00"
-      }
-    }
-    ```
-    - `id` (String): Unique identifier for the prescription.
-    - `pet` (PetResponseDTO): Details of the pet.
-        - `id` (String): ID of the pet.
-        - `name` (String): Name of the pet.
-    - `issuingBusiness` (BusinessResponseDTO): Details of the issuing business.
-        - `businessId` (String): ID of the business.
-        - `businessName` (String): Name of the business.
-    - `issueDate` (String): Date the prescription was issued.
-    - `notes` (String): Notes for the prescription.
-    - `prescriptionItems` (List<PrescriptionItemResponseDTO>): List of prescription items.
-        - `id` (String): Unique identifier for the prescription item.
-        - `medicationName` (String): Name of the medication.
-        - `dosage` (String): Dosage of the medication.
-        - `frequency` (String): Frequency of medication.
-        - `durationDays` (Integer): Duration of medication in days.
-        - `instructions` (String): Instructions for administering the medication.
-    - `createdAt` (LocalDateTime): Timestamp when the prescription was created.
-
-### 2. Get Prescription By ID
-Retrieves a specific prescription by its ID.
-
-- **URL:** `/api/prescriptions/{id}`
-- **Method:** `GET`
-- **Authentication:** Requires Business Owner, Admin, or Customer token.
-- **Path Variable:**
-    - `id` (String): The ID of the prescription to retrieve.
-- **Request Body:** None
-- **Response Body:** `PrescriptionResponseDTO` (Same as Create Prescription response)
-
-### 3. Get All Prescriptions
-Retrieves a paginated list of all prescriptions.
-
-- **URL:** `/api/prescriptions`
-- **Method:** `GET`
-- **Authentication:** Requires Business Owner or Admin token.
-- **Query Parameters (Pageable):**
-    - `page` (Integer, optional): Page number (0-indexed). Default is 0.
-    - `size` (Integer, optional): Number of items per page. Default is 10.
-    - `sort` (String, optional): Sorting criteria in the format `property,(asc|desc)`. Default is `createdAt,desc`.
-- **Request Body:** None
-- **Response Body:** `CommonResponse<Page<PrescriptionResponseDTO>>` (Similar to Get My Orders response structure, but with `PrescriptionResponseDTO` content)
-
-### 4. Delete Prescription
-Deletes a prescription by its ID.
-
-- **URL:** `/api/prescriptions/{id}`
-- **Method:** `DELETE`
-- **Authentication:** Requires Business Owner or Admin token.
-- **Path Variable:**
-    - `id` (String): The ID of the prescription to delete.
-- **Request Body:** None
-- **Response Body:** `CommonResponse<Void>`
-    ```json
-    {
-      "statusCode": "OK",
-      "message": "Successfully deleted prescription",
-      "data": null
-    }
-    ```
-
-## Product Endpoints (`/api/products`)
-
-### 1. Create Product
-Creates a new product for a business.
-
-- **URL:** `/api/products`
-- **Method:** `POST`
-- **Authentication:** Requires Business Owner token.
-- **Request Body:** `ProductRequestDTO` (multipart/form-data)
-    ```form-data
-    name: Royal Canin Adult
-    description: Makanan anjing dewasa
-    price: 150000
-    stockQuantity: 100
-    category: FOOD
-    businessId: {{business_id}}
-    image: (file)
-    ```
-    - `businessId` (UUID): ID of the business owning the product.
-    - `name` (String): Name of the product.
-    - `category` (ProductCategory Enum): Category of the product (e.g., `FOOD`, `TOYS`, `ACCESSORIES`, `MEDICINE`).
-    - `description` (String, optional): Description of the product.
-    - `price` (BigDecimal): Price of the product.
-    - `stockQuantity` (Integer): Quantity of the product in stock.
-    - `image` (MultipartFile, optional): Product image file.
-- **Response Body:** `ProductResponseDTO`
-    ```json
-    {
-      "statusCode": "CREATED",
-      "message": "Successfully created product",
-      "data": {
-        "id": "p1r2o3d4-u5c6-7890-1234-567890abcdef",
-        "businessId": "b1c2d3e4-f5g6-7890-1234-567890abcdef",
-        "name": "Royal Canin Adult",
-        "category": "FOOD",
-        "description": "Makanan anjing dewasa",
-        "price": 150000.00,
-        "stockQuantity": 100,
-        "imageUrl": "https://example.com/images/royal-canin.jpg",
-        "isActive": true
-      }
-    }
-    ```
-    - `id` (UUID): Unique identifier for the product.
-    - `businessId` (UUID): ID of the business that owns the product.
-    - `name` (String): Name of the product.
-    - `category` (ProductCategory Enum): Category of the product.
-    - `description` (String): Description of the product.
-    - `price` (BigDecimal): Price of the product.
-    - `stockQuantity` (Integer): Quantity of the product in stock.
-    - `imageUrl` (String): URL of the product image.
-    - `isActive` (Boolean): Indicates if the product is active.
-
-### 2. Get Product By ID
-Retrieves a specific product by its ID.
-
-- **URL:** `/api/products/{id}`
-- **Method:** `GET`
-- **Authentication:** None
-- **Path Variable:**
-    - `id` (UUID): The ID of the product to retrieve.
-- **Request Body:** None
-- **Response Body:** `ProductResponseDTO` (Same as Create Product response)
-
-### 3. Get All Products
-Retrieves a paginated list of all products.
-
-- **URL:** `/api/products`
-- **Method:** `GET`
-- **Authentication:** None
-- **Query Parameters (Pageable):**
-    - `page` (Integer, optional): Page number (0-indexed). Default is 0.
-    - `size` (Integer, optional): Number of items per page. Default is 10.
-    - `sort` (String, optional): Sorting criteria in the format `property,(asc|desc)`. Default is `id,asc`.
-- **Request Body:** None
-- **Response Body:** `CommonResponse<Page<ProductResponseDTO>>` (Similar to Get My Orders response structure, but with `ProductResponseDTO` content)
-
-### 4. Update Product
-Updates an existing product's information.
-
-- **URL:** `/api/products/{id}`
-- **Method:** `PUT`
-- **Authentication:** Requires Business Owner token.
-- **Path Variable:**
-    - `id` (UUID): The ID of the product to update.
-- **Request Body:** `ProductRequestDTO` (multipart/form-data, all fields are optional for update, but typically you'd send the fields you want to change)
-    ```form-data
-    name: Royal Canin Adult Updated
-    description: Makanan anjing dewasa terbaru
-    price: 160000
-    stockQuantity: 90
-    category: FOOD
-    businessId: {{business_id}}
-    image: (file)
-    ```
-- **Response Body:** `ProductResponseDTO` (Same as Create Product response)
-
-### 5. Delete Product
-Deletes a product by its ID.
-
-- **URL:** `/api/products/{id}`
-- **Method:** `DELETE`
-- **Authentication:** Requires Business Owner token.
-- **Path Variable:**
-    - `id` (UUID): The ID of the product to delete.
-- **Request Body:** None
-- **Response Body:** `CommonResponse<Void>`
-    ```json
-    {
-      "statusCode": "OK",
-      "message": "Successfully deleted product",
-      "data": null
-    }
-    ```
-
-## Service Endpoints (`/api/services`)
-
-### 1. Create Service
-Creates a new service offered by a business.
-
-- **URL:** `/api/services`
-- **Method:** `POST`
-- **Authentication:** Requires Business Owner token.
-- **Request Body:** `ServiceRequestDTO` (multipart/form-data)
-    ```form-data
-    name: Grooming Kucing
-    description: Layanan grooming lengkap untuk kucing
-    basePrice: 75000
-    category: GROOMING
-    businessId: {{business_id}}
-    image: (file)
-    ```
-    - `businessId` (UUID): ID of the business offering the service.
-    - `category` (ServiceCategory Enum): Category of the service (e.g., `GROOMING`, `VACCINATION`, `CONSULTATION`).
-    - `name` (String): Name of the service.
-    - `basePrice` (BigDecimal): Base price of the service.
-    - `capacityPerDay` (Integer, optional): Maximum number of times the service can be booked per day.
-    - `image` (MultipartFile, optional): Service image file.
-- **Response Body:** `ServiceResponseDTO`
-    ```json
-    {
-      "statusCode": "CREATED",
-      "message": "Successfully created service",
-      "data": {
-        "id": "s1e2r3v4-i5c6-7890-1234-567890abcdef",
-        "businessId": "b1c2d3e4-f5g6-7890-1234-567890abcdef",
-        "category": "GROOMING",
-        "name": "Grooming Kucing",
-        "basePrice": 75000.00,
-        "capacityPerDay": null,
-        "imageUrl": "https://example.com/images/grooming-kucing.jpg",
-        "isActive": true
-      }
-    }
-    ```
-    - `id` (UUID): Unique identifier for the service.
-    - `businessId` (UUID): ID of the business offering the service.
-    - `category` (ServiceCategory Enum): Category of the service.
-    - `name` (String): Name of the service.
-    - `basePrice` (BigDecimal): Base price of the service.
-    - `capacityPerDay` (Integer): Maximum number of times the service can be booked per day.
-    - `imageUrl` (String): URL of the service image.
-    - `isActive` (Boolean): Indicates if the service is active.
-
-### 2. Get Service By ID
-Retrieves a specific service by its ID.
-
-- **URL:** `/api/services/{id}`
-- **Method:** `GET`
-- **Authentication:** None
-- **Path Variable:**
-    - `id` (UUID): The ID of the service to retrieve.
-- **Request Body:** None
-- **Response Body:** `ServiceResponseDTO` (Same as Create Service response)
-
-### 3. Get All Services
-Retrieves a paginated list of all services.
-
-- **URL:** `/api/services`
-- **Method:** `GET`
-- **Authentication:** None
-- **Query Parameters (Pageable):**
-    - `page` (Integer, optional): Page number (0-indexed). Default is 0.
-    - `size` (Integer, optional): Number of items per page. Default is 10.
-    - `sort` (String, optional): Sorting criteria in the format `property,(asc|desc)`. Default is `id,asc`.
-- **Request Body:** None
-- **Response Body:** `CommonResponse<Page<ServiceResponseDTO>>` (Similar to Get My Orders response structure, but with `ServiceResponseDTO` content)
-
-### 4. Update Service
-Updates an existing service's information.
-
-- **URL:** `/api/services/{id}`
-- **Method:** `PUT`
-- **Authentication:** Requires Business Owner token.
-- **Path Variable:**
-    - `id` (UUID): The ID of the service to update.
-- **Request Body:** `ServiceRequestDTO` (multipart/form-data, all fields are optional for update, but typically you'd send the fields you want to change)
-    ```form-data
-    name: Grooming Kucing Premium
-    description: Layanan grooming lengkap untuk kucing dengan tambahan spa
-    basePrice: 100000
-    category: GROOMING
-    businessId: {{business_id}}
-    image: (file)
-    ```
-- **Response Body:** `ServiceResponseDTO` (Same as Create Service response)
-
-### 5. Delete Service
-Deletes a service by its ID.
-
-- **URL:** `/api/services/{id}`
-- **Method:** `DELETE`
-- **Authentication:** Requires Business Owner token.
-- **Path Variable:**
-    - `id` (UUID): The ID of the service to delete.
-- **Request Body:** None
-- **Response Body:** `CommonResponse<Void>`
-    ```json
-    {
-      "statusCode": "OK",
-      "message": "Successfully deleted service",
-      "data": null
-    }
-    ```
-
-## Shopping Cart Endpoints (`/api/cart`)
-
-### 1. Add Item to Cart
-Adds a product to the authenticated customer's shopping cart.
-
-- **URL:** `/api/cart`
-- **Method:** `POST`
-- **Authentication:** Requires Customer token.
-- **Request Body:** `AddToCartRequestDTO`
-    ```json
-    {
-      "productId": "{{product_id}}",
-      "quantity": 1,
-      "businessId": "{{business_id}}"
-    }
-    ```
-    - `productId` (UUID): ID of the product to add.
-    - `quantity` (Integer): Quantity of the product to add (minimum 1).
-    - `businessId` (UUID): ID of the business associated with the product.
-- **Response Body:** `ShoppingCartResponseDTO`
-    ```json
-    {
-      "statusCode": "CREATED",
-      "message": "Successfully added item to cart",
-      "data": {
-        "id": "s1h2o3p4-c5a6-7890-1234-567890abcdef",
-        "customerId": "c1d2e3f4-g5h6-7890-1234-567890abcdef",
-        "businessId": "b1c2d3e4-f5g6-7890-1234-567890abcdef",
-        "businessName": "Intan Grooming House",
-        "items": [
-          {
-            "id": "c1a2r3t4-i5t6-7890-1234-567890abcdef",
-            "productId": "p1q2r3s4-t5u6-7890-1234-567890abcdef",
-            "productName": "Royal Canin Adult",
-            "productPrice": 150000.00,
-            "quantity": 1,
-            "subTotal": 150000.00
-          }
-        ],
-        "totalPrice": 150000.00
-      }
-    }
-    ```
-    - `id` (UUID): Unique identifier for the shopping cart.
-    - `customerId` (UUID): ID of the customer who owns the cart.
-    - `businessId` (UUID): ID of the business whose products are in the cart.
-    - `businessName` (String): Name of the business.
-    - `items` (List<CartItemResponseDTO>): List of items in the cart.
-        - `id` (UUID): Unique identifier for the cart item.
-        - `productId` (UUID): ID of the product in the cart.
-        - `productName` (String): Name of the product.
-        - `productPrice` (BigDecimal): Price of the product per unit.
-        - `quantity` (Integer): Quantity of the product in the cart.
-        - `subTotal` (BigDecimal): Subtotal for this cart item.
-    - `totalPrice` (BigDecimal): Total price of all items in the cart.
-
-### 2. Get Shopping Cart
-Retrieves the authenticated customer's shopping cart.
-
-- **URL:** `/api/cart`
-- **Method:** `GET`
-- **Authentication:** Requires Customer token.
-- **Request Body:** None
-- **Response Body:** `ShoppingCartResponseDTO` (Same as Add Item to Cart response)
-
-### 3. Update Cart Item Quantity
-Updates the quantity of a specific item in the shopping cart.
-
-- **URL:** `/api/cart`
-- **Method:** `PUT`
-- **Authentication:** Requires Customer token.
-- **Request Body:** `UpdateCartItemRequestDTO`
-    ```json
-    {
-      "cartItemId": "{{cart_item_id}}",
-      "quantity": 2
-    }
-    ```
-    - `cartItemId` (UUID): ID of the cart item to update.
-    - `quantity` (Integer): New quantity for the cart item (minimum 1).
-- **Response Body:** `ShoppingCartResponseDTO` (Same as Add Item to Cart response)
-
-### 4. Remove Cart Item
-Removes a specific item from the shopping cart.
-
-- **URL:** `/api/cart/{cartItemId}`
-- **Method:** `DELETE`
-- **Authentication:** Requires Customer token.
-- **Path Variable:**
-    - `cartItemId` (UUID): The ID of the cart item to remove.
-- **Request Body:** None
-- **Response Body:** `CommonResponse<Void>`
-    ```json
-    {
-      "statusCode": "OK",
-      "message": "Successfully removed item from cart",
-      "data": null
-    }
-    ```
-
-### 5. Clear Shopping Cart
-Clears all items from the authenticated customer's shopping cart.
-
-- **URL:** `/api/cart`
-- **Method:** `DELETE`
-- **Authentication:** Requires Customer token.
-- **Request Body:** None
-- **Response Body:** `CommonResponse<Void>`
-    ```json
-    {
-      "statusCode": "OK",
-      "message": "Successfully cleared shopping cart",
-      "data": null
-    }
-    ```
-
-## User Endpoints (`/api/users`)
-
-### 1. Get User By ID
+# Pawtner API Documentation (v2.0 - Complete)
+
+This document provides a complete and detailed reference for all available endpoints in the Pawtner backend API, including concrete examples for request and response bodies.
+
+## 1. Base URL
+All API endpoints are prefixed with the base URL of the server. The paths in this document are relative to that base URL.
+
+## 2. Authentication
+Access to protected endpoints is controlled via JWT. A valid token must be included in the `Authorization` header for all protected requests, prefixed with `Bearer `.
+
+**Example**: `Authorization: Bearer <your_jwt_token>`
+
+## 3. Common Response Wrapper
+All responses (unless specified otherwise) are wrapped in a `CommonResponse` object.
+
+**Structure**
+```json
+{
+    "status": 200,
+    "message": "Descriptive message here",
+    "data": { ... } // The actual response data
+}
+```
+
+---
+
+## Authentication (`/api/auth`)
+
+### `POST /api/auth/register/customer`
+Registers a new user with the `CUSTOMER` role.
+- **Roles Permitted**: `Public`
+
+**Request Body (`application/json`)**
+```json
+{
+  "email": "customer@example.com",
+  "phoneNumber": "081234567890",
+  "password": "password123",
+  "name": "John Doe",
+  "address": "123 Main Street, Anytown"
+}
+```
+
+### `POST /api/auth/register/business-owner`
+Registers a new user with the `BUSINESS_OWNER` role.
+- **Roles Permitted**: `Public`
+
+**Request Body (`application/json`)**
+```json
+{
+  "email": "owner@example.com",
+  "phoneNumber": "089876543210",
+  "password": "password123",
+  "name": "Jane Smith",
+  "address": "456 Business Ave, Anytown"
+}
+```
+
+### `POST /api/auth/login`
+Authenticates a user and returns a JWT.
+- **Roles Permitted**: `Public`
+
+**Request Body (`application/json`)**
+```json
+{
+  "email": "customer@example.com",
+  "password": "password123"
+}
+```
+
+**Response Data (`LoginResponseDTO`)**
+```json
+{
+    "userId": "c4a5b6c7-d8e9-f0a1-b2c3-d4e5f6a7b8c9",
+    "name": "John Doe",
+    "email": "customer@example.com",
+    "token": "ey...<jwt>..."
+}
+```
+
+### `POST /api/auth/verify`
+Verifies a user's account with a code sent to their email.
+- **Roles Permitted**: `Public`
+
+**Request Body (`application/json`)**
+```json
+{
+  "email": "customer@example.com",
+  "verificationCode": "123456"
+}
+```
+
+### `POST /api/auth/resend-verification`
+Resends the verification code to the user's email.
+- **Roles Permitted**: `Public`
+
+**Request Body (`application/json`)**
+```json
+{
+  "email": "customer@example.com"
+}
+```
+
+### `POST /api/auth/forgot-password`
+Initiates the password reset process.
+- **Roles Permitted**: `Public`
+
+**Request Body (`application/json`)**
+```json
+{
+  "email": "customer@example.com"
+}
+```
+
+### `POST /api/auth/reset-password`
+Resets the user's password using a valid token.
+- **Roles Permitted**: `Public`
+
+**Request Body (`application/json`)**
+```json
+{
+  "token": "valid-reset-token-from-email-link",
+  "newPassword": "newStrongPassword123"
+}
+```
+
+---
+
+## Users (`/api/users`)
+
+### `GET /api/users`
+Retrieves a list of all users.
+- **Roles Permitted**: `ADMIN`
+
+### `GET /api/users/{id}`
 Retrieves a specific user by their ID.
+- **Roles Permitted**: `Authenticated`
 
-- **URL:** `/api/users/{id}`
-- **Method:** `GET`
-- **Authentication:** Requires Admin token.
-- **Path Variable:**
-    - `id` (String): The ID of the user to retrieve.
-- **Request Body:** None
-- **Response Body:** `UserResponseDTO`
-    ```json
-    {
-      "statusCode": "OK",
-      "message": "Successfully get user by id",
-      "data": {
-        "id": "u1s2e3r4-i5d6-7890-1234-567890abcdef",
-        "email": "user@example.com",
-        "name": "User Name",
-        "address": "User Address",
-        "phone": "081234567890"
-      }
-    }
-    ```
-    - `id` (String): Unique identifier for the user.
-    - `email` (String): User's email address.
-    - `name` (String): User's full name.
-    - `address` (String): User's address.
-    - `phone` (String): User's phone number.
+### `PUT /api/users`
+Updates a user's profile information and profile image.
+- **Roles Permitted**: `Authenticated`
 
-### 2. Update User
-Updates an existing user's information.
+**Request Body (`multipart/form-data`)**
+- `user` (form-part): JSON string: `{"name": "John Doe Updated", "address": "124 New Street", "phone": "081234567891"}`
+- `profileImage` (file-part): The user's profile image file.
 
-- **URL:** `/api/users`
-- **Method:** `PUT`
-- **Authentication:** Requires authenticated user's token.
-- **Request Body:** `UserRequestDTO`
-    ```json
-    {
-      "name": "New User Name",
-      "address": "New User Address",
-      "phone": "081234567899"
-    }
-    ```
-    - `name` (String, optional): New name for the user.
-    - `address` (String, optional): New address for the user.
-    - `phone` (String, optional): New phone number for the user.
-- **Response Body:** `UserResponseDTO` (Same as Get User By ID response)
-
-### 3. Get All Users (Admin Only)
-Retrieves a list of all registered users.
-
-- **URL:** `/api/users`
-- **Method:** `GET`
-- **Authentication:** Requires Admin token.
-- **Request Body:** None
-- **Response Body:** `CommonResponse<List<UserResponseDTO>>`
-    ```json
-    {
-      "statusCode": "OK",
-      "message": "Successfully get all users",
-      "data": [
-        // List of UserResponseDTO objects
-      ]
-    }
-    ```
-
-### 4. Delete User (Admin Only)
+### `DELETE /api/users/{id}`
 Deletes a user by their ID.
+- **Roles Permitted**: `ADMIN`
 
-- **URL:** `/api/users/{id}`
-- **Method:** `DELETE`
-- **Authentication:** Requires Admin token.
-- **Path Variable:**
-    - `id` (String): The ID of the user to delete.
-- **Request Body:** None
-- **Response Body:** `CommonResponse<String>`
-    ```json
+### `PATCH /api/users/{id}/status`
+Updates a user's status (e.g., `isVerified`, `isActive`).
+- **Roles Permitted**: `ADMIN`
+- **Query Parameters**: `action` (String, e.g., "isVerified"), `value` (Boolean, e.g., "true")
+
+---
+
+## Businesses (`/api/business`)
+
+### `POST /api/business/register`
+Creates a new business profile.
+- **Roles Permitted**: `BUSINESS_OWNER`
+
+**Request Body (`multipart/form-data`)**
+- `business` (form-part): JSON string for `BusinessRequestDTO`
+- `businessImage` (file-part): The business's main image.
+- `certificateImage` (file-part): The business's certificate image.
+
+### `GET /api/business`
+Retrieves a list of all businesses for admin review.
+- **Roles Permitted**: `ADMIN`
+
+### `GET /api/business/my-business`
+Retrieves the business profiles owned by the current user.
+- **Roles Permitted**: `BUSINESS_OWNER`
+
+### `PATCH /api/business/{id}`
+Approves or rejects a business registration.
+- **Roles Permitted**: `ADMIN`
+
+**Request Body (`application/json`)**
+```json
+{
+  "approve": true
+}
+```
+
+---
+
+## Products (`/api/products`)
+
+### `POST /api/products`
+Creates a new product.
+- **Roles Permitted**: `BUSINESS_OWNER`
+
+**Request Body (`multipart/form-data`)**
+- `businessId`: "c4a5b6c7-d8e9-f0a1-b2c3-d4e5f6a7b8c9"
+- `name`: "Premium Dog Food"
+- `category`: "FOOD"
+- `description`: "High-quality dog food for all breeds."
+- `price`: 250000
+- `stockQuantity`: 100
+- `image`: (file)
+
+### `GET /api/products`
+Retrieves a paginated list of all products.
+- **Roles Permitted**: `Public`
+
+### `GET /api/products/{id}`
+Retrieves a specific product by its ID.
+- **Roles Permitted**: `Public`
+
+### `PUT /api/products/{id}`
+Updates an existing product.
+- **Roles Permitted**: `BUSINESS_OWNER`
+
+### `DELETE /api/products/{id}`
+Deletes a product.
+- **Roles Permitted**: `BUSINESS_OWNER`
+
+---
+
+## Services (`/api/services`)
+
+### `POST /api/services`
+Creates a new service offering.
+- **Roles Permitted**: `BUSINESS_OWNER`
+
+**Request Body (`multipart/form-data`)**
+- `businessId`: "c4a5b6c7-d8e9-f0a1-b2c3-d4e5f6a7b8c9"
+- `category`: "GROOMING"
+- `name`: "Full Grooming Package"
+- `basePrice`: 150000
+- `capacityPerDay`: 10
+- `image`: (file)
+
+### `GET /api/services`
+Retrieves a paginated list of all services.
+- **Roles Permitted**: `Public`
+
+### `GET /api/services/{id}`
+Retrieves a specific service by its ID.
+- **Roles Permitted**: `Public`
+
+### `PUT /api/services/{id}`
+Updates an existing service.
+- **Roles Permitted**: `BUSINESS_OWNER`
+
+### `DELETE /api/services/{id}`
+Deletes a service.
+- **Roles Permitted**: `BUSINESS_OWNER`
+
+---
+
+## Shopping Cart (`/api/cart`)
+
+### `POST /api/cart`
+Adds an item to the cart. Creates a cart if one doesn't exist for the business.
+- **Roles Permitted**: `CUSTOMER`
+
+**Request Body (`application/json`)**
+```json
+{
+  "productId": "a1b2c3d4-e5f6-a7b8-c9d0-e1f2a3b4c5d6",
+  "quantity": 2,
+  "businessId": "b1c2d3e4-f5a6-b7c8-d9e0-f1a2b3c4d5e6"
+}
+```
+
+### `GET /api/cart`
+Retrieves the current user's shopping cart.
+- **Roles Permitted**: `CUSTOMER`
+
+### `PUT /api/cart`
+Updates the quantity of an item in the cart.
+- **Roles Permitted**: `CUSTOMER`
+
+**Request Body (`application/json`)**
+```json
+{
+  "cartItemId": "d1e2f3a4-b5c6-d7e8-f9a0-b1c2d3e4f5a6",
+  "quantity": 3
+}
+```
+
+### `DELETE /api/cart/{cartItemId}`
+Removes a single item from the cart.
+- **Roles Permitted**: `CUSTOMER`
+
+### `DELETE /api/cart`
+Clears all items from the user's shopping cart.
+- **Roles Permitted**: `CUSTOMER`
+
+---
+
+## Orders (`/api/orders`)
+
+### `POST /api/orders/checkout`
+Creates a new order from the user's cart and returns a `snap_token` for payment.
+- **Roles Permitted**: `CUSTOMER`
+
+**Response Data (`OrderResponseDTO`)**
+```json
+{
+    "id": "o1r2d3e4-f5a6-b7c8-d9e0-f1a2b3c4d5e6",
+    "orderNumber": "ORDER-ABC-123",
+    "customerId": "c4a5b6c7-d8e9-f0a1-b2c3-d4e5f6a7b8c9",
+    "customerName": "John Doe",
+    "businessId": "b1c2d3e4-f5a6-b7c8-d9e0-f1a2b3c4d5e6",
+    "businessName": "Pawtner Pet Shop",
+    "totalAmount": 500000.00,
+    "status": "PENDING",
+    "createdAt": "2025-07-05T14:30:00Z",
+    "items": [
+        {
+            "id": "i1t2e3m4-f5a6-b7c8-d9e0-f1a2b3c4d5e6",
+            "productId": "a1b2c3d4-e5f6-a7b8-c9d0-e1f2a3b4c5d6",
+            "productName": "Premium Dog Food",
+            "quantity": 2,
+            "pricePerUnit": 250000.00,
+            "subTotal": 500000.00
+        }
+    ],
+    "snapToken": "...<midtrans-snap-token>..."
+}
+```
+
+### `GET /api/orders`
+Retrieves a paginated list of the current user's orders.
+- **Roles Permitted**: `CUSTOMER`
+
+### `GET /api/orders/{order_id}`
+Retrieves a specific order by its ID.
+- **Roles Permitted**: `CUSTOMER`, `BUSINESS_OWNER`, `ADMIN`
+
+---
+
+## Bookings (`/api/bookings`)
+
+### `POST /api/bookings`
+Creates a new service booking.
+- **Roles Permitted**: `CUSTOMER`
+
+**Request Body (`application/json`)**
+```json
+{
+  "petId": "p1e2t3p4-e5f6-a7b8-c9d0-e1f2a3b4c5d6",
+  "serviceId": "s1e2r3v4-e5f6-a7b8-c9d0-e1f2a3b4c5d6",
+  "startTime": "2025-12-24T10:00:00",
+  "endTime": "2025-12-26T12:00:00"
+}
+```
+
+### `GET /api/bookings`
+Retrieves a paginated list of bookings for the user/business.
+- **Roles Permitted**: `CUSTOMER`, `BUSINESS_OWNER`, `ADMIN`
+
+### `GET /api/bookings/{id}`
+Retrieves a specific booking by its ID.
+- **Roles Permitted**: `CUSTOMER`, `BUSINESS_OWNER`, `ADMIN`
+
+### `PUT /api/bookings/{id}/status`
+Updates a booking's status.
+- **Roles Permitted**: `BUSINESS_OWNER`
+
+**Request Body (`text/plain`)**
+```
+CONFIRMED
+```
+
+### `DELETE /api/bookings/{id}`
+Cancels and deletes a booking.
+- **Roles Permitted**: `CUSTOMER`, `ADMIN`
+
+---
+
+## Payments (`/api/payments`)
+
+### `POST /api/payments/webhook`
+Handles incoming payment notification webhooks from Midtrans.
+- **Roles Permitted**: `Public`
+
+**Request Body (`application/json`)**
+```json
+{
+  "transaction_time": "2025-07-05 21:30:10",
+  "transaction_status": "settlement",
+  "order_id": "ORDER-ABC-123",
+  "payment_type": "qris",
+  "gross_amount": "500000.00"
+}
+```
+
+---
+
+## Pets (`/api/pets`)
+
+### `POST /api/pets`
+Creates a new pet profile.
+- **Roles Permitted**: `CUSTOMER`
+
+**Request Body (`multipart/form-data`)**
+- `name`: "Buddy"
+- `species`: "Dog"
+- `breed`: "Golden Retriever"
+- `age`: 5
+- `notes`: "Loves to play fetch."
+- `image`: (file)
+
+### `GET /api/pets`
+Retrieves a paginated list of the customer's pets.
+- **Roles Permitted**: `CUSTOMER`
+
+### `GET /api/pets/{id}`
+Retrieves a specific pet by its ID.
+- **Roles Permitted**: `CUSTOMER`, `BUSINESS_OWNER`, `ADMIN`
+
+### `PUT /api/pets/{id}`
+Updates a pet's profile.
+- **Roles Permitted**: `CUSTOMER`
+
+### `DELETE /api/pets/{id}`
+Deletes a pet's profile.
+- **Roles Permitted**: `CUSTOMER`
+
+---
+
+## Reviews (`/api/reviews`)
+
+### `POST /api/reviews`
+Creates a new review for a business, product, or service.
+- **Roles Permitted**: `CUSTOMER`
+
+**Request Body (`application/json`)**
+```json
+{
+  "businessId": "b1c2d3e4-f5a6-b7c8-d9e0-f1a2b3c4d5e6",
+  "rating": 5,
+  "comment": "Excellent service!"
+}
+```
+
+### `GET /api/reviews`
+Retrieves a paginated list of all reviews.
+- **Roles Permitted**: `Public`
+
+### `GET /api/reviews/{id}`
+Retrieves a specific review by its ID.
+- **Roles Permitted**: `Public`
+
+### `PUT /api/reviews/{id}`
+Updates an existing review.
+- **Roles Permitted**: `CUSTOMER`
+
+### `DELETE /api/reviews/{id}`
+Deletes a review.
+- **Roles Permitted**: `CUSTOMER`, `ADMIN`
+
+---
+
+## Prescriptions (`/api/prescriptions`)
+
+### `POST /api/prescriptions`
+Creates a new prescription for a pet.
+- **Roles Permitted**: `BUSINESS_OWNER` (Vet), `ADMIN`
+
+**Request Body (`application/json`)**
+```json
+{
+  "petId": "p1e2t3p4-e5f6-a7b8-c9d0-e1f2a3b4c5d6",
+  "issuingBusinessId": "b1c2d3e4-f5a6-b7c8-d9e0-f1a2b3c4d5e6",
+  "issueDate": "2025-07-05",
+  "notes": "Follow up in 2 weeks.",
+  "prescriptionItems": [
     {
-      "statusCode": "OK",
-      "message": "Successfully delete user",
-      "data": null
+      "medicationName": "Amoxicillin",
+      "dosage": "250mg",
+      "frequency": "Twice a day",
+      "durationDays": 10,
+      "instructions": "Take with food."
     }
-    ```
+  ]
+}
+```
 
-### 5. Update User Status (Admin Only)
-Updates the status (e.g., enable/disable) of a user.
+### `GET /api/prescriptions`
+Retrieves a paginated list of all prescriptions.
+- **Roles Permitted**: `BUSINESS_OWNER`, `ADMIN`
 
-- **URL:** `/api/users/{id}/status`
-- **Method:** `PATCH`
-- **Authentication:** Requires Admin token.
-- **Path Variable:**
-    - `id` (UUID): The ID of the user to update.
-- **Query Parameters:**
-    - `action` (String): The action to perform (e.g., `isEnable`, `isAccountNonLocked`).
-    - `value` (Boolean): The boolean value to set for the action (e.g., `true`, `false`).
-- **Request Body:** None
-- **Response Body:** `UserResponseDTO`
-    ```json
-    {
-      "statusCode": "OK",
-      "message": "Berhasil mengubah status isEnable menjadi true",
-      "data": {
-        "id": "u1s2e3r4-i5d6-7890-1234-567890abcdef",
-        "email": "user@example.com",
-        "name": "User Name",
-        "address": "User Address",
-        "phone": "081234567890"
-      }
-    }
-    ```
+### `GET /api/prescriptions/{id}`
+Retrieves a specific prescription by its ID.
+- **Roles Permitted**: `CUSTOMER`, `BUSINESS_OWNER`, `ADMIN`
+
+### `DELETE /api/prescriptions/{id}`
+Deletes a prescription.
+- **Roles Permitted**: `BUSINESS_OWNER`, `ADMIN`
+
+---
+
+## AI Assistant (`/api/ai`)
+
+### `POST /api/ai/chat`
+Sends a message to the Gemini AI assistant for a response.
+- **Roles Permitted**: `Authenticated`
+
+**Request Body (`application/json`)**
+```json
+{
+  "message": "What are common symptoms of dog flu?"
+}
+```
+
+**Response Data (`AiChatResponse`)**
+```json
+{
+  "reply": "Common symptoms of dog flu include coughing, sneezing, fever, and a runny nose..."
+}
+```
