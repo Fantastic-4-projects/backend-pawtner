@@ -27,7 +27,7 @@ public class PetController {
 
     @PostMapping(consumes = "multipart/form-data")
     @PreAuthorize("hasAuthority('CUSTOMER')")
-    public ResponseEntity<CommonResponse<PetResponseDTO>> createPet(@Valid @ModelAttribute PetRequestDTO petRequestDTO, @RequestPart("image") MultipartFile image, Authentication authentication) {
+    public ResponseEntity<CommonResponse<PetResponseDTO>> createPet(@Valid @RequestPart("pet") PetRequestDTO petRequestDTO, @RequestPart("image") MultipartFile image, Authentication authentication) {
         petRequestDTO.setImage(image);
         PetResponseDTO responseDTO = petService.createPet(petRequestDTO, authentication.getName());
         return ResponseUtil.createResponse(HttpStatus.CREATED, "Successfully created pet", responseDTO);
@@ -49,7 +49,7 @@ public class PetController {
 
     @PutMapping("/{id}")
     @PreAuthorize("hasAuthority('CUSTOMER')")
-    public ResponseEntity<CommonResponse<PetResponseDTO>> updatePet(@PathVariable UUID id, @Valid @RequestBody PetRequestDTO petRequestDTO, Authentication authentication) {
+    public ResponseEntity<CommonResponse<PetResponseDTO>> updatePet(@PathVariable UUID id, @Valid @RequestPart("pet") PetRequestDTO petRequestDTO, @RequestPart(value = "image", required = false) MultipartFile image, Authentication authentication) {
         petRequestDTO.setId(id);
         PetResponseDTO responseDTO = petService.updatePet(petRequestDTO, authentication.getName());
         return ResponseUtil.createResponse(HttpStatus.OK, "Successfully updated pet", responseDTO);

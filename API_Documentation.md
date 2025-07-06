@@ -437,6 +437,22 @@ Retrieves a specific pet by its ID.
 Updates a pet's profile.
 - **Roles Permitted**: `CUSTOMER`
 
+**Request Body (`multipart/form-data`)**
+- `pet` (form-part): JSON string for `PetRequestDTO` (excluding the image field, which is handled separately)
+- `image` (file-part): The pet's image file.
+
+**Example `pet` JSON string:**
+```json
+{
+  "name": "Buddy",
+  "species": "Dog",
+  "breed": "Golden Retriever",
+  "age": 5,
+  "gender": "MALE",
+  "notes": "Loves to play fetch."
+}
+```
+
 ### `DELETE /api/pets/{id}`
 Deletes a pet's profile.
 - **Roles Permitted**: `CUSTOMER`
