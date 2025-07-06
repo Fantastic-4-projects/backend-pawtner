@@ -76,22 +76,42 @@ public class BusinessServiceImpl implements BusinessService {
     }
 
     @Override
-    public BusinessResponseDTO updateBusiness(UUID businessId, BusinessRequestDTO businessRequestDTO) {
+    @Transactional(rollbackOn = Exception.class)
+    public BusinessResponseDTO updateBusiness(UUID businessId, BusinessRequestDTO businessRequestDTO, MultipartFile businessImage, MultipartFile certificateImage) {
         Business business = getBusinessByIdForInternal(businessId);
 
-        business.setName(businessRequestDTO.getNameBusiness());
-        business.setDescription(businessRequestDTO.getDescriptionBusiness());
-        business.setBusinessType(businessRequestDTO.getBusinessType());
-        business.setBusinessEmail(businessRequestDTO.getBusinessEmail());
-        business.setBusinessPhone(businessRequestDTO.getBusinessPhone());
-        business.setEmergencyPhone(businessRequestDTO.getEmergencyPhone());
-        business.setAddress(businessRequestDTO.getBusinessAddress());
-        business.setLatitude(businessRequestDTO.getLatitude());
-        business.setLongitude(businessRequestDTO.getLongitude());
-        businessRepository.save(business);
+        try {
+            String businessImageUrl = business.getBusinessImageUrl();
+            String certificateImageUrl = business.getCertificateImageUrl();
 
-        return mapToResponse(business);
+            if (businessImage != null && !businessImage.isEmpty()) {
+                businessImageUrl = imageUploadService.upload(businessImage);
+            }
+
+            if (certificateImage != null && !certificateImage.isEmpty()) {
+                certificateImageUrl = imageUploadService.upload(certificateImage);
+            }
+
+            business.setName(businessRequestDTO.getNameBusiness());
+            business.setDescription(businessRequestDTO.getDescriptionBusiness());
+            business.setBusinessType(businessRequestDTO.getBusinessType());
+            business.setBusinessEmail(businessRequestDTO.getBusinessEmail());
+            business.setBusinessPhone(businessRequestDTO.getBusinessPhone());
+            business.setEmergencyPhone(businessRequestDTO.getEmergencyPhone());
+            business.setAddress(businessRequestDTO.getBusinessAddress());
+            business.setLatitude(businessRequestDTO.getLatitude());
+            business.setLongitude(businessRequestDTO.getLongitude());
+            business.setBusinessImageUrl(businessImageUrl);
+            business.setCertificateImageUrl(certificateImageUrl);
+
+            businessRepository.save(business);
+            return mapToResponse(business);
+
+        } catch (IOException e) {
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Failed to upload image");
+        }
     }
+
 
 
     @Override
