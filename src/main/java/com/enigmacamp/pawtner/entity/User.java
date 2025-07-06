@@ -87,7 +87,8 @@ public class User implements UserDetails {
     private Boolean isCredentialsNonExpired;
     private Boolean isEnabled;
 
-
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<FcmToken> fcmTokens;
 
     @PrePersist
     protected void onCreate() {
