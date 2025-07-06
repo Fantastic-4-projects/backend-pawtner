@@ -1,17 +1,14 @@
 package com.enigmacamp.pawtner.service.impl;
 
-import com.enigmacamp.pawtner.constant.UserRole;
 import com.enigmacamp.pawtner.dto.request.BusinessRequestDTO;
 import com.enigmacamp.pawtner.dto.response.BusinessResponseDTO;
 import com.enigmacamp.pawtner.entity.Business;
 import com.enigmacamp.pawtner.entity.User;
-import com.enigmacamp.pawtner.repository.UserRepository;
 import com.enigmacamp.pawtner.repository.BusinessRepository;
 import com.enigmacamp.pawtner.service.BusinessService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
@@ -70,6 +67,30 @@ public class BusinessServiceImpl implements BusinessService {
         }
     }
 
+    @Override
+    public BusinessResponseDTO profileBusiness(UUID businessId) {
+        Business business = getBusinessByIdForInternal(businessId);
+        return mapToResponse(business);
+    }
+
+    @Override
+    public BusinessResponseDTO updateBusiness(UUID businessId, BusinessRequestDTO businessRequestDTO) {
+        Business business = getBusinessByIdForInternal(businessId);
+
+        business.setName(businessRequestDTO.getNameBusiness());
+        business.setDescription(businessRequestDTO.getDescriptionBusiness());
+        business.setBusinessType(businessRequestDTO.getBusinessType());
+        business.setBusinessEmail(businessRequestDTO.getBusinessEmail());
+        business.setBusinessPhone(businessRequestDTO.getBusinessPhone());
+        business.setEmergencyPhone(businessRequestDTO.getEmergencyPhone());
+        business.setAddress(businessRequestDTO.getBusinessAddress());
+        business.setLatitude(businessRequestDTO.getLatitude());
+        business.setLongitude(businessRequestDTO.getLongitude());
+        businessRepository.save(business);
+
+        return mapToResponse(business);
+    }
+
 
     @Override
     public List<BusinessResponseDTO> viewBusiness() {
@@ -94,13 +115,28 @@ public class BusinessServiceImpl implements BusinessService {
 
     @Override
     public BusinessResponseDTO approveBusiness(UUID businessId, Boolean approved) {
-        Business business = businessRepository.findBusinessById((businessId))
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Business not found"));
+        Business business = getBusinessByIdForInternal(businessId);
 
         business.setIsApproved(approved);
         businessRepository.save(business);
 
         return mapToResponse(business);
+    }
+
+    @Override
+    public BusinessResponseDTO openBusiness(UUID businessId) {
+        Business business = getBusinessByIdForInternal(businessId);
+
+        business.setIsOpen(!business.getIsOpen());
+        businessRepository.save(business);
+
+        return mapToResponse(business);
+    }
+
+    @Override
+    public void deleteBusiness(UUID businessId) {
+        Business business = getBusinessByIdForInternal(businessId);
+        businessRepository.delete(business);
     }
 
     private BusinessResponseDTO mapToResponse(Business business) {
@@ -110,6 +146,7 @@ public class BusinessServiceImpl implements BusinessService {
                 .businessName(business.getName())
                 .businessAddress(business.getAddress())
                 .operationHours(business.getOperationHours())
+                .isOpen(business.getIsOpen())
                 .statusApproved(
                         business.getIsApproved() == null ? "Pending"
                                 : business.getIsApproved() ? "Approved"

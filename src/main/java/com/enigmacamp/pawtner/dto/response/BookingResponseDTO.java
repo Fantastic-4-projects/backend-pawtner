@@ -1,5 +1,6 @@
 package com.enigmacamp.pawtner.dto.response;
 
+import com.enigmacamp.pawtner.entity.User;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -14,8 +15,8 @@ import java.util.UUID;
 @Builder
 public class BookingResponseDTO {
     private UUID id;
-    private UUID customerId;
-    private UUID petId;
+    private UserResponseDTO customer;
+    private PetResponseDTO pet;
     private String petName;
     private UUID serviceId;
     private String serviceName;

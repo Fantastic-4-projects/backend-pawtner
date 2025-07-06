@@ -9,6 +9,4 @@ import java.util.List;
 
 public interface BusinessRepository extends JpaRepository<Business, UUID> {
     List<Business> findAllByOwner_Id(UUID id);
-
-    Optional<Business> findBusinessById(UUID id);
 }

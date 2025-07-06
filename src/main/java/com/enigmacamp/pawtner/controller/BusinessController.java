@@ -4,7 +4,6 @@ import com.enigmacamp.pawtner.dto.request.BusinessRequestDTO;
 import com.enigmacamp.pawtner.dto.response.BusinessResponseDTO;
 import com.enigmacamp.pawtner.dto.response.CommonResponse;
 import com.enigmacamp.pawtner.service.BusinessService;
-import com.enigmacamp.pawtner.service.ServiceService;
 import com.enigmacamp.pawtner.util.ResponseUtil;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -42,6 +41,24 @@ public class BusinessController {
         );
     }
 
+    @GetMapping("/{businessId}")
+    public ResponseEntity<CommonResponse<BusinessResponseDTO>> getBusinessById(@PathVariable UUID businessId) {
+        return ResponseUtil.createResponse(
+                HttpStatus.OK,
+                "Profil bisnis didapatkan",
+                businessService.profileBusiness(businessId)
+        );
+    }
+
+    @PutMapping("/{businessId}/update")
+    public ResponseEntity<CommonResponse<BusinessResponseDTO>> updateBusiness(@PathVariable UUID businessId, @RequestBody BusinessRequestDTO businessRequestDTO) {
+        return ResponseUtil.createResponse(
+                HttpStatus.OK,
+                "Berhasil memperbaharui profil bisnis",
+                businessService.updateBusiness(businessId, businessRequestDTO)
+        );
+    }
+
     @PatchMapping("/{id}")
     @PreAuthorize("hasAuthority('ADMIN')")
     public ResponseEntity<CommonResponse<BusinessResponseDTO>> approveBusiness(
@@ -71,6 +88,27 @@ public class BusinessController {
                 HttpStatus.OK,
                 "Profil bisnis didapatkan",
                 businessService.viewMyBusiness()
+        );
+    }
+
+    @PatchMapping("/{businessId}/toggle-open")
+    public ResponseEntity<CommonResponse<BusinessResponseDTO>> openBusiness(@PathVariable UUID businessId){
+        BusinessResponseDTO response = businessService.openBusiness(businessId);
+        String message = response.getIsOpen() ? "Bisnis berhasil dibuka" : "Bisnis berhasil ditutup";
+        return ResponseUtil.createResponse(
+                HttpStatus.OK,
+                message,
+                response
+        );
+    }
+
+    @DeleteMapping("/{businessId}/delete")
+    public ResponseEntity<CommonResponse<BusinessResponseDTO>> deleteBusiness(@PathVariable UUID businessId){
+        businessService.deleteBusiness(businessId);
+        return ResponseUtil.createResponse(
+                HttpStatus.OK,
+                "Bisnis berhasil dihapus",
+                null
         );
     }
 }
