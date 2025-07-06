@@ -43,8 +43,8 @@ public class UserController {
 
     @PutMapping(consumes = "multipart/form-data")
     public ResponseEntity<?> updateUser(
-            @RequestPart("user") UserRequestDTO userRequestDTO,
-            @RequestPart("profileImage") MultipartFile profileImage
+            @RequestPart(name = "user", required = false) UserRequestDTO userRequestDTO,
+            @RequestPart(name = "profileImage", required = false) MultipartFile profileImage
     ) {
         UserResponseDTO userResponseDTO = userService.updateUser(userRequestDTO, profileImage);
         CommonResponse<UserResponseDTO> response = CommonResponse.<UserResponseDTO>builder()

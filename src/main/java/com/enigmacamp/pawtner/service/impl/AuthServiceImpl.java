@@ -46,6 +46,13 @@ public class AuthServiceImpl implements AuthService {
     @Override
     @Transactional(rollbackOn =  Exception.class)
     public RegisterResponseDTO register(RegisterRequestDTO registerRequestDTO, UserRole userRole) {
+
+        boolean emailCheck = userRepository.existsByEmail(registerRequestDTO.getEmail());
+
+        if (emailCheck) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Email already exists");
+        }
+
         User user = User.builder()
                 .email(registerRequestDTO.getEmail())
                 .phoneNumber(registerRequestDTO.getPhoneNumber())
