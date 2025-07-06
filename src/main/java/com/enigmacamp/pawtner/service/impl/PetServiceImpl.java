@@ -69,7 +69,7 @@ public class PetServiceImpl implements PetService {
     }
 
     @Override
-    public Page<PetResponseDTO> getAllPetsByOwnerId(String ownerEmail, Pageable pageable) {
+    public Page<PetResponseDTO> getAllPetsByOwner(String ownerEmail, Pageable pageable) {
         User owner = userService.getUserByEmailForInternal(ownerEmail);
         Page<Pet> pets = petRepository.findByOwner(owner, pageable);
         return pets.map(this::mapToResponseDTO);

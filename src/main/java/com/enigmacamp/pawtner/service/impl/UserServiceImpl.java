@@ -40,6 +40,8 @@ public class UserServiceImpl implements UserService {
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
     }
 
+    
+
     @Override
     public UserResponseDTO getUserById(String id) {
         User user = userRepository.findById(UUID.fromString(id))

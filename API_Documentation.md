@@ -437,6 +437,22 @@ Retrieves a specific pet by its ID.
 Updates a pet's profile.
 - **Roles Permitted**: `CUSTOMER`
 
+**Request Body (`multipart/form-data`)**
+- `pet` (form-part): JSON string for `PetRequestDTO` (excluding the image field, which is handled separately)
+- `image` (file-part): The pet's image file.
+
+**Example `pet` JSON string:**
+```json
+{
+  "name": "Buddy",
+  "species": "Dog",
+  "breed": "Golden Retriever",
+  "age": 5,
+  "gender": "MALE",
+  "notes": "Loves to play fetch."
+}
+```
+
 ### `DELETE /api/pets/{id}`
 Deletes a pet's profile.
 - **Roles Permitted**: `CUSTOMER`
@@ -486,13 +502,14 @@ Creates a new prescription for a pet.
 ```json
 {
   "petId": "p1e2t3p4-e5f6-a7b8-c9d0-e1f2a3b4c5d6",
+  "bookingId": "b1o2o3k4-i5d6-a7b8-c9d0-e1f2a3b4c5d6",
   "issuingBusinessId": "b1c2d3e4-f5a6-b7c8-d9e0-f1a2b3c4d5e6",
   "issueDate": "2025-07-05",
   "notes": "Follow up in 2 weeks.",
   "prescriptionItems": [
     {
       "medicationName": "Amoxicillin",
-      "dosage": "250mg",
+      ""dosage": "250mg",
       "frequency": "Twice a day",
       "durationDays": 10,
       "instructions": "Take with food."
@@ -508,6 +525,10 @@ Retrieves a paginated list of all prescriptions.
 ### `GET /api/prescriptions/{id}`
 Retrieves a specific prescription by its ID.
 - **Roles Permitted**: `CUSTOMER`, `BUSINESS_OWNER`, `ADMIN`
+
+### `GET /api/prescriptions/booking/{bookingId}`
+Retrieves a prescription by its associated booking ID.
+- **Roles Permitted**: `BUSINESS_OWNER`
 
 ### `DELETE /api/prescriptions/{id}`
 Deletes a prescription.

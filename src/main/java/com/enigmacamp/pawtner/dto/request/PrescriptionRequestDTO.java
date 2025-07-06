@@ -19,6 +19,9 @@ public class PrescriptionRequestDTO {
     @NotBlank(message = "Pet ID is required")
     private String petId;
 
+    @NotBlank(message = "Booking ID is required")
+    private String bookingId;
+
     @NotBlank(message = "Issuing Business ID is required")
     private String issuingBusinessId;
 
