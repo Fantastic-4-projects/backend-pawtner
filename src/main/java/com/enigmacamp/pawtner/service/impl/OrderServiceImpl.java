@@ -18,6 +18,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.math.BigDecimal;
+import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -33,6 +34,8 @@ public class OrderServiceImpl implements OrderService {
     private final UserService userService;
     private final ProductService productService;
     private final PaymentService paymentService;
+    private final NotificationService notificationService;
+
 
     @Override
     @Transactional
@@ -91,6 +94,15 @@ public class OrderServiceImpl implements OrderService {
         // Clear the shopping cart after successful order creation
         shoppingCartService.clearShoppingCart(customerEmail);
 
+        // Send notification to customer
+        notificationService.sendNotification(
+                customer,
+                "Order Successful!",
+                "Your order " + order.getOrderNumber() + " has been placed.",
+                Collections.singletonMap("orderId", order.getId().toString())
+        );
+
+
         OrderResponseDTO responseDTO = mapToOrderResponseDTO(order, orderItems);
         responseDTO.setSnapToken(payment.getSnapToken());
         return responseDTO;
@@ -123,17 +135,31 @@ public class OrderServiceImpl implements OrderService {
         Order order = orderRepository.findByOrderNumber(orderId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Order not found"));
 
+        OrderStatus oldStatus = order.getStatus();
+        OrderStatus newStatus = oldStatus;
+
         if (transactionStatus.equals("capture")) {
             if (fraudStatus.equals("accept")) {
-                order.setStatus(OrderStatus.PROCESSING);
+                newStatus = OrderStatus.PROCESSING;
             }
         } else if (transactionStatus.equals("settlement")) {
-            order.setStatus(OrderStatus.COMPLETED);
+            newStatus = OrderStatus.COMPLETED;
         } else if (transactionStatus.equals("cancel") || transactionStatus.equals("deny") || transactionStatus.equals("expire")) {
-            order.setStatus(OrderStatus.CANCELLED);
+            newStatus = OrderStatus.CANCELLED;
         }
 
-        orderRepository.save(order);
+        if (oldStatus != newStatus) {
+            order.setStatus(newStatus);
+            orderRepository.save(order);
+
+            // Send notification to customer
+            notificationService.sendNotification(
+                    order.getCustomer(),
+                    "Order Status Updated",
+                    "Your order " + order.getOrderNumber() + " is now " + newStatus.name(),
+                    Collections.singletonMap("orderId", order.getId().toString())
+            );
+        }
     }
 
     private String generateOrderNumber() {

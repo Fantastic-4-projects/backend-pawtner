@@ -4,7 +4,9 @@ import com.enigmacamp.pawtner.constant.UserRole;
 import com.enigmacamp.pawtner.dto.request.*;
 import com.enigmacamp.pawtner.dto.response.LoginResponseDTO;
 import com.enigmacamp.pawtner.dto.response.RegisterResponseDTO;
+import com.enigmacamp.pawtner.entity.FcmToken;
 import com.enigmacamp.pawtner.entity.User;
+import com.enigmacamp.pawtner.repository.FcmTokenRepository;
 import com.enigmacamp.pawtner.repository.UserRepository;
 import com.enigmacamp.pawtner.service.AuthService;
 import com.enigmacamp.pawtner.config.JwtService;
@@ -36,6 +38,7 @@ public class AuthServiceImpl implements AuthService {
     private final AuthenticationManager authenticationManager;
     private final JwtService jwtService;
     private final EmailServiceImpl emailService;
+    private final FcmTokenRepository fcmTokenRepository;
 
     @Value("${app.pawtner.reset-password-url}")
     private String resetPasswordUrl;
@@ -89,6 +92,13 @@ public class AuthServiceImpl implements AuthService {
 
         if (!user.getIsVerified()){
             throw new BadCredentialsException("Email belum terverifikasi.");
+        }
+
+        if (loginRequestDTO.getFcmToken() != null && !loginRequestDTO.getFcmToken().isEmpty()) {
+            FcmToken fcmToken = new FcmToken();
+            fcmToken.setUser(user);
+            fcmToken.setToken(loginRequestDTO.getFcmToken());
+            fcmTokenRepository.save(fcmToken);
         }
 
         String token = jwtService.generateToken(user);

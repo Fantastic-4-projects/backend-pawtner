@@ -6,7 +6,6 @@ import com.enigmacamp.pawtner.entity.User;
 
 import com.enigmacamp.pawtner.dto.request.UserRequestDTO;
 import com.enigmacamp.pawtner.dto.response.UserResponseDTO;
-import com.enigmacamp.pawtner.entity.User;
 
 import java.util.List;
 import java.util.UUID;
