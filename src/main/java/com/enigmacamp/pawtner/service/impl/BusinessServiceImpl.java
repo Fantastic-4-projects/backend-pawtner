@@ -67,6 +67,30 @@ public class BusinessServiceImpl implements BusinessService {
         }
     }
 
+    @Override
+    public BusinessResponseDTO profileBusiness(UUID businessId) {
+        Business business = getBusinessByIdForInternal(businessId);
+        return mapToResponse(business);
+    }
+
+    @Override
+    public BusinessResponseDTO updateBusiness(UUID businessId, BusinessRequestDTO businessRequestDTO) {
+        Business business = getBusinessByIdForInternal(businessId);
+
+        business.setName(businessRequestDTO.getNameBusiness());
+        business.setDescription(businessRequestDTO.getDescriptionBusiness());
+        business.setBusinessType(businessRequestDTO.getBusinessType());
+        business.setBusinessEmail(businessRequestDTO.getBusinessEmail());
+        business.setBusinessPhone(businessRequestDTO.getBusinessPhone());
+        business.setEmergencyPhone(businessRequestDTO.getEmergencyPhone());
+        business.setAddress(businessRequestDTO.getBusinessAddress());
+        business.setLatitude(businessRequestDTO.getLatitude());
+        business.setLongitude(businessRequestDTO.getLongitude());
+        businessRepository.save(business);
+
+        return mapToResponse(business);
+    }
+
 
     @Override
     public List<BusinessResponseDTO> viewBusiness() {

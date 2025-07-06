@@ -5,6 +5,7 @@ import com.enigmacamp.pawtner.dto.response.BusinessResponseDTO;
 import com.enigmacamp.pawtner.dto.response.CommonResponse;
 import com.enigmacamp.pawtner.service.BusinessService;
 import com.enigmacamp.pawtner.util.ResponseUtil;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -37,6 +38,24 @@ public class BusinessController {
                 HttpStatus.CREATED,
                 "Profil bisnis berhasil dibuat",
                 null
+        );
+    }
+
+    @GetMapping("/{businessId}")
+    public ResponseEntity<CommonResponse<BusinessResponseDTO>> getBusinessById(@PathVariable UUID businessId) {
+        return ResponseUtil.createResponse(
+                HttpStatus.OK,
+                "Profil bisnis didapatkan",
+                businessService.profileBusiness(businessId)
+        );
+    }
+
+    @PutMapping("/{businessId}/update")
+    public ResponseEntity<CommonResponse<BusinessResponseDTO>> updateBusiness(@PathVariable UUID businessId, @RequestBody BusinessRequestDTO businessRequestDTO) {
+        return ResponseUtil.createResponse(
+                HttpStatus.OK,
+                "Berhasil memperbaharui profil bisnis",
+                businessService.updateBusiness(businessId, businessRequestDTO)
         );
     }
 
