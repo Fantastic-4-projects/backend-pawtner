@@ -333,6 +333,16 @@ Retrieves a paginated list of the current user's orders.
 Retrieves a specific order by its ID.
 - **Roles Permitted**: `CUSTOMER`, `BUSINESS_OWNER`, `ADMIN`
 
+### `PUT /api/orders/{order_id}/status`
+Updates the status of a specific order.
+- **Roles Permitted**: `BUSINESS_OWNER`
+
+**Query Parameters**: `status` (String, e.g., "PROCESSING", "COMPLETED", "CANCELLED")
+
+### `GET /api/orders/business`
+Retrieves a paginated list of orders associated with the authenticated business owner's business.
+- **Roles Permitted**: `BUSINESS_OWNER`
+
 ---
 
 ## Bookings (`/api/bookings`)
@@ -400,12 +410,19 @@ Creates a new pet profile.
 - **Roles Permitted**: `CUSTOMER`
 
 **Request Body (`multipart/form-data`)**
-- `name`: "Buddy"
-- `species`: "Dog"
-- `breed`: "Golden Retriever"
-- `age`: 5
-- `notes`: "Loves to play fetch."
-- `image`: (file)
+- `pet` (form-part): JSON string for `PetRequestDTO` (excluding the image field, which is handled separately)
+- `image` (file-part): The pet's image file.
+
+**Example `pet` JSON string:**
+```json
+{
+  "name": "Buddy",
+  "species": "Dog",
+  "breed": "Golden Retriever",
+  "age": 5,
+  "notes": "Loves to play fetch."
+}
+```
 
 ### `GET /api/pets`
 Retrieves a paginated list of the customer's pets.
