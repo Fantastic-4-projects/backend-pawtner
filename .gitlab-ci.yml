@@ -1,0 +1,24 @@
+variables:
+  GIT_DEPTH: "0"
+
+stages:
+  - mirror
+
+mirror_to_github:
+  stage: mirror
+  image: bitnami/git:latest
+  before_script:
+    - git remote remove github 2>/dev/null || true
+  script:
+    - git config --global user.name "GitLab Mirror Bot"
+    - git config --global user.email "mirror@example.com"
+    - git remote add github "https://alrifqidarmawan:${GITHUB_TOKEN}@github.com/Fantastic-4-projects/backend-pawtner.git"
+    # Explicitly push all branches and tags
+    - git push -f github 'refs/remotes/origin/*:refs/heads/*'
+    - git push github --tags
+    # Clean up the unwanted HEAD branch
+    - git push github --delete HEAD
+  tags:
+    - github-mirror
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "push"'
