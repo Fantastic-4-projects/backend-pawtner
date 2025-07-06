@@ -31,6 +31,7 @@ public class BusinessServiceImpl implements BusinessService {
 
     private final BusinessRepository businessRepository;
     private final ImageUploadService imageUploadService;
+    private final UserRepository userRepository;
 
     @Transactional(rollbackOn = Exception.class)
     @Override
@@ -101,6 +102,14 @@ public class BusinessServiceImpl implements BusinessService {
         businessRepository.save(business);
 
         return mapToResponse(business);
+    }
+
+    @Override
+    public Business getBusinessByOwnerEmailForInternal(String ownerEmail) {
+        User owner = userRepository.findByEmail(ownerEmail)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
+        return businessRepository.findByOwner(owner)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Business not found for this owner"));
     }
 
     private BusinessResponseDTO mapToResponse(Business business) {

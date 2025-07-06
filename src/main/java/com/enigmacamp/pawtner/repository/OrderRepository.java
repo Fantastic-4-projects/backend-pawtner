@@ -1,5 +1,6 @@
 package com.enigmacamp.pawtner.repository;
 
+import com.enigmacamp.pawtner.entity.Business;
 import com.enigmacamp.pawtner.entity.Order;
 import com.enigmacamp.pawtner.entity.User;
 import org.springframework.data.domain.Page;
@@ -14,4 +15,5 @@ import java.util.UUID;
 public interface OrderRepository extends JpaRepository<Order, UUID> {
     Page<Order> findByCustomer(User customer, Pageable pageable);
     Optional<Order> findByOrderNumber(String orderNumber);
+    Page<Order> findByBusiness(Business business, Pageable pageable);
 }

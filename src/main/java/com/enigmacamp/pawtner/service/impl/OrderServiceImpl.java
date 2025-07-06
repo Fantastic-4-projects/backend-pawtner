@@ -35,6 +35,7 @@ public class OrderServiceImpl implements OrderService {
     private final ProductService productService;
     private final PaymentService paymentService;
     private final NotificationService notificationService;
+    private final BusinessService businessService;
 
 
     @Override
@@ -47,9 +48,7 @@ public class OrderServiceImpl implements OrderService {
         }
 
         User customer = userService.getUserByEmailForInternal(customerEmail);
-        Business business = new Business();
-        business.setId(shoppingCartDTO.getBusinessId());
-        business.setName(shoppingCartDTO.getBusinessName());
+        Business business = businessService.getBusinessByIdForInternal(shoppingCartDTO.getBusinessId());
 
         // Deduct stock and create order items
         List<OrderItem> orderItems = shoppingCartDTO.getItems().stream().map(cartItemDTO -> {
@@ -190,5 +189,44 @@ public class OrderServiceImpl implements OrderService {
                 .createdAt(order.getCreatedAt())
                 .items(itemDTOs)
                 .build();
+    }
+
+    @Override
+    @Transactional
+    public OrderResponseDTO updateOrderStatus(UUID orderId, String newStatus, String businessOwnerEmail) {
+        Order order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Order not found"));
+
+        Business business = businessService.getBusinessByOwnerEmailForInternal(businessOwnerEmail);
+
+        if (!order.getBusiness().getId().equals(business.getId())) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Order does not belong to this business owner");
+        }
+
+        try {
+            OrderStatus status = OrderStatus.valueOf(newStatus.toUpperCase());
+            order.setStatus(status);
+            orderRepository.save(order);
+
+            // Send notification to customer about order status update
+            notificationService.sendNotification(
+                    order.getCustomer(),
+                    "Order Status Updated",
+                    "Your order " + order.getOrderNumber() + " is now " + status.name(),
+                    Collections.singletonMap("orderId", order.getId().toString())
+            );
+
+            return mapToOrderResponseDTO(order, orderItemRepository.findByOrder(order));
+        } catch (IllegalArgumentException e) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid order status: " + newStatus);
+        }
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Page<OrderResponseDTO> getAllOrdersByBusinessOwnerId(String businessOwnerEmail, Pageable pageable) {
+        Business business = businessService.getBusinessByOwnerEmailForInternal(businessOwnerEmail);
+        Page<Order> orders = orderRepository.findByBusiness(business, pageable);
+        return orders.map(order -> mapToOrderResponseDTO(order, orderItemRepository.findByOrder(order)));
     }
 }

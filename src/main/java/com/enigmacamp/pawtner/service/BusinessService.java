@@ -16,4 +16,5 @@ public interface BusinessService {
     List<BusinessResponseDTO> viewMyBusiness();
     Business getBusinessByIdForInternal(UUID id);
     BusinessResponseDTO approveBusiness(UUID businessId, Boolean approved);
+    Business getBusinessByOwnerEmailForInternal(String ownerEmail);
 }

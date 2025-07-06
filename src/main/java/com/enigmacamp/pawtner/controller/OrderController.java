@@ -42,4 +42,18 @@ public class OrderController {
         Page<OrderResponseDTO> responseDTOPage = orderService.getAllOrdersByCustomerId(authentication.getName(), pageable);
         return ResponseUtil.createResponse(HttpStatus.OK, "Successfully fetched all orders", responseDTOPage);
     }
+
+    @PutMapping("/{order_id}/status")
+    @PreAuthorize("hasAuthority('BUSINESS_OWNER')")
+    public ResponseEntity<CommonResponse<OrderResponseDTO>> updateOrderStatus(@PathVariable(name = "order_id") UUID id, @RequestParam String status, Authentication authentication) {
+        OrderResponseDTO responseDTO = orderService.updateOrderStatus(id, status, authentication.getName());
+        return ResponseUtil.createResponse(HttpStatus.OK, "Order status updated successfully", responseDTO);
+    }
+
+    @GetMapping("/business")
+    @PreAuthorize("hasAuthority('BUSINESS_OWNER')")
+    public ResponseEntity<CommonResponse<Page<OrderResponseDTO>>> getAllOrdersForBusiness(Authentication authentication, Pageable pageable) {
+        Page<OrderResponseDTO> responseDTOPage = orderService.getAllOrdersByBusinessOwnerId(authentication.getName(), pageable);
+        return ResponseUtil.createResponse(HttpStatus.OK, "Successfully fetched all orders for business", responseDTOPage);
+    }
 }
