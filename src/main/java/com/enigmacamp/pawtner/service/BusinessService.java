@@ -18,9 +18,7 @@ public interface BusinessService {
     List<BusinessResponseDTO> viewMyBusiness();
     Business getBusinessByIdForInternal(UUID id);
     BusinessResponseDTO approveBusiness(UUID businessId, Boolean approved);
-<<<<<<< HEAD
+    Business getBusinessByOwnerEmailForInternal(String ownerEmail);
     BusinessResponseDTO openBusiness(UUID businessId);
     void deleteBusiness(UUID businessId);
-======
->>>>>>> dev/rifqi
 }

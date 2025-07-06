@@ -10,11 +10,6 @@ import java.util.List;
 
 public interface BusinessRepository extends JpaRepository<Business, UUID> {
     List<Business> findAllByOwner_Id(UUID id);
-<<<<<<< HEAD
-=======
-
     Optional<Business> findBusinessById(UUID id);
-
     Optional<Business> findByOwner(User owner);
->>>>>>> dev/rifqi
 }

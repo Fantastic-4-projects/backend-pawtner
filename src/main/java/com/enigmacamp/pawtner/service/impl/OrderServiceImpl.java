@@ -26,8 +26,7 @@ import java.util.Map;
 
 @Service
 @AllArgsConstructor
-public class
-OrderServiceImpl implements OrderService {
+public class OrderServiceImpl implements OrderService {
 
     private final OrderRepository orderRepository;
     private final OrderItemRepository orderItemRepository;
@@ -36,10 +35,7 @@ OrderServiceImpl implements OrderService {
     private final ProductService productService;
     private final PaymentService paymentService;
     private final NotificationService notificationService;
-<<<<<<< HEAD
-=======
     private final BusinessService businessService;
->>>>>>> dev/rifqi
 
 
     @Override
@@ -194,8 +190,6 @@ OrderServiceImpl implements OrderService {
                 .items(itemDTOs)
                 .build();
     }
-<<<<<<< HEAD
-=======
 
     @Override
     @Transactional
@@ -235,5 +229,4 @@ OrderServiceImpl implements OrderService {
         Page<Order> orders = orderRepository.findByBusiness(business, pageable);
         return orders.map(order -> mapToOrderResponseDTO(order, orderItemRepository.findByOrder(order)));
     }
->>>>>>> dev/rifqi
 }

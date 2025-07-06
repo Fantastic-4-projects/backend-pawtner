@@ -1,5 +1,6 @@
 package com.enigmacamp.pawtner.entity;
 
+import com.enigmacamp.pawtner.constant.PetGender;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -43,6 +44,10 @@ public class Pet {
 
     @NotNull(message = "Age is required")
     private Integer age;
+
+    @NotNull(message = "Gender is required")
+    @Enumerated(EnumType.STRING)
+    private PetGender gender;
 
     @Size(max = 255)
     private String imageUrl;

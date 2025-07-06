@@ -5,6 +5,7 @@ import com.enigmacamp.pawtner.dto.response.BusinessResponseDTO;
 import com.enigmacamp.pawtner.entity.Business;
 import com.enigmacamp.pawtner.entity.User;
 import com.enigmacamp.pawtner.repository.BusinessRepository;
+import com.enigmacamp.pawtner.repository.UserRepository;
 import com.enigmacamp.pawtner.service.BusinessService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -125,7 +126,6 @@ public class BusinessServiceImpl implements BusinessService {
     }
 
     @Override
-<<<<<<< HEAD
     public BusinessResponseDTO openBusiness(UUID businessId) {
         Business business = getBusinessByIdForInternal(businessId);
 
@@ -139,13 +139,14 @@ public class BusinessServiceImpl implements BusinessService {
     public void deleteBusiness(UUID businessId) {
         Business business = getBusinessByIdForInternal(businessId);
         businessRepository.delete(business);
-=======
+    }
+
+    @Override
     public Business getBusinessByOwnerEmailForInternal(String ownerEmail) {
         User owner = userRepository.findByEmail(ownerEmail)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
         return businessRepository.findByOwner(owner)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Business not found for this owner"));
->>>>>>> dev/rifqi
     }
 
     private BusinessResponseDTO mapToResponse(Business business) {
