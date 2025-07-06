@@ -3,6 +3,7 @@ package com.enigmacamp.pawtner.service.impl;
 import com.enigmacamp.pawtner.constant.BookingStatus;
 import com.enigmacamp.pawtner.dto.request.BookingRequestDTO;
 import com.enigmacamp.pawtner.dto.response.BookingResponseDTO;
+import com.enigmacamp.pawtner.dto.response.PetResponseDTO;
 import com.enigmacamp.pawtner.dto.response.UserResponseDTO;
 import com.enigmacamp.pawtner.entity.Booking;
 import com.enigmacamp.pawtner.entity.Pet;
@@ -97,7 +98,7 @@ public class BookingServiceImpl implements BookingService {
         return BookingResponseDTO.builder()
                 .id(booking.getId())
                 .customer(mapToUserResponseDTO(booking.getCustomer()))
-                .petId(booking.getPet().getId())
+                .pet(mapToPetResponseDTO(booking.getPet()))
                 .petName(booking.getPet().getName())
                 .serviceId(booking.getService().getId())
                 .serviceName(booking.getService().getName())
@@ -115,11 +116,24 @@ public class BookingServiceImpl implements BookingService {
     private UserResponseDTO mapToUserResponseDTO(User user) {
         return UserResponseDTO.builder()
                 .id(user.getId().toString())
-                .phone(user.getName())
+                .name(user.getName())
                 .email(user.getEmail())
                 .address(user.getAddress())
                 .phone(user.getPhoneNumber())
                 .imageUrl(user.getImageUrl())
+                .build();
+    }
+
+    private PetResponseDTO mapToPetResponseDTO(Pet pet) {
+        return PetResponseDTO.builder()
+                .id(pet.getId())
+                .name(pet.getName())
+                .species(pet.getSpecies())
+                .breed(pet.getBreed())
+                .age(pet.getAge())
+                .imageUrl(pet.getImageUrl())
+                .notes(pet.getNotes())
+                .ownerName(pet.getOwner().getName())
                 .build();
     }
 }

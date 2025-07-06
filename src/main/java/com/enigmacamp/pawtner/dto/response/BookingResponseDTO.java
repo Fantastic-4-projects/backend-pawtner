@@ -16,7 +16,7 @@ import java.util.UUID;
 public class BookingResponseDTO {
     private UUID id;
     private UserResponseDTO customer;
-    private UUID petId;
+    private PetResponseDTO pet;
     private String petName;
     private UUID serviceId;
     private String serviceName;
