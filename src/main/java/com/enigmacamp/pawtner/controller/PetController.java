@@ -43,7 +43,7 @@ public class PetController {
     @GetMapping
     @PreAuthorize("hasAuthority('CUSTOMER')")
     public ResponseEntity<CommonResponse<Page<PetResponseDTO>>> getMyPets(Authentication authentication, Pageable pageable) {
-        Page<PetResponseDTO> responseDTOPage = petService.getAllPetsByOwnerId(authentication.getName(), pageable);
+        Page<PetResponseDTO> responseDTOPage = petService.getAllPetsByOwner(authentication.getName(), pageable);
         return ResponseUtil.createResponse(HttpStatus.OK, "Successfully fetched all pets", responseDTOPage);
     }
 

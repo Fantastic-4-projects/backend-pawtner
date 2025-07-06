@@ -2,6 +2,7 @@ package com.enigmacamp.pawtner.service;
 
 import com.enigmacamp.pawtner.dto.request.BookingRequestDTO;
 import com.enigmacamp.pawtner.dto.response.BookingResponseDTO;
+import com.enigmacamp.pawtner.entity.Booking;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.Authentication;
@@ -14,4 +15,5 @@ public interface BookingService {
     Page<BookingResponseDTO> getAllBookings(Authentication authentication, Pageable pageable);
     BookingResponseDTO updateBookingStatus(UUID id, String status);
     void cancelBooking(UUID id, String customerEmail);
+    Booking getBookingEntityById(UUID id);
 }

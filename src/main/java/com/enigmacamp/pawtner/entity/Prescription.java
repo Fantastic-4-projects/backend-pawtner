@@ -31,6 +31,10 @@ public class Prescription {
     @JoinColumn(name = "issuing_business_id")
     private Business issuingBusiness;
 
+    @ManyToOne
+    @JoinColumn(name = "booking_id")
+    private Booking booking;
+
     @Column(name = "issue_date", nullable = false)
     @JsonFormat(pattern = "yyyy-MM-dd")
     private LocalDate issueDate;

@@ -94,6 +94,12 @@ public class BookingServiceImpl implements BookingService {
         bookingRepository.delete(booking);
     }
 
+    @Override
+    public Booking getBookingEntityById(UUID id) {
+        return bookingRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Booking not found"));
+    }
+
     private BookingResponseDTO toBookingResponseDTO(Booking booking) {
         return BookingResponseDTO.builder()
                 .id(booking.getId())
@@ -109,7 +115,7 @@ public class BookingServiceImpl implements BookingService {
                 .endTime(booking.getEndTime())
                 .totalPrice(booking.getTotalPrice().doubleValue())
                 .status(booking.getStatus().name())
-                .createdAt(booking.getCreatedAt())
+                .createdAt(LocalDateTime.now())
                 .build();
     }
 
