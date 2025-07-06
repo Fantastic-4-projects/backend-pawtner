@@ -14,6 +14,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.UUID;
 
@@ -24,9 +25,10 @@ public class PetController {
 
     private final PetService petService;
 
-    @PostMapping
+    @PostMapping(consumes = "multipart/form-data")
     @PreAuthorize("hasAuthority('CUSTOMER')")
-    public ResponseEntity<CommonResponse<PetResponseDTO>> createPet(@Valid @RequestBody PetRequestDTO petRequestDTO, Authentication authentication) {
+    public ResponseEntity<CommonResponse<PetResponseDTO>> createPet(@Valid @ModelAttribute PetRequestDTO petRequestDTO, @RequestPart("image") MultipartFile image, Authentication authentication) {
+        petRequestDTO.setImage(image);
         PetResponseDTO responseDTO = petService.createPet(petRequestDTO, authentication.getName());
         return ResponseUtil.createResponse(HttpStatus.CREATED, "Successfully created pet", responseDTO);
     }

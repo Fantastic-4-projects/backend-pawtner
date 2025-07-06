@@ -12,4 +12,6 @@ public interface OrderService {
     OrderResponseDTO getOrderById(UUID id);
     Page<OrderResponseDTO> getAllOrdersByCustomerId(String customerEmail, Pageable pageable);
     void handleWebhook(Map<String, Object> payload);
+    OrderResponseDTO updateOrderStatus(UUID orderId, String newStatus, String businessOwnerEmail);
+    Page<OrderResponseDTO> getAllOrdersByBusinessOwnerId(String businessOwnerEmail, Pageable pageable);
 }

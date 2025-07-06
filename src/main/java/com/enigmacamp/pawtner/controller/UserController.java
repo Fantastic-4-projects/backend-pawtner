@@ -1,10 +1,14 @@
 package com.enigmacamp.pawtner.controller;
 
+import com.enigmacamp.pawtner.dto.request.UpdateFcmTokenRequestDTO;
 import com.enigmacamp.pawtner.dto.request.UserRequestDTO;
 import com.enigmacamp.pawtner.dto.response.CommonResponse;
 import com.enigmacamp.pawtner.dto.response.UserResponseDTO;
+import com.enigmacamp.pawtner.entity.User;
+import com.enigmacamp.pawtner.service.NotificationService;
 import com.enigmacamp.pawtner.service.UserService;
 import com.enigmacamp.pawtner.util.ResponseUtil;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -25,6 +29,7 @@ import org.springframework.web.server.ResponseStatusException;
 public class UserController {
 
     private final UserService userService;
+    private final NotificationService notificationService;
 
     @GetMapping("/{id}")
     public ResponseEntity<?> getUserById(@PathVariable String id) {
