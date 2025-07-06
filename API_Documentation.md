@@ -420,6 +420,7 @@ Creates a new pet profile.
   "species": "Dog",
   "breed": "Golden Retriever",
   "age": 5,
+  "gender": "MALE",
   "notes": "Loves to play fetch."
 }
 ```
