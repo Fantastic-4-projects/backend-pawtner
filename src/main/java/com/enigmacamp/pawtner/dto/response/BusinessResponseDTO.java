@@ -19,5 +19,6 @@ public class BusinessResponseDTO {
     private String businessName;
     private String businessAddress;
     private OperationHoursDTO operationHours;
+    private Boolean isOpen;
     private String statusApproved = "Pending";
 }

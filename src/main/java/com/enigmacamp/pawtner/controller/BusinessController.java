@@ -4,9 +4,7 @@ import com.enigmacamp.pawtner.dto.request.BusinessRequestDTO;
 import com.enigmacamp.pawtner.dto.response.BusinessResponseDTO;
 import com.enigmacamp.pawtner.dto.response.CommonResponse;
 import com.enigmacamp.pawtner.service.BusinessService;
-import com.enigmacamp.pawtner.service.ServiceService;
 import com.enigmacamp.pawtner.util.ResponseUtil;
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -71,6 +69,27 @@ public class BusinessController {
                 HttpStatus.OK,
                 "Profil bisnis didapatkan",
                 businessService.viewMyBusiness()
+        );
+    }
+
+    @PatchMapping("/{businessId}/toggle-open")
+    public ResponseEntity<CommonResponse<BusinessResponseDTO>> openBusiness(@PathVariable UUID businessId){
+        BusinessResponseDTO response = businessService.openBusiness(businessId);
+        String message = response.getIsOpen() ? "Bisnis berhasil dibuka" : "Bisnis berhasil ditutup";
+        return ResponseUtil.createResponse(
+                HttpStatus.OK,
+                message,
+                response
+        );
+    }
+
+    @DeleteMapping("/{businessId}/delete")
+    public ResponseEntity<CommonResponse<BusinessResponseDTO>> deleteBusiness(@PathVariable UUID businessId){
+        businessService.deleteBusiness(businessId);
+        return ResponseUtil.createResponse(
+                HttpStatus.OK,
+                "Bisnis berhasil dihapus",
+                null
         );
     }
 }

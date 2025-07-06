@@ -16,4 +16,6 @@ public interface BusinessService {
     List<BusinessResponseDTO> viewMyBusiness();
     Business getBusinessByIdForInternal(UUID id);
     BusinessResponseDTO approveBusiness(UUID businessId, Boolean approved);
+    BusinessResponseDTO openBusiness(UUID businessId);
+    void deleteBusiness(UUID businessId);
 }
