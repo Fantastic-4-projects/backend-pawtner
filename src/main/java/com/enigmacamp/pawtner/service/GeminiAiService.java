@@ -28,14 +28,14 @@ public class GeminiAiService {
     private final WebClient webClient;
     private final String apiKey;
     private final String modelName;
-    private final ObjectMapper objectMapper; // <-- PERUBAHAN 1: Menambahkan ObjectMapper
+    private final ObjectMapper objectMapper;
 
     public GeminiAiService(
             WebClient.Builder webClientBuilder,
             @Value("${pawtner.ai.gemini.api-url:https://generativelanguage.googleapis.com/}") String apiUrl,
             @Value("${pawtner.ai.gemini.api-key}") String apiKey,
             @Value("${pawtner.ai.gemini.model-name}") String modelName,
-            ObjectMapper objectMapper // <-- PERUBAHAN 2: Inject ObjectMapper melalui konstruktor
+            ObjectMapper objectMapper
     ) {
         this.webClient = webClientBuilder.baseUrl(apiUrl).build();
         this.apiKey = apiKey;
@@ -89,15 +89,15 @@ public class GeminiAiService {
 
         log.info("Mengirim permintaan ke Gemini API. Model: {}, Path: {}", this.modelName, path);
 
-        // --- PERUBAHAN 3: Rantai WebClient diubah untuk debugging ---
+
         return webClient.post()
                 .uri(uriBuilder -> uriBuilder.path(path).queryParam("key", this.apiKey).build())
                 .contentType(MediaType.APPLICATION_JSON)
                 .bodyValue(requestBody)
                 .retrieve()
-                .bodyToMono(String.class) // Mengambil respons sebagai String mentah
+                .bodyToMono(String.class)
                 .flatMap(rawJsonResponse -> {
-                    // MENCATAT RESPONS MENTAH DARI GOOGLE
+
                     log.info("RAW JSON RESPONSE FROM GEMINI: {}", rawJsonResponse);
 
                     try {
@@ -135,14 +135,14 @@ public class GeminiAiService {
     }
 
     private String extractTextFromResponse(GeminiResponse geminiResponse) {
-        // PERUBAHAN 4: Menambahkan log yang lebih detail di sini
+
         if (geminiResponse == null) {
             log.warn("Mencoba mengekstrak teks, tetapi objek GeminiResponse adalah null.");
             return "Maaf, saya tidak dapat memproses respons saat ini (objek respons null).";
         }
         if (geminiResponse.candidates() == null || geminiResponse.candidates().length == 0) {
             log.warn("Respons Gemini valid, tetapi array 'candidates' kosong atau null. Ini bisa terjadi karena filter keamanan.");
-            // Cek apakah ada promptFeedback yang menjelaskan kenapa diblokir
+
             if (geminiResponse.promptFeedback() != null && geminiResponse.promptFeedback().blockReason() != null) {
                 log.warn("Permintaan diblokir karena: {}", geminiResponse.promptFeedback().blockReason());
                 return "Maaf, pertanyaan Anda tidak dapat diproses karena melanggar kebijakan keamanan.";
@@ -162,7 +162,7 @@ public class GeminiAiService {
             return "Maaf, saya tidak dapat memproses respons saat ini (teks respons kosong).";
         }
 
-        // Jika semua pengecekan berhasil, kembalikan teksnya
+
         log.info("Berhasil mengekstrak teks dari respons Gemini.");
         return firstPart.text();
     }

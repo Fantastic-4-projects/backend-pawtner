@@ -90,8 +90,8 @@ public class UserServiceImpl implements UserService {
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
 
         switch (action.toLowerCase()) {
-            case "ban" -> user.setIsEnabled(!value);
-            case "suspend" -> user.setIsAccountNonLocked(!value);
+            case "ban" -> user.setIsEnabled(value);
+            case "suspend" -> user.setIsAccountNonLocked(value);
             default -> throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid action");
         }
 
@@ -114,6 +114,10 @@ public class UserServiceImpl implements UserService {
                 .address(user.getAddress())
                 .phone(user.getPhoneNumber())
                 .imageUrl(user.getImageUrl())
+                .isEnable(user.getIsEnabled())
+                .isNoLocked(user.getIsAccountNonLocked())
+                .createdAt(user.getCreatedAt())
+                .updatedAt(user.getCreatedAt())
                 .build();
     }
 }

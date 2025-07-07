@@ -94,27 +94,27 @@ public class SecurityConfig {
 
                         // Endpoints for CUSTOMER
                         .requestMatchers(
-                                "/api/cart/**", // All cart operations
-                                "/api/orders/checkout", // Checkout
-                                "/api/orders", // GET my orders
-                                "/api/pets/**", // All pet operations
-                                "/api/reviews" // POST create review, PUT update review
+                                "/api/cart/**",
+                                "/api/orders/checkout",
+                                "/api/orders",
+                                "/api/pets/**",
+                                "/api/reviews"
                         ).hasAuthority(UserRole.CUSTOMER.name())
 
                         // Endpoints for ADMIN
                         .requestMatchers(
-                                "/api/users", // GET all users, DELETE user by ID
-                                "/api/users/{id}", // DELETE user by ID, PATCH update user status
-                                "/api/users/{id}/status", // PATCH update user status
-                                "/api/auth/user/set-role", // PATCH set user role
-                                "/api/reviews/{id}", // DELETE review
-                                "/api/business/{id}" // PATCH approve business
+                                "/api/users",
+                                "/api/users/{id}",
+                                "/api/users/{id}/status",
+                                "/api/auth/user/set-role",
+                                "/api/reviews/{id}",
+                                "/api/business/{id}"
                         ).hasAuthority(UserRole.ADMIN.name())
 
                         .requestMatchers("/api/orders/{order_id}"
                         ).hasAnyAuthority(UserRole.CUSTOMER.name(), UserRole.BUSINESS_OWNER.name(), UserRole.ADMIN.name())
 
-                        .anyRequest().authenticated() // Fallback for any other authenticated requests
+                        .anyRequest().authenticated()
                 )
                 .addFilterBefore(authTokenFilter, UsernamePasswordAuthenticationFilter.class)
                 .oauth2Login(oauth2 ->
