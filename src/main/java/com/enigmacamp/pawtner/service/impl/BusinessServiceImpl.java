@@ -1,27 +1,30 @@
 package com.enigmacamp.pawtner.service.impl;
 
-import com.enigmacamp.pawtner.constant.UserRole;
 import com.enigmacamp.pawtner.dto.request.BusinessRequestDTO;
 import com.enigmacamp.pawtner.dto.response.BusinessResponseDTO;
 import com.enigmacamp.pawtner.entity.Business;
 import com.enigmacamp.pawtner.entity.User;
-import com.enigmacamp.pawtner.repository.UserRepository;
 import com.enigmacamp.pawtner.repository.BusinessRepository;
+import com.enigmacamp.pawtner.repository.UserRepository;
 import com.enigmacamp.pawtner.service.BusinessService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
 import com.enigmacamp.pawtner.service.ImageUploadService;
 import org.springframework.web.multipart.MultipartFile;
+import org.locationtech.jts.geom.Point;
+import org.locationtech.jts.geom.GeometryFactory;
+import org.locationtech.jts.geom.Coordinate;
 
 import java.io.IOException;
 
@@ -32,6 +35,7 @@ public class BusinessServiceImpl implements BusinessService {
     private final BusinessRepository businessRepository;
     private final ImageUploadService imageUploadService;
     private final UserRepository userRepository;
+    private final GeometryFactory geometryFactory = new GeometryFactory();
 
     @Transactional(rollbackOn = Exception.class)
     @Override
@@ -56,13 +60,15 @@ public class BusinessServiceImpl implements BusinessService {
                     .description(businessRequestDTO.getDescriptionBusiness())
                     .address(businessRequestDTO.getBusinessAddress())
                     .businessType(businessRequestDTO.getBusinessType())
+                    .hasEmergencyServices(businessRequestDTO.getHasEmergencyServices())
                     .businessEmail(businessRequestDTO.getBusinessEmail())
                     .businessPhone(businessRequestDTO.getBusinessPhone())
+                    .emergencyPhone(businessRequestDTO.getEmergencyPhone())
                     .businessImageUrl(businessImageUrl) // boleh null
                     .certificateImageUrl(certificateImageUrl) // boleh null
-                    .latitude(businessRequestDTO.getLatitude())
-                    .longitude(businessRequestDTO.getLongitude())
+                    .statusRealtime(businessRequestDTO.getBusinessStatus())
                     .operationHours(businessRequestDTO.getOperationHours())
+                    .location(geometryFactory.createPoint(new Coordinate(businessRequestDTO.getLongitude().doubleValue(), businessRequestDTO.getLatitude().doubleValue())))
                     .build();
 
             businessRepository.save(newBusiness);
@@ -70,6 +76,51 @@ public class BusinessServiceImpl implements BusinessService {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Failed to upload image");
         }
     }
+
+    @Override
+    public BusinessResponseDTO profileBusiness(UUID businessId) {
+        Business business = getBusinessByIdForInternal(businessId);
+        return mapToResponse(business);
+    }
+
+    @Override
+    @Transactional(rollbackOn = Exception.class)
+    public BusinessResponseDTO updateBusiness(UUID businessId, BusinessRequestDTO businessRequestDTO, MultipartFile businessImage, MultipartFile certificateImage) {
+        Business business = getBusinessByIdForInternal(businessId);
+
+        try {
+            String businessImageUrl = business.getBusinessImageUrl();
+            String certificateImageUrl = business.getCertificateImageUrl();
+
+            if (businessImage != null && !businessImage.isEmpty()) {
+                businessImageUrl = imageUploadService.upload(businessImage);
+            }
+
+            if (certificateImage != null && !certificateImage.isEmpty()) {
+                certificateImageUrl = imageUploadService.upload(certificateImage);
+            }
+
+            business.setName(businessRequestDTO.getNameBusiness());
+            business.setDescription(businessRequestDTO.getDescriptionBusiness());
+            business.setBusinessType(businessRequestDTO.getBusinessType());
+            business.setHasEmergencyServices(business.getHasEmergencyServices());
+            business.setBusinessEmail(businessRequestDTO.getBusinessEmail());
+            business.setBusinessPhone(businessRequestDTO.getBusinessPhone());
+            business.setEmergencyPhone(businessRequestDTO.getEmergencyPhone());
+            business.setAddress(businessRequestDTO.getBusinessAddress());
+            business.setStatusRealtime(businessRequestDTO.getBusinessStatus());
+            business.setLocation(geometryFactory.createPoint(new Coordinate(businessRequestDTO.getLongitude().doubleValue(), businessRequestDTO.getLatitude().doubleValue())));
+            business.setBusinessImageUrl(businessImageUrl);
+            business.setCertificateImageUrl(certificateImageUrl);
+
+            businessRepository.save(business);
+            return mapToResponse(business);
+
+        } catch (IOException e) {
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Failed to upload image");
+        }
+    }
+
 
 
     @Override
@@ -83,7 +134,9 @@ public class BusinessServiceImpl implements BusinessService {
     public List<BusinessResponseDTO> viewMyBusiness() {
         User currentUser = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         return businessRepository.findAllByOwner_Id(currentUser.getId())
-                .stream().map(this::mapToResponse)
+                .stream()
+                .filter(Business::getIsActive)
+                .map(this::mapToResponse)
                 .collect(Collectors.toList());
     }
 
@@ -95,13 +148,38 @@ public class BusinessServiceImpl implements BusinessService {
 
     @Override
     public BusinessResponseDTO approveBusiness(UUID businessId, Boolean approved) {
-        Business business = businessRepository.findBusinessById((businessId))
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Business not found"));
+        Business business = getBusinessByIdForInternal(businessId);
 
         business.setIsApproved(approved);
         businessRepository.save(business);
 
         return mapToResponse(business);
+    }
+
+    @Override
+    public BusinessResponseDTO openBusiness(UUID businessId, BusinessRequestDTO businessRequestDTO) {
+        Business business = getBusinessByIdForInternal(businessId);
+
+        business.setStatusRealtime(businessRequestDTO.getBusinessStatus());
+        businessRepository.save(business);
+
+        return mapToResponse(business);
+    }
+
+    @Override
+    public List<BusinessResponseDTO> findNearbyBusinesses(double lat, double lon, double radiusKm) {
+        Point userLocation = geometryFactory.createPoint(new Coordinate(lon, lat));
+        double distanceInMeters = radiusKm * 1000;
+        return businessRepository.findNearbyBusinesses(userLocation, distanceInMeters)
+                .stream().map(this::mapToResponse)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public void deleteBusiness(UUID businessId) {
+        Business business = getBusinessByIdForInternal(businessId);
+        business.setIsActive(false);
+        businessRepository.save(business);
     }
 
     @Override
@@ -117,6 +195,17 @@ public class BusinessServiceImpl implements BusinessService {
                 .businessId(business.getId())
                 .ownerName(business.getOwner().getName())
                 .businessName(business.getName())
+                .description(business.getDescription())
+                .businessType(business.getBusinessType())
+                .hasEmergencyServices(business.getHasEmergencyServices())
+                .businessEmail(business.getBusinessEmail())
+                .businessPhone(business.getBusinessPhone())
+                .emergencyPhone(business.getEmergencyPhone())
+                .businessImageUrl(business.getBusinessImageUrl())
+                .certificateImageUrl(business.getCertificateImageUrl())
+                .latitude(BigDecimal.valueOf(business.getLocation().getY()))
+                .longitude(BigDecimal.valueOf(business.getLocation().getX()))
+                .statusRealTime(business.getStatusRealtime())
                 .businessAddress(business.getAddress())
                 .operationHours(business.getOperationHours())
                 .statusApproved(

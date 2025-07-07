@@ -5,6 +5,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDateTime;
+
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
@@ -16,4 +18,8 @@ public class UserResponseDTO {
     private String address;
     private String phone;
     private String imageUrl;
+    private Boolean isEnable;
+    private Boolean isNoLocked;
+    private LocalDateTime createdAt;
+    private LocalDateTime updatedAt;
 }

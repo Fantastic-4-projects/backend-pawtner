@@ -24,4 +24,6 @@ public class ProductResponseDTO {
     private Integer stockQuantity;
     private String imageUrl;
     private Boolean isActive;
+    private Double averageRating;
+    private Long reviewCount;
 }

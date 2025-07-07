@@ -9,7 +9,10 @@ import com.enigmacamp.pawtner.entity.*;
 import com.enigmacamp.pawtner.repository.OrderItemRepository;
 import com.enigmacamp.pawtner.repository.OrderRepository;
 import com.enigmacamp.pawtner.service.*;
+import com.midtrans.httpclient.error.MidtransError;
+import com.midtrans.service.MidtransCoreApi;
 import lombok.AllArgsConstructor;
+import org.json.JSONObject;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
@@ -36,6 +39,7 @@ public class OrderServiceImpl implements OrderService {
     private final PaymentService paymentService;
     private final NotificationService notificationService;
     private final BusinessService businessService;
+    private final MidtransCoreApi midtransCoreApi;
 
 
     @Override
@@ -127,37 +131,45 @@ public class OrderServiceImpl implements OrderService {
     @Override
     @Transactional
     public void handleWebhook(Map<String, Object> payload) {
-        String orderId = (String) payload.get("order_id");
-        String transactionStatus = (String) payload.get("transaction_status");
-        String fraudStatus = (String) payload.get("fraud_status");
+        try {
+            String orderId = (String) payload.get("order_id");
+            JSONObject transactionResult = midtransCoreApi.checkTransaction(orderId);
 
-        Order order = orderRepository.findByOrderNumber(orderId)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Order not found"));
+            String transactionStatus = (String) transactionResult.get("transaction_status");
+            String fraudStatus = (String) transactionResult.get("fraud_status");
 
-        OrderStatus oldStatus = order.getStatus();
-        OrderStatus newStatus = oldStatus;
+            Order order = orderRepository.findByOrderNumber(orderId)
+                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Order not found"));
 
-        if (transactionStatus.equals("capture")) {
-            if (fraudStatus.equals("accept")) {
-                newStatus = OrderStatus.PROCESSING;
+            OrderStatus oldStatus = order.getStatus();
+            OrderStatus newStatus = oldStatus;
+
+            if (transactionStatus.equals("capture")) {
+                if (fraudStatus.equals("accept")) {
+                    newStatus = OrderStatus.PROCESSING;
+                }
+            } else if (transactionStatus.equals("settlement")) {
+                newStatus = OrderStatus.COMPLETED;
+            } else if (transactionStatus.equals("cancel") || transactionStatus.equals("deny") || transactionStatus.equals("expire")) {
+                newStatus = OrderStatus.CANCELLED;
+            } else if (transactionStatus.equals("pending")) {
+                newStatus = OrderStatus.PENDING_PAYMENT;
             }
-        } else if (transactionStatus.equals("settlement")) {
-            newStatus = OrderStatus.COMPLETED;
-        } else if (transactionStatus.equals("cancel") || transactionStatus.equals("deny") || transactionStatus.equals("expire")) {
-            newStatus = OrderStatus.CANCELLED;
-        }
 
-        if (oldStatus != newStatus) {
-            order.setStatus(newStatus);
-            orderRepository.save(order);
+            if (oldStatus != newStatus) {
+                order.setStatus(newStatus);
+                orderRepository.save(order);
 
-            // Send notification to customer
-            notificationService.sendNotification(
-                    order.getCustomer(),
-                    "Order Status Updated",
-                    "Your order " + order.getOrderNumber() + " is now " + newStatus.name(),
-                    Collections.singletonMap("orderId", order.getId().toString())
-            );
+                // Send notification to customer
+                notificationService.sendNotification(
+                        order.getCustomer(),
+                        "Order Status Updated",
+                        "Your order " + order.getOrderNumber() + " is now " + newStatus.name(),
+                        Collections.singletonMap("orderId", order.getId().toString())
+                );
+            }
+        } catch (MidtransError e) {
+            throw new RuntimeException(e.getMessage(), e);
         }
     }
 
@@ -224,8 +236,8 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     @Transactional(readOnly = true)
-    public Page<OrderResponseDTO> getAllOrdersByBusinessOwnerId(String businessOwnerEmail, Pageable pageable) {
-        Business business = businessService.getBusinessByOwnerEmailForInternal(businessOwnerEmail);
+    public Page<OrderResponseDTO> getAllOrdersByBusinessId(UUID businessId, Pageable pageable) {
+        Business business = businessService.getBusinessByIdForInternal(businessId);
         Page<Order> orders = orderRepository.findByBusiness(business, pageable);
         return orders.map(order -> mapToOrderResponseDTO(order, orderItemRepository.findByOrder(order)));
     }

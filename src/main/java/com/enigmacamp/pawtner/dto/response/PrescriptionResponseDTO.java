@@ -8,6 +8,7 @@ import lombok.NoArgsConstructor;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.UUID;
 
 @Data
 @AllArgsConstructor
@@ -17,6 +18,7 @@ public class PrescriptionResponseDTO {
     private String id;
     private PetResponseDTO pet;
     private BusinessResponseDTO issuingBusiness;
+    private UUID bookingId;
     private LocalDate issueDate;
     private String notes;
     private List<PrescriptionItemResponseDTO> prescriptionItems;

@@ -11,8 +11,8 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.locationtech.jts.geom.Point;
 
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
@@ -68,11 +68,8 @@ public class Business {
     @Column(length = 2000)
     private String address;
 
-    @Digits(integer = 9, fraction = 6)
-    private BigDecimal latitude;
-
-    @Digits(integer = 9, fraction = 6)
-    private BigDecimal longitude;
+    @Column(name = "location", columnDefinition = "geometry(Point, 4326)")
+    private Point location;
 
     @Convert(converter = OperationHoursConverter.class)
     @Column(columnDefinition = "TEXT")
@@ -83,7 +80,7 @@ public class Business {
     private BusinessStatus statusRealtime = BusinessStatus.CLOSED;
 
     @Builder.Default
-    private Boolean isOpen = false;
+    private Boolean isActive = true;
 
     @Builder.Default
     private Boolean isApproved = null;

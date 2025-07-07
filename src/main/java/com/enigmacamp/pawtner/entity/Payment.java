@@ -55,8 +55,7 @@ public class Payment {
     @Size(max = 255)
     private String snapToken;
 
-    @JdbcTypeCode(SqlTypes.JSON)
-    @Column(columnDefinition = "JSONB")
+    @Column(columnDefinition = "TEXT")
     private String webhookPayload;
 
     @Builder.Default

@@ -82,10 +82,21 @@ public class User implements UserDetails {
     @Column(updatable = false)
     private LocalDateTime createdAt = LocalDateTime.now();
 
-    private Boolean isAccountNonExpired;
-    private Boolean isAccountNonLocked;
-    private Boolean isCredentialsNonExpired;
-    private Boolean isEnabled;
+    @Builder.Default
+    @Column(nullable = false)
+    private Boolean isAccountNonExpired = true;
+
+    @Builder.Default
+    @Column(nullable = false)
+    private Boolean isAccountNonLocked = true;
+
+    @Builder.Default
+    @Column(nullable = false)
+    private Boolean isCredentialsNonExpired = true;
+
+    @Builder.Default
+    @Column(nullable = false)
+    private Boolean isEnabled = true;
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<FcmToken> fcmTokens;

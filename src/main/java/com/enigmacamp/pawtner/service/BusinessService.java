@@ -12,9 +12,14 @@ import org.springframework.web.multipart.MultipartFile;
 
 public interface BusinessService {
     void registerBusiness(BusinessRequestDTO businessRequestDTO, MultipartFile businessImage, MultipartFile certificateImage);
+    BusinessResponseDTO profileBusiness(UUID businessId);
+    BusinessResponseDTO updateBusiness(UUID businessId, BusinessRequestDTO businessRequestDTO, MultipartFile businessImage, MultipartFile certificateImage);
     List<BusinessResponseDTO> viewBusiness();
     List<BusinessResponseDTO> viewMyBusiness();
+    List<BusinessResponseDTO> findNearbyBusinesses(double lat, double lon, double radiusKm);
     Business getBusinessByIdForInternal(UUID id);
     BusinessResponseDTO approveBusiness(UUID businessId, Boolean approved);
     Business getBusinessByOwnerEmailForInternal(String ownerEmail);
+    BusinessResponseDTO openBusiness(UUID businessId,  BusinessRequestDTO businessRequestDTO);
+    void deleteBusiness(UUID businessId);
 }

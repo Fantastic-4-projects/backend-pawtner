@@ -5,14 +5,11 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
@@ -27,11 +24,6 @@ public class SecurityConfig {
     private final AuthTokenFilter authTokenFilter;
     private final OAuth2SuccessHandler oAuth2SuccessHandler;
     private final CustomAuthenticationEntryPoint customAuthenticationEntryPoint; // Inject the custom entry point
-
-    @Bean
-    public PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder();
-    }
 
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration) throws Exception {
@@ -70,15 +62,16 @@ public class SecurityConfig {
                                 "/api/services", // GET all services
                                 "/api/services/{id}", // GET service by ID
                                 "/api/business", // GET all businesses
-                                "/api/business/{id}", // GET business by ID
-                                "/api/users/{id}" // GET user by ID (public for now, adjust if needed)
+                                "/api/business/{id}" // GET business by ID
                         ).permitAll() // Publicly accessible GET endpoints
 
                         // Endpoints requiring authentication (any role)
                         .requestMatchers(
                                 "/api/reviews", // GET all reviews
                                 "/api/reviews/{id}", // GET review by ID
-                                "/api/users" // PUT update user
+                                "/api/users", // PUT update user
+                                "/api/users/{id}", // GET user by ID
+                                "/api/users/change-password"
                         ).authenticated()
 
                         // Endpoints for BUSINESS_OWNER
@@ -88,31 +81,33 @@ public class SecurityConfig {
                                 "/api/services", // POST create service
                                 "/api/services/{id}", // PUT update service, DELETE delete service
                                 "/api/business/register", // POST register business
-                                "/api/business/my-business" // GET my business
+                                "/api/business/my-business", // GET my business
+                                "/api/orders/business"
                         ).hasAuthority(UserRole.BUSINESS_OWNER.name())
 
                         // Endpoints for CUSTOMER
                         .requestMatchers(
-                                "/api/cart/**", // All cart operations
-                                "/api/orders/checkout", // Checkout
-                                "/api/orders", // GET my orders
-                                "/api/orders/{id}", // GET order by ID (customer specific)
-                                "/api/pets/**", // All pet operations
-                                "/api/reviews" // POST create review, PUT update review
+                                "/api/cart/**",
+                                "/api/orders/checkout",
+                                "/api/orders",
+                                "/api/pets/**",
+                                "/api/reviews"
                         ).hasAuthority(UserRole.CUSTOMER.name())
 
                         // Endpoints for ADMIN
                         .requestMatchers(
-                                "/api/users", // GET all users, DELETE user by ID
-                                "/api/users/{id}", // DELETE user by ID, PATCH update user status
-                                "/api/users/{id}/status", // PATCH update user status
-                                "/api/auth/user/set-role", // PATCH set user role
-                                "/api/orders/{id}", // PUT update order status, DELETE delete order
-                                "/api/reviews/{id}", // DELETE review
-                                "/api/business/{id}" // PATCH approve business
+                                "/api/users",
+                                "/api/users/{id}",
+                                "/api/users/{id}/status",
+                                "/api/auth/user/set-role",
+                                "/api/reviews/{id}",
+                                "/api/business/{id}"
                         ).hasAuthority(UserRole.ADMIN.name())
 
-                        .anyRequest().authenticated() // Fallback for any other authenticated requests
+                        .requestMatchers("/api/orders/{order_id}"
+                        ).hasAnyAuthority(UserRole.CUSTOMER.name(), UserRole.BUSINESS_OWNER.name(), UserRole.ADMIN.name())
+
+                        .anyRequest().authenticated()
                 )
                 .addFilterBefore(authTokenFilter, UsernamePasswordAuthenticationFilter.class)
                 .oauth2Login(oauth2 ->

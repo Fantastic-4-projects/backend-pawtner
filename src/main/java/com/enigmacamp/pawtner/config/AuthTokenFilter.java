@@ -43,6 +43,12 @@ public class AuthTokenFilter extends OncePerRequestFilter {
                 UserDetails userDetails = userService.loadUserByUsername(email);
 
                 log.info("Token valid. User authenticated: {}", email);
+                log.info("userdata: {}", userDetails.getAuthorities());
+
+                log.info("User enabled: {}", userDetails.isEnabled());
+                log.info("Account locked: {}", !userDetails.isAccountNonLocked());
+                log.info("Account expired: {}", !userDetails.isAccountNonExpired());
+                log.info("Credential expired: {}", !userDetails.isCredentialsNonExpired());
 
                 UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
                 authenticationToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));

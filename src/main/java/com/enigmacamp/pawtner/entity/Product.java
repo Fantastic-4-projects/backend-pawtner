@@ -10,6 +10,7 @@ import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.UUID;
 
 @Data
@@ -37,7 +38,7 @@ public class Product {
     @Column(nullable = false)
     private ProductCategory category;
 
-    @Lob
+    @Column(columnDefinition = "TEXT")
     private String description;
 
     @NotNull(message = "Price is required")
@@ -54,6 +55,9 @@ public class Product {
 
     @Size(max = 255)
     private String imageUrl;
+
+    @OneToMany(mappedBy = "product", fetch = FetchType.LAZY)
+    private List<Review> reviews;
 
     @Builder.Default
     @Column(updatable = false)

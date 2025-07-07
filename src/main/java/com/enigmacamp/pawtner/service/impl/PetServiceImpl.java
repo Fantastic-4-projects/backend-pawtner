@@ -1,5 +1,6 @@
 package com.enigmacamp.pawtner.service.impl;
 
+import com.enigmacamp.pawtner.constant.PetGender;
 import com.enigmacamp.pawtner.dto.request.PetRequestDTO;
 import com.enigmacamp.pawtner.dto.response.PetResponseDTO;
 import com.enigmacamp.pawtner.entity.Pet;
@@ -47,6 +48,7 @@ public class PetServiceImpl implements PetService {
                 .species(petRequestDTO.getSpecies())
                 .breed(petRequestDTO.getBreed())
                 .age(petRequestDTO.getAge())
+                .gender(petRequestDTO.getGender())
                 .imageUrl(imageUrl)
                 .notes(petRequestDTO.getNotes())
                 .build();
@@ -67,7 +69,7 @@ public class PetServiceImpl implements PetService {
     }
 
     @Override
-    public Page<PetResponseDTO> getAllPetsByOwnerId(String ownerEmail, Pageable pageable) {
+    public Page<PetResponseDTO> getAllPetsByOwner(String ownerEmail, Pageable pageable) {
         User owner = userService.getUserByEmailForInternal(ownerEmail);
         Page<Pet> pets = petRepository.findByOwner(owner, pageable);
         return pets.map(this::mapToResponseDTO);
@@ -96,6 +98,7 @@ public class PetServiceImpl implements PetService {
         existingPet.setSpecies(petRequestDTO.getSpecies());
         existingPet.setBreed(petRequestDTO.getBreed());
         existingPet.setAge(petRequestDTO.getAge());
+        existingPet.setGender(petRequestDTO.getGender());
         existingPet.setImageUrl(imageUrl);
         existingPet.setNotes(petRequestDTO.getNotes());
 
@@ -122,6 +125,7 @@ public class PetServiceImpl implements PetService {
                 .species(pet.getSpecies())
                 .breed(pet.getBreed())
                 .age(pet.getAge())
+                .gender(pet.getGender())
                 .imageUrl(pet.getImageUrl())
                 .notes(pet.getNotes())
                 .ownerName(pet.getOwner().getName())

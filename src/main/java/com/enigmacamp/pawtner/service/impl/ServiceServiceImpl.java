@@ -3,19 +3,25 @@ package com.enigmacamp.pawtner.service.impl;
 import com.enigmacamp.pawtner.dto.request.ServiceRequestDTO;
 import com.enigmacamp.pawtner.dto.response.ServiceResponseDTO;
 import com.enigmacamp.pawtner.entity.Business;
+import com.enigmacamp.pawtner.entity.Product;
 import com.enigmacamp.pawtner.entity.Service;
 import com.enigmacamp.pawtner.repository.ServiceRepository;
 import com.enigmacamp.pawtner.service.BusinessService;
 import com.enigmacamp.pawtner.service.ImageUploadService;
 import com.enigmacamp.pawtner.service.ServiceService;
+import com.enigmacamp.pawtner.specification.ProductSpecification;
+import com.enigmacamp.pawtner.specification.ServiceSpecification;
 import lombok.AllArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.util.UUID;
 
 @Component
@@ -59,8 +65,18 @@ public class ServiceServiceImpl implements ServiceService {
     }
 
     @Override
-    public Page<ServiceResponseDTO> getAllServices(Pageable pageable) {
-        Page<Service> services = serviceRepository.findAll(pageable);
+    public Page<ServiceResponseDTO> getAllServices(Pageable pageable, String name, BigDecimal minPrice, BigDecimal maxPrice) {
+        Specification<Service> spec = ServiceSpecification.getSpecification(name, minPrice, maxPrice);
+
+        Page<Service> services = serviceRepository.findAll(spec, pageable);
+        return services.map(this::mapToResponseDTO);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Page<ServiceResponseDTO> getAllServicesByBusiness(UUID businessId, Pageable pageable) {
+        Business business = businessService.getBusinessByIdForInternal(businessId);
+        Page<Service> services = serviceRepository.findAllByBusiness(business, pageable);
         return services.map(this::mapToResponseDTO);
     }
 

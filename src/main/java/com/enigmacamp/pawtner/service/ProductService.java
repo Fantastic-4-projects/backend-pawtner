@@ -6,12 +6,14 @@ import com.enigmacamp.pawtner.entity.Product;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
+import java.math.BigDecimal;
 import java.util.UUID;
 
 public interface ProductService {
     ProductResponseDTO createProduct(ProductRequestDTO productRequestDTO);
     ProductResponseDTO getProductById(UUID id);
-    Page<ProductResponseDTO> getAllProducts(Pageable pageable);
+    Page<ProductResponseDTO> getAllProducts(Pageable pageable, String name, BigDecimal minPrice, BigDecimal maxPrice);
+    Page<ProductResponseDTO> getProductsByBusiness(UUID ownerId, Pageable pageable);
     ProductResponseDTO updateProduct(ProductRequestDTO productRequestDTO);
     void deleteProduct(UUID id);
     Product getProductEntityById(UUID id);

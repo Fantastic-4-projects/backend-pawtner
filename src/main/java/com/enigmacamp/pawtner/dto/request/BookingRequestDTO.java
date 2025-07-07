@@ -7,6 +7,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.math.BigDecimal;
+
 import java.time.LocalDateTime;
 import java.util.UUID;
 
@@ -28,4 +30,6 @@ public class BookingRequestDTO {
     @NotNull(message = "End time is required")
     @Future(message = "End time must be in the future")
     private LocalDateTime endTime;
+    private BigDecimal latitude;
+    private BigDecimal longitude;
 }

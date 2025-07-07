@@ -1,5 +1,6 @@
 package com.enigmacamp.pawtner.dto.response;
 
+import com.enigmacamp.pawtner.constant.PetGender;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -17,6 +18,7 @@ public class PetResponseDTO {
     private String species;
     private String breed;
     private Integer age;
+    private PetGender gender;
     private String imageUrl;
     private String notes;
     private String ownerName;

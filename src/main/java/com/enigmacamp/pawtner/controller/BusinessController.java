@@ -4,7 +4,6 @@ import com.enigmacamp.pawtner.dto.request.BusinessRequestDTO;
 import com.enigmacamp.pawtner.dto.response.BusinessResponseDTO;
 import com.enigmacamp.pawtner.dto.response.CommonResponse;
 import com.enigmacamp.pawtner.service.BusinessService;
-import com.enigmacamp.pawtner.service.ServiceService;
 import com.enigmacamp.pawtner.util.ResponseUtil;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -42,6 +41,29 @@ public class BusinessController {
         );
     }
 
+    @GetMapping("/{businessId}")
+    public ResponseEntity<CommonResponse<BusinessResponseDTO>> getBusinessById(@PathVariable UUID businessId) {
+        return ResponseUtil.createResponse(
+                HttpStatus.OK,
+                "Profil bisnis didapatkan",
+                businessService.profileBusiness(businessId)
+        );
+    }
+
+    @PutMapping("/{businessId}/update")
+    public ResponseEntity<CommonResponse<BusinessResponseDTO>> updateBusiness(
+            @PathVariable UUID businessId,
+            @RequestPart(required = false, name = "business") BusinessRequestDTO businessRequestDTO,
+            @RequestPart(required = false, name = "businessImage") MultipartFile businessImage,
+            @RequestPart(required = false, name = "certificateImage") MultipartFile certificateImage
+    ) {
+        return ResponseUtil.createResponse(
+                HttpStatus.OK,
+                "Berhasil memperbaharui profil bisnis",
+                businessService.updateBusiness(businessId, businessRequestDTO, businessImage, certificateImage)
+        );
+    }
+
     @PatchMapping("/{id}")
     @PreAuthorize("hasAuthority('ADMIN')")
     public ResponseEntity<CommonResponse<BusinessResponseDTO>> approveBusiness(
@@ -71,6 +93,40 @@ public class BusinessController {
                 HttpStatus.OK,
                 "Profil bisnis didapatkan",
                 businessService.viewMyBusiness()
+        );
+    }
+
+    @PatchMapping("/{businessId}/toggle-open")
+    public ResponseEntity<CommonResponse<BusinessResponseDTO>> openBusiness(@PathVariable UUID businessId, @RequestBody BusinessRequestDTO businessRequestDTO) {
+        BusinessResponseDTO response = businessService.openBusiness(businessId,  businessRequestDTO);
+        String message = "Status realtime berubah menjadi " + response.getStatusRealTime().name();
+        return ResponseUtil.createResponse(
+                HttpStatus.OK,
+                message,
+                response
+        );
+    }
+
+    @DeleteMapping("/{businessId}/delete")
+    public ResponseEntity<CommonResponse<BusinessResponseDTO>> deleteBusiness(@PathVariable UUID businessId){
+        businessService.deleteBusiness(businessId);
+        return ResponseUtil.createResponse(
+                HttpStatus.OK,
+                "Bisnis berhasil dihapus",
+                null
+        );
+    }
+
+    @GetMapping("/nearby")
+    public ResponseEntity<CommonResponse<List<BusinessResponseDTO>>> getNearbyBusinesses(
+            @RequestParam double lat,
+            @RequestParam double lon,
+            @RequestParam(defaultValue = "15") double radiusKm
+    ) {
+        return ResponseUtil.createResponse(
+                HttpStatus.OK,
+                "Bisnis terdekat berhasil didapatkan",
+                businessService.findNearbyBusinesses(lat, lon, radiusKm)
         );
     }
 }

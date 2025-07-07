@@ -15,6 +15,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Map;
 import java.util.UUID;
 
 @RestController
@@ -31,6 +32,12 @@ public class BookingController {
         return ResponseUtil.createResponse(HttpStatus.CREATED, "Successfully created booking", responseDTO);
     }
 
+    @PostMapping("/webhook")
+    public ResponseEntity<CommonResponse<String>> handleWebhook(@RequestBody Map<String, Object> payload) {
+        bookingService.handleWebhook(payload);
+        return ResponseUtil.createResponse(HttpStatus.OK, "Webhook received", null);
+    }
+
     @GetMapping("/{id}")
     @PreAuthorize("hasAuthority('CUSTOMER') or hasAuthority('BUSINESS_OWNER') or hasAuthority('ADMIN')")
     public ResponseEntity<CommonResponse<BookingResponseDTO>> getBookingById(@PathVariable UUID id) {
@@ -43,6 +50,16 @@ public class BookingController {
     public ResponseEntity<CommonResponse<Page<BookingResponseDTO>>> getAllBookings(Authentication authentication, Pageable pageable) {
         Page<BookingResponseDTO> responseDTOPage = bookingService.getAllBookings(authentication, pageable);
         return ResponseUtil.createResponse(HttpStatus.OK, "Successfully fetched all bookings", responseDTOPage);
+    }
+
+    @GetMapping("/my-bookings/{businessId}")
+    @PreAuthorize("hasAuthority('BUSINESS_OWNER')")
+    public ResponseEntity<CommonResponse<Page<BookingResponseDTO>>> getAllBookingsForBusiness(
+            @PathVariable UUID businessId,
+            Pageable pageable) {
+
+        Page<BookingResponseDTO> responseDTOPage = bookingService.getAllBookingsByBusiness(businessId, pageable);
+        return ResponseUtil.createResponse(HttpStatus.OK, "Successfully fetched all bookings for the business", responseDTOPage);
     }
 
     @PutMapping("/{id}/status")

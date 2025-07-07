@@ -22,4 +22,6 @@ public class ServiceResponseDTO {
     private Integer capacityPerDay;
     private String imageUrl;
     private Boolean isActive;
+    private Double averageRating;
+    private Long reviewCount;
 }

@@ -1,5 +1,6 @@
 package com.enigmacamp.pawtner.dto.request;
 
+import com.enigmacamp.pawtner.constant.PetGender;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
@@ -32,6 +33,9 @@ public class PetRequestDTO {
 
     @NotNull(message = "Age is required")
     private Integer age;
+
+    @NotNull(message = "Gender is required")
+    private PetGender gender;
 
     private MultipartFile image;
 
