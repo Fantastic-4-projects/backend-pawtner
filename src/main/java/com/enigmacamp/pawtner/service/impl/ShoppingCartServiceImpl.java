@@ -75,19 +75,18 @@ public class ShoppingCartServiceImpl implements ShoppingCartService {
     @Override
     public ShoppingCartResponseDTO getShoppingCartByCustomerId(String customerEmail) {
         User customer = userService.getUserByEmailForInternal(customerEmail);
-        List<ShoppingCart> shoppingCarts = shoppingCartRepository.findAll().stream()
-                .filter(cart -> cart.getCustomer().getId().equals(customer.getId()))
-                .collect(Collectors.toList());
+        List<ShoppingCart> shoppingCarts = shoppingCartRepository.findByCustomer(customer);
 
         if (shoppingCarts.isEmpty()) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Shopping cart not found for this customer");
         }
 
+        // Assuming one customer can have multiple shopping carts (one per business)
+        // For now, we'll return the first one found or handle multiple carts as needed.
+        // If a customer can only have one active cart across all businesses, this logic needs adjustment.
         ShoppingCart shoppingCart = shoppingCarts.get(0);
 
-        List<CartItem> cartItems = cartItemRepository.findAll().stream()
-                .filter(item -> item.getShoppingCart().getId().equals(shoppingCart.getId()))
-                .collect(Collectors.toList());
+        List<CartItem> cartItems = cartItemRepository.findByShoppingCart(shoppingCart);
 
         List<CartItemResponseDTO> itemDTOs = cartItems.stream()
                 .map(this::mapToCartItemResponseDTO)
@@ -145,9 +144,7 @@ public class ShoppingCartServiceImpl implements ShoppingCartService {
     @Transactional
     public void clearShoppingCart(String customerEmail) {
         User customer = userService.getUserByEmailForInternal(customerEmail);
-        List<ShoppingCart> shoppingCarts = shoppingCartRepository.findAll().stream()
-                .filter(cart -> cart.getCustomer().getId().equals(customer.getId()))
-                .collect(Collectors.toList());
+        List<ShoppingCart> shoppingCarts = shoppingCartRepository.findByCustomer(customer);
 
         if (shoppingCarts.isEmpty()) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Shopping cart not found for this customer");
@@ -155,9 +152,7 @@ public class ShoppingCartServiceImpl implements ShoppingCartService {
 
         ShoppingCart shoppingCart = shoppingCarts.get(0);
 
-        List<CartItem> cartItems = cartItemRepository.findAll().stream()
-                .filter(item -> item.getShoppingCart().getId().equals(shoppingCart.getId()))
-                .collect(Collectors.toList());
+        List<CartItem> cartItems = cartItemRepository.findByShoppingCart(shoppingCart);
 
         cartItemRepository.deleteAll(cartItems);
         shoppingCartRepository.delete(shoppingCart);

@@ -1,5 +1,6 @@
 package com.enigmacamp.pawtner.service;
 
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetailsService;
 
 import com.enigmacamp.pawtner.entity.User;
@@ -16,7 +17,7 @@ public interface UserService extends UserDetailsService {
     User getUserByEmailForInternal(String email);
     UserResponseDTO getUserById(String id);
     UserResponseDTO updateUser(UserRequestDTO userRequestDTO, MultipartFile profileImage);
-    List<UserResponseDTO> getAllUser();
+    List<UserResponseDTO> getAllUser(Authentication authentication);
     UserResponseDTO updateUserStatus(UUID id, String action, Boolean value);
     void deleteUser(String id);
 }

@@ -56,8 +56,8 @@ public class UserController {
 
     @GetMapping
     @PreAuthorize("hasAuthority('ADMIN')")
-    public ResponseEntity<?> getAllUser() {
-        List<UserResponseDTO> userResponseDTOS = userService.getAllUser();
+    public ResponseEntity<?> getAllUser(Authentication authentication) {
+        List<UserResponseDTO> userResponseDTOS = userService.getAllUser(authentication);
         CommonResponse<List<UserResponseDTO>> response = CommonResponse.<List<UserResponseDTO>>builder()
                 .message("Successfully get all users")
                 .data(userResponseDTOS)
