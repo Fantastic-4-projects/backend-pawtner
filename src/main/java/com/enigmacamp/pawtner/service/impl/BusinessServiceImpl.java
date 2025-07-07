@@ -15,6 +15,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -61,12 +63,9 @@ public class BusinessServiceImpl implements BusinessService {
                     .hasEmergencyServices(businessRequestDTO.getHasEmergencyServices())
                     .businessEmail(businessRequestDTO.getBusinessEmail())
                     .businessPhone(businessRequestDTO.getBusinessPhone())
-
                     .emergencyPhone(businessRequestDTO.getEmergencyPhone())
                     .businessImageUrl(businessImageUrl) // boleh null
                     .certificateImageUrl(certificateImageUrl) // boleh null
-                    .latitude(businessRequestDTO.getLatitude())
-                    .longitude(businessRequestDTO.getLongitude())
                     .statusRealtime(businessRequestDTO.getBusinessStatus())
                     .operationHours(businessRequestDTO.getOperationHours())
                     .location(geometryFactory.createPoint(new Coordinate(businessRequestDTO.getLongitude().doubleValue(), businessRequestDTO.getLatitude().doubleValue())))
@@ -109,13 +108,8 @@ public class BusinessServiceImpl implements BusinessService {
             business.setBusinessPhone(businessRequestDTO.getBusinessPhone());
             business.setEmergencyPhone(businessRequestDTO.getEmergencyPhone());
             business.setAddress(businessRequestDTO.getBusinessAddress());
-<<<<<<< src/main/java/com/enigmacamp/pawtner/service/impl/BusinessServiceImpl.java
-            business.setLocation(geometryFactory.createPoint(new Coordinate(businessRequestDTO.getLongitude().doubleValue(), businessRequestDTO.getLatitude().doubleValue())));
-=======
             business.setStatusRealtime(businessRequestDTO.getBusinessStatus());
-            business.setLatitude(businessRequestDTO.getLatitude());
-            business.setLongitude(businessRequestDTO.getLongitude());
->>>>>>> src/main/java/com/enigmacamp/pawtner/service/impl/BusinessServiceImpl.java
+            business.setLocation(geometryFactory.createPoint(new Coordinate(businessRequestDTO.getLongitude().doubleValue(), businessRequestDTO.getLatitude().doubleValue())));
             business.setBusinessImageUrl(businessImageUrl);
             business.setCertificateImageUrl(certificateImageUrl);
 
@@ -206,8 +200,8 @@ public class BusinessServiceImpl implements BusinessService {
                 .emergencyPhone(business.getEmergencyPhone())
                 .businessImageUrl(business.getBusinessImageUrl())
                 .certificateImageUrl(business.getCertificateImageUrl())
-                .latitude(business.getLatitude())
-                .longitude(business.getLongitude())
+                .latitude(BigDecimal.valueOf(business.getLocation().getY()))
+                .longitude(BigDecimal.valueOf(business.getLocation().getX()))
                 .statusRealTime(business.getStatusRealtime())
                 .businessAddress(business.getAddress())
                 .operationHours(business.getOperationHours())
