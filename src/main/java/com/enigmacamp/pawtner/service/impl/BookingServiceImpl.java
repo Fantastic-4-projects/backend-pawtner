@@ -6,6 +6,7 @@ import com.enigmacamp.pawtner.dto.response.BookingResponseDTO;
 import com.enigmacamp.pawtner.dto.response.PetResponseDTO;
 import com.enigmacamp.pawtner.dto.response.UserResponseDTO;
 import com.enigmacamp.pawtner.entity.Booking;
+import com.enigmacamp.pawtner.entity.Business;
 import com.enigmacamp.pawtner.entity.Pet;
 import com.enigmacamp.pawtner.entity.User;
 import com.enigmacamp.pawtner.repository.BookingRepository;
@@ -13,12 +14,14 @@ import com.enigmacamp.pawtner.repository.PetRepository;
 import com.enigmacamp.pawtner.repository.ServiceRepository;
 import com.enigmacamp.pawtner.repository.UserRepository;
 import com.enigmacamp.pawtner.service.BookingService;
+import com.enigmacamp.pawtner.service.BusinessService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDate;
@@ -35,6 +38,7 @@ public class BookingServiceImpl implements BookingService {
     private final PetRepository petRepository;
     private final ServiceRepository serviceRepository;
     private final BookingRepository bookingRepository;
+    private final BusinessService businessService;
 
     @Override
     public BookingResponseDTO createBooking(BookingRequestDTO requestDTO, String customerEmail) {
@@ -99,6 +103,14 @@ public class BookingServiceImpl implements BookingService {
         User user = userRepository.findByEmail(authentication.getName())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
         return bookingRepository.findAll(pageable).map(this::toBookingResponseDTO);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Page<BookingResponseDTO> getAllBookingsByBusiness(UUID uuid, Pageable pageable) {
+        Business business = businessService.getBusinessByIdForInternal(uuid);
+        Page<Booking> bookings = bookingRepository.findAllByService_Business(business, pageable);
+        return bookings.map(this::toBookingResponseDTO);
     }
 
     @Override

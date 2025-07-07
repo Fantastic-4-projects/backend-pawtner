@@ -13,6 +13,7 @@ public interface BookingService {
     BookingResponseDTO createBooking(BookingRequestDTO requestDTO, String customerEmail);
     BookingResponseDTO getBookingById(UUID id);
     Page<BookingResponseDTO> getAllBookings(Authentication authentication, Pageable pageable);
+    Page<BookingResponseDTO> getAllBookingsByBusiness(UUID uuid, Pageable pageable);
     BookingResponseDTO updateBookingStatus(UUID id, String status);
     void cancelBooking(UUID id, String customerEmail);
     Booking getBookingEntityById(UUID id);

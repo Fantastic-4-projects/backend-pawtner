@@ -45,6 +45,16 @@ public class BookingController {
         return ResponseUtil.createResponse(HttpStatus.OK, "Successfully fetched all bookings", responseDTOPage);
     }
 
+    @GetMapping("/my-bookings/{businessId}")
+    @PreAuthorize("hasAuthority('BUSINESS_OWNER')")
+    public ResponseEntity<CommonResponse<Page<BookingResponseDTO>>> getAllBookingsForBusiness(
+            @PathVariable UUID businessId,
+            Pageable pageable) {
+
+        Page<BookingResponseDTO> responseDTOPage = bookingService.getAllBookingsByBusiness(businessId, pageable);
+        return ResponseUtil.createResponse(HttpStatus.OK, "Successfully fetched all bookings for the business", responseDTOPage);
+    }
+
     @PutMapping("/{id}/status")
     @PreAuthorize("hasAuthority('BUSINESS_OWNER')")
     public ResponseEntity<CommonResponse<BookingResponseDTO>> updateBookingStatus(@PathVariable UUID id, @RequestBody String status) {

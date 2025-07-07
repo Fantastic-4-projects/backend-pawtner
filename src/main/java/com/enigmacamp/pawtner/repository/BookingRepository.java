@@ -2,6 +2,9 @@ package com.enigmacamp.pawtner.repository;
 
 import com.enigmacamp.pawtner.constant.BookingStatus;
 import com.enigmacamp.pawtner.entity.Booking;
+import com.enigmacamp.pawtner.entity.Business;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -20,4 +23,6 @@ public interface BookingRepository extends JpaRepository<Booking, UUID> {
             @Param("startDate") LocalDateTime startDate,
             @Param("endDate") LocalDateTime endDate
     );
+
+    Page<Booking> findAllByService_Business(Business serviceBusiness, Pageable pageable);
 }
