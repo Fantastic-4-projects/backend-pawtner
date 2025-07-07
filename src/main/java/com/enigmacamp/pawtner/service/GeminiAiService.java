@@ -101,12 +101,10 @@ public class GeminiAiService {
                     log.info("RAW JSON RESPONSE FROM GEMINI: {}", rawJsonResponse);
 
                     try {
-                        // Mencoba mem-parsing string mentah ke DTO
                         GeminiResponse geminiResponse = objectMapper.readValue(rawJsonResponse, GeminiResponse.class);
                         return Mono.just(extractTextFromResponse(geminiResponse));
                     } catch (JsonProcessingException e) {
                         log.error("Gagal mem-parsing JSON dari Gemini. Error: {}", e.getMessage());
-                        // Jika parsing gagal, kita tahu ada masalah dengan DTO atau struktur JSON
                         return Mono.just("Maaf, terjadi kesalahan saat memproses respons dari AI. (Parsing Error)");
                     }
                 })
@@ -119,7 +117,6 @@ public class GeminiAiService {
                         })
                 )
                 .onErrorResume(e -> {
-                    // Menangkap error jaringan atau error non-2xx lainnya
                     if (e instanceof WebClientResponseException) {
                         WebClientResponseException wcre = (WebClientResponseException) e;
                         log.error("Gagal saat memanggil Gemini API. Status: {}, Body: {}", wcre.getStatusCode(), wcre.getResponseBodyAsString());

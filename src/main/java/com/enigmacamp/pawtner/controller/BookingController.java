@@ -15,6 +15,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Map;
 import java.util.UUID;
 
 @RestController
@@ -29,6 +30,12 @@ public class BookingController {
     public ResponseEntity<CommonResponse<BookingResponseDTO>> createBooking(@Valid @RequestBody BookingRequestDTO requestDTO, Authentication authentication) {
         BookingResponseDTO responseDTO = bookingService.createBooking(requestDTO, authentication.getName());
         return ResponseUtil.createResponse(HttpStatus.CREATED, "Successfully created booking", responseDTO);
+    }
+
+    @PostMapping("/webhook")
+    public ResponseEntity<CommonResponse<String>> handleWebhook(@RequestBody Map<String, Object> payload) {
+        bookingService.handleWebhook(payload);
+        return ResponseUtil.createResponse(HttpStatus.OK, "Webhook received", null);
     }
 
     @GetMapping("/{id}")

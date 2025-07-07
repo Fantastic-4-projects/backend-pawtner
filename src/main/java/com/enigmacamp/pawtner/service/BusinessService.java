@@ -16,6 +16,7 @@ public interface BusinessService {
     BusinessResponseDTO updateBusiness(UUID businessId, BusinessRequestDTO businessRequestDTO, MultipartFile businessImage, MultipartFile certificateImage);
     List<BusinessResponseDTO> viewBusiness();
     List<BusinessResponseDTO> viewMyBusiness();
+    List<BusinessResponseDTO> findNearbyBusinesses(double lat, double lon, double radiusKm);
     Business getBusinessByIdForInternal(UUID id);
     BusinessResponseDTO approveBusiness(UUID businessId, Boolean approved);
     Business getBusinessByOwnerEmailForInternal(String ownerEmail);
