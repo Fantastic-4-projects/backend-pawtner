@@ -1543,54 +1543,85 @@ Retrieves a specific product by its ID.
 ```
 
 ### `GET /api/products`
-Retrieves a paginated list of all products.
-- **Roles Permitted**: `Public`
 
-**Query Parameters**: `page` (int), `size` (int), `sort` (String)
+Retrieves a paginated list of all products with extensive filtering and sorting capabilities, including by location.
 
-**Response Data (`Page<ProductResponseDTO>`)**
+- **Roles Permitted**: `Public / Authenticated` (Sesuai konfigurasi `SecurityConfig` Anda, endpoint ini saat ini memerlukan autentikasi)
+- **Method**: `GET`
+- **Full Endpoint**: `/api/products`
+
+**Query Parameters**
+
+| Parameter | Type | Optional | Default | Description |
+| :--- | :--- | :--- | :--- | :--- |
+| `page` | `int` | Yes | `0` | The page number to retrieve. |
+| `size` | `int` | Yes | `10` | The number of items per page. |
+| `sortBy` | `String` | Yes | `name` | The field to sort by. Valid options: `name`, `price`, `avgRating`, `reviewCount`. |
+| `direction` | `String` | Yes | `asc` | The sort direction. Valid options: `asc` (ascending) or `desc` (descending). |
+| `name` | `String` | Yes | - | Filter products by name (case-insensitive, partial match). |
+| `minPrice` | `BigDecimal` | Yes | - | Filter for products with a price greater than or equal to this value. |
+| `maxPrice` | `BigDecimal` | Yes | - | Filter for products with a price less than or equal to this value. |
+| `userLat` | `Double` | Yes | - | The user's latitude. Required for location-based filtering. |
+| `userLon` | `Double` | Yes | - | The user's longitude. Required for location-based filtering. |
+| `radiusKm` | `Double` | Yes | `15` | The search radius in kilometers for location-based filtering. |
+
+**Example Request**
+
+*   Mencari produk bernama "Food" dalam radius 10 km dari lokasi pengguna, dengan harga di bawah 300000, diurutkan berdasarkan rating tertinggi.
+    ```http
+    GET /api/products?name=Food&maxPrice=300000&userLat=-6.2088&userLon=106.8456&radiusKm=10&sortBy=avgRating&direction=desc
+    ```
+
+**Success Response (200 OK)**
+
+*   **Body**: `CommonResponse<Page<ProductResponseDTO>>`
+
 ```json
 {
-    "content": [
-        {
-            "id": "p1r2o3d4-u5c6-t7i8-d9e0-f1a2b3c4d5e6",
-            "businessId": "c4a5b6c7-d8e9-f0a1-b2c3-d4e5f6a7b8c9",
-            "businessName": "Pawtner Pet Shop",
-            "name": "Premium Dog Food",
-            "category": "FOOD",
-            "description": "High-quality dog food for all breeds.",
-            "price": 250000.00,
-            "stockQuantity": 100,
-            "isActive": true,
-            "imageUrl": "http://example.com/dog_food.jpg",
-            "createdAt": "2025-07-05T14:30:00"
-        }
-    ],
-    "pageable": {
-        "pageNumber": 0,
-        "pageSize": 10,
+    "status": 200,
+    "message": "Successfully fetched all products",
+    "data": {
+        "content": [
+            {
+                "id": "a1b2c3d4-e5f6-7890-1234-567890abcdef",
+                "businessId": "b1c2d3e4-f5a6-b7c8-d9e0-f1a2b3c4d5e6",
+                "name": "Royal Canin Premium Dog Food",
+                "category": "FOOD",
+                "description": "High-quality dog food for adult dogs, rich in nutrients.",
+                "price": 250000.00,
+                "stockQuantity": 50,
+                "imageUrl": "https://res.cloudinary.com/dhqueh6fp/image/upload/v1/some-image.jpg",
+                "isActive": true,
+                "avgRating": 4.8,
+                "reviewCount": 150
+            }
+        ],
+        "pageable": {
+            "pageNumber": 0,
+            "pageSize": 10,
+            "sort": {
+                "empty": false,
+                "sorted": true,
+                "unsorted": false
+            },
+            "offset": 0,
+            "paged": true,
+            "unpaged": false
+        },
+        "last": true,
+        "totalPages": 1,
+        "totalElements": 1,
+        "size": 10,
+        "number": 0,
         "sort": {
             "empty": false,
             "sorted": true,
             "unsorted": false
         },
-        "offset": 0,
-        "paged": true,
-        "unpaged": false
-    },
-    "last": true,
-    "totalPages": 1,
-    "totalElements": 1,
-    "size": 10,
-    "number": 0,
-    "sort": {
-        "empty": false,
-        "sorted": true,
-        "unsorted": false
-    },
-    "first": true,
-    "numberOfElements": 1,
-    "empty": false
+        "first": true,
+        "numberOfElements": 1,
+        "empty": false
+    }
 }
 ```
 
@@ -1903,54 +1934,65 @@ Retrieves a specific service by its ID.
 }
 ```
 
+
 ### `GET /api/services`
-Retrieves a paginated list of all services.
-- **Roles Permitted**: `Public`
 
-**Query Parameters**: `page` (int), `size` (int), `sort` (String)
+Retrieves a paginated list of all services with extensive filtering and sorting capabilities, including by location.
 
-**Response Data (`Page<ServiceResponseDTO>`)**
+- **Roles Permitted**: `Public / Authenticated` (Sesuai konfigurasi `SecurityConfig` Anda, endpoint ini saat ini memerlukan autentikasi)
+- **Method**: `GET`
+- **Full Endpoint**: `/api/services`
+
+**Query Parameters**
+
+| Parameter | Type | Optional | Default | Description |
+| :--- | :--- | :--- | :--- | :--- |
+| `page` | `int` | Yes | `0` | The page number to retrieve. |
+| `size` | `int` | Yes | `10` | The number of items per page. |
+| `sortBy` | `String` | Yes | `name` | The field to sort by. Valid options: `name`, `basePrice`, `avgRating`, `reviewCount`. |
+| `direction` | `String` | Yes | `asc` | The sort direction. Valid options: `asc` (ascending) or `desc` (descending). |
+| `name` | `String` | Yes | - | Filter services by name (case-insensitive, partial match). |
+| `minPrice` | `BigDecimal`| Yes | - | Filter for services with a base price greater than or equal to this value. |
+| `maxPrice` | `BigDecimal`| Yes | - | Filter for services with a base price less than or equal to this value. |
+| `userLat` | `Double` | Yes | - | The user's latitude. Required for location-based filtering. |
+| `userLon` | `Double` | Yes | - | The user's longitude. Required for location-based filtering. |
+| `radiusKm` | `Double` | Yes | `15` | The search radius in kilometers for location-based filtering. |
+
+**Example Request**
+
+*   Mencari layanan "Grooming" dalam radius 20 km, diurutkan berdasarkan jumlah review terbanyak.
+    ```http
+    GET /api/services?name=Grooming&userLat=-6.2088&userLon=106.8456&radiusKm=20&sortBy=reviewCount&direction=desc
+    ```
+
+**Success Response (200 OK)**
+
+*   **Body**: `CommonResponse<Page<ServiceResponseDTO>>`
+
 ```json
 {
+  "status": 200,
+  "message": "Successfully fetched all services",
+  "data": {
     "content": [
-        {
-            "id": "s1e2r3v4-e5f6-a7b8-c9d0-e1f2a3b4c5d6",
-            "businessId": "c4a5b6c7-d8e9-f0a1-b2c3-d4e5f6a7b8c9",
-            "businessName": "Pawtner Pet Grooming",
-            "category": "GROOMING",
-            "name": "Full Grooming Package",
-            "basePrice": 150000.00,
-            "capacityPerDay": 10,
-            "isActive": true,
-            "imageUrl": "http://example.com/grooming.jpg",
-            "createdAt": "2025-07-05T14:30:00"
-        }
+      {
+        "id": "s1e2r3v4-i5c6-e7i8-d9e0-f1a2b3c4d5e6",
+        "businessId": "b1c2d3e4-f5a6-b7c8-d9e0-f1a2b3c4d5e6",
+        "category": "GROOMING",
+        "name": "Complete Pet Grooming Package",
+        "basePrice": 150000.00,
+        "capacityPerDay": 10,
+        "imageUrl": "https://res.cloudinary.com/dhqueh6fp/image/upload/v1/some-grooming-image.jpg",
+        "isActive": true,
+        "avgRating": 4.9,
+        "reviewCount": 210
+      }
     ],
     "pageable": {
-        "pageNumber": 0,
-        "pageSize": 10,
-        "sort": {
-            "empty": false,
-            "sorted": true,
-            "unsorted": false
-        },
-        "offset": 0,
-        "paged": true,
-        "unpaged": false
+      // ... sisa struktur pageable sama seperti response produk ...
     },
-    "last": true,
-    "totalPages": 1,
-    "totalElements": 1,
-    "size": 10,
-    "number": 0,
-    "sort": {
-        "empty": false,
-        "sorted": true,
-        "unsorted": false
-    },
-    "first": true,
-    "numberOfElements": 1,
-    "empty": false
+    // ... sisa struktur paginasi sama seperti response produk ...
+  }
 }
 ```
 
