@@ -72,6 +72,14 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
+    public Page<ProductResponseDTO> getProductsByBusiness(UUID business, Pageable pageable) {
+        Business businessEntity = businessService.getBusinessByIdForInternal(business);
+        Page<Product> products = productRepository.findAllByBusiness(businessEntity, pageable);
+
+        return products.map(this::mapToResponseDTO);
+    }
+
+    @Override
     public ProductResponseDTO updateProduct(ProductRequestDTO productRequestDTO) {
         Product existingProduct = productRepository.findById(productRequestDTO.getId())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Product not found"));
