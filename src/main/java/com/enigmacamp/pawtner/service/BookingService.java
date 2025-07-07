@@ -7,6 +7,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.Authentication;
 
+import java.util.Map;
 import java.util.UUID;
 
 public interface BookingService {
@@ -16,5 +17,7 @@ public interface BookingService {
     Page<BookingResponseDTO> getAllBookingsByBusiness(UUID uuid, Pageable pageable);
     BookingResponseDTO updateBookingStatus(UUID id, String status);
     void cancelBooking(UUID id, String customerEmail);
+    void handleWebhook(Map<String, Object> payload);
+    double calculateDeliveryFee(double distanceInMeters);
     Booking getBookingEntityById(UUID id);
 }

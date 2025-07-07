@@ -1,21 +1,30 @@
 package com.enigmacamp.pawtner.service.impl;
 
 import com.enigmacamp.pawtner.constant.BookingStatus;
+import com.enigmacamp.pawtner.constant.PaymentStatus;
 import com.enigmacamp.pawtner.dto.request.BookingRequestDTO;
 import com.enigmacamp.pawtner.dto.response.BookingResponseDTO;
 import com.enigmacamp.pawtner.dto.response.PetResponseDTO;
 import com.enigmacamp.pawtner.dto.response.UserResponseDTO;
 import com.enigmacamp.pawtner.entity.Booking;
 import com.enigmacamp.pawtner.entity.Business;
+import com.enigmacamp.pawtner.entity.Payment;
 import com.enigmacamp.pawtner.entity.Pet;
 import com.enigmacamp.pawtner.entity.User;
 import com.enigmacamp.pawtner.repository.BookingRepository;
 import com.enigmacamp.pawtner.repository.PetRepository;
 import com.enigmacamp.pawtner.repository.ServiceRepository;
 import com.enigmacamp.pawtner.repository.UserRepository;
+import com.enigmacamp.pawtner.repository.BusinessRepository;
+import com.enigmacamp.pawtner.repository.PaymentRepository;
 import com.enigmacamp.pawtner.service.BookingService;
+import com.enigmacamp.pawtner.service.NotificationService;
+import com.enigmacamp.pawtner.service.PaymentService;
+import com.midtrans.httpclient.error.MidtransError;
+import com.midtrans.service.MidtransCoreApi;
 import com.enigmacamp.pawtner.service.BusinessService;
 import lombok.RequiredArgsConstructor;
+import org.json.JSONObject;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
@@ -23,12 +32,18 @@ import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
+import org.locationtech.jts.geom.Point;
+import org.locationtech.jts.geom.GeometryFactory;
+import org.locationtech.jts.geom.Coordinate;
 
 import java.time.LocalDate;
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Collections;
 import java.util.UUID;
+import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
@@ -39,6 +54,12 @@ public class BookingServiceImpl implements BookingService {
     private final ServiceRepository serviceRepository;
     private final BookingRepository bookingRepository;
     private final BusinessService businessService;
+    private final BusinessRepository businessRepository;
+    private final PaymentService paymentService;
+    private final PaymentRepository paymentRepository;
+    private final MidtransCoreApi midtransCoreApi;
+    private final NotificationService notificationService;
+    private final GeometryFactory geometryFactory = new GeometryFactory();
 
     @Override
     public BookingResponseDTO createBooking(BookingRequestDTO requestDTO, String customerEmail) {
@@ -50,6 +71,11 @@ public class BookingServiceImpl implements BookingService {
 
         com.enigmacamp.pawtner.entity.Service service = serviceRepository.findById(requestDTO.getServiceId())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Service not found"));
+
+        // Calculate delivery fee
+        Point userLocation = geometryFactory.createPoint(new Coordinate(requestDTO.getLongitude().doubleValue(), requestDTO.getLatitude().doubleValue()));
+        Double distanceInMeters = businessRepository.calculateDistanceToBusiness(service.getBusiness().getId(), userLocation);
+        double deliveryFee = calculateDeliveryFee(distanceInMeters);
 
         if (service.getCapacityPerDay() != null && service.getCapacityPerDay() > 0) {
             LocalDate bookingDate = requestDTO.getStartTime().toLocalDate();
@@ -81,12 +107,25 @@ public class BookingServiceImpl implements BookingService {
                 .bookingNumber("BOOK-" + UUID.randomUUID().toString())
                 .startTime(requestDTO.getStartTime())
                 .endTime(requestDTO.getEndTime())
-                .totalPrice(service.getBasePrice()) // Simplified for now
+                .totalPrice(service.getBasePrice().add(BigDecimal.valueOf(deliveryFee))) // Add delivery fee
                 .status(BookingStatus.REQUESTED)
                 .createdAt(LocalDateTime.now())
                 .build();
 
         bookingRepository.save(booking);
+
+        // Create payment
+        Payment payment = Payment.builder()
+                .booking(booking)
+                .amount(booking.getTotalPrice())
+                .status(PaymentStatus.PENDING)
+                .build();
+        payment = paymentService.createPayment(payment);
+
+        booking.setSnapToken(payment.getSnapToken());
+        booking.setPayment(payment);
+        bookingRepository.save(booking);
+
         return toBookingResponseDTO(booking);
     }
 
@@ -138,6 +177,76 @@ public class BookingServiceImpl implements BookingService {
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Booking not found"));
     }
 
+    @Override
+    public double calculateDeliveryFee(double distanceInMeters) {
+        // Example: Base fee + cost per kilometer
+        double baseFee = 10000; // Rp 10.000
+        double costPerKm = 2000; // Rp 2.000 per kilometer
+
+        // Convert meters to kilometers
+        double distanceInKm = distanceInMeters / 1000;
+
+        return baseFee + (costPerKm * distanceInKm);
+    }
+
+    @Override
+    @Transactional
+    public void handleWebhook(Map<String, Object> payload) {
+        try {
+            String bookingNumber = (String) payload.get("order_id");
+            JSONObject transactionResult = midtransCoreApi.checkTransaction(bookingNumber);
+
+            String transactionStatus = (String) transactionResult.get("transaction_status");
+            String fraudStatus = (String) transactionResult.get("fraud_status");
+
+            Booking booking = bookingRepository.findByBookingNumber(bookingNumber)
+                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Booking not found"));
+
+            BookingStatus oldStatus = booking.getStatus();
+            BookingStatus newStatus = oldStatus;
+
+            if (transactionStatus.equals("capture")) {
+                if (fraudStatus.equals("accept")) {
+                    newStatus = BookingStatus.CONFIRMED;
+                }
+            } else if (transactionStatus.equals("settlement")) {
+                newStatus = BookingStatus.CONFIRMED;
+            } else if (transactionStatus.equals("cancel") || transactionStatus.equals("deny") || transactionStatus.equals("expire")) {
+                newStatus = BookingStatus.CANCELLED;
+            } else if (transactionStatus.equals("pending")) {
+                newStatus = BookingStatus.PENDING_PAYMENT;
+            }
+
+            if (oldStatus != newStatus) {
+                booking.setStatus(newStatus);
+                bookingRepository.save(booking);
+
+                // Update payment status
+                Payment payment = booking.getPayment();
+                if (payment != null) {
+                    if (newStatus == BookingStatus.CONFIRMED) {
+                        payment.setStatus(PaymentStatus.SUCCESS);
+                    } else if (newStatus == BookingStatus.CANCELLED) {
+                        payment.setStatus(PaymentStatus.FAILED);
+                    } else if (newStatus == BookingStatus.PENDING_PAYMENT) {
+                        payment.setStatus(PaymentStatus.PENDING);
+                    }
+                    paymentRepository.save(payment);
+                }
+
+                // Send notification to customer
+                notificationService.sendNotification(
+                        booking.getCustomer(),
+                        "Booking Status Updated",
+                        "Your booking " + booking.getBookingNumber() + " is now " + newStatus.name(),
+                        Collections.singletonMap("bookingId", booking.getId().toString())
+                );
+            }
+        } catch (MidtransError e) {
+            throw new RuntimeException(e.getMessage(), e);
+        }
+    }
+
     private BookingResponseDTO toBookingResponseDTO(Booking booking) {
         return BookingResponseDTO.builder()
                 .id(booking.getId())
@@ -153,6 +262,7 @@ public class BookingServiceImpl implements BookingService {
                 .endTime(booking.getEndTime())
                 .totalPrice(booking.getTotalPrice().doubleValue())
                 .status(booking.getStatus().name())
+                .snapToken(booking.getSnapToken())
                 .createdAt(LocalDateTime.now())
                 .build();
     }
