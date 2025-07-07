@@ -70,15 +70,15 @@ public class SecurityConfig {
                                 "/api/services", // GET all services
                                 "/api/services/{id}", // GET service by ID
                                 "/api/business", // GET all businesses
-                                "/api/business/{id}", // GET business by ID
-                                "/api/users/{id}" // GET user by ID (public for now, adjust if needed)
+                                "/api/business/{id}" // GET business by ID
                         ).permitAll() // Publicly accessible GET endpoints
 
                         // Endpoints requiring authentication (any role)
                         .requestMatchers(
                                 "/api/reviews", // GET all reviews
                                 "/api/reviews/{id}", // GET review by ID
-                                "/api/users" // PUT update user
+                                "/api/users", // PUT update user
+                                "/api/users/{id}" // GET user by ID
                         ).authenticated()
 
                         // Endpoints for BUSINESS_OWNER
