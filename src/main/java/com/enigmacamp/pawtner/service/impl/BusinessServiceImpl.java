@@ -54,12 +54,15 @@ public class BusinessServiceImpl implements BusinessService {
                     .description(businessRequestDTO.getDescriptionBusiness())
                     .address(businessRequestDTO.getBusinessAddress())
                     .businessType(businessRequestDTO.getBusinessType())
+                    .hasEmergencyServices(businessRequestDTO.getHasEmergencyServices())
                     .businessEmail(businessRequestDTO.getBusinessEmail())
                     .businessPhone(businessRequestDTO.getBusinessPhone())
+                    .emergencyPhone(businessRequestDTO.getEmergencyPhone())
                     .businessImageUrl(businessImageUrl) // boleh null
                     .certificateImageUrl(certificateImageUrl) // boleh null
                     .latitude(businessRequestDTO.getLatitude())
                     .longitude(businessRequestDTO.getLongitude())
+                    .statusRealtime(businessRequestDTO.getBusinessStatus())
                     .operationHours(businessRequestDTO.getOperationHours())
                     .build();
 
@@ -95,10 +98,12 @@ public class BusinessServiceImpl implements BusinessService {
             business.setName(businessRequestDTO.getNameBusiness());
             business.setDescription(businessRequestDTO.getDescriptionBusiness());
             business.setBusinessType(businessRequestDTO.getBusinessType());
+            business.setHasEmergencyServices(business.getHasEmergencyServices());
             business.setBusinessEmail(businessRequestDTO.getBusinessEmail());
             business.setBusinessPhone(businessRequestDTO.getBusinessPhone());
             business.setEmergencyPhone(businessRequestDTO.getEmergencyPhone());
             business.setAddress(businessRequestDTO.getBusinessAddress());
+            business.setStatusRealtime(businessRequestDTO.getBusinessStatus());
             business.setLatitude(businessRequestDTO.getLatitude());
             business.setLongitude(businessRequestDTO.getLongitude());
             business.setBusinessImageUrl(businessImageUrl);
@@ -146,10 +151,10 @@ public class BusinessServiceImpl implements BusinessService {
     }
 
     @Override
-    public BusinessResponseDTO openBusiness(UUID businessId) {
+    public BusinessResponseDTO openBusiness(UUID businessId, BusinessRequestDTO businessRequestDTO) {
         Business business = getBusinessByIdForInternal(businessId);
 
-        business.setIsOpen(!business.getIsOpen());
+        business.setStatusRealtime(businessRequestDTO.getBusinessStatus());
         businessRepository.save(business);
 
         return mapToResponse(business);
@@ -174,9 +179,19 @@ public class BusinessServiceImpl implements BusinessService {
                 .businessId(business.getId())
                 .ownerName(business.getOwner().getName())
                 .businessName(business.getName())
+                .description(business.getDescription())
+                .businessType(business.getBusinessType())
+                .hasEmergencyServices(business.getHasEmergencyServices())
+                .businessEmail(business.getBusinessEmail())
+                .businessPhone(business.getBusinessPhone())
+                .emergencyPhone(business.getEmergencyPhone())
+                .businessImageUrl(business.getBusinessImageUrl())
+                .certificateImageUrl(business.getCertificateImageUrl())
+                .latitude(business.getLatitude())
+                .longitude(business.getLongitude())
+                .statusRealTime(business.getStatusRealtime())
                 .businessAddress(business.getAddress())
                 .operationHours(business.getOperationHours())
-                .isOpen(business.getIsOpen())
                 .statusApproved(
                         business.getIsApproved() == null ? "Pending"
                                 : business.getIsApproved() ? "Approved"
