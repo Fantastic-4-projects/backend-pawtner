@@ -10,6 +10,7 @@ import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.UUID;
 
 @Data
@@ -46,6 +47,9 @@ public class Service {
     private Integer capacityPerDay;
 
     private String imageUrl;
+
+    @OneToMany(mappedBy = "service", fetch = FetchType.LAZY)
+    private List<Review> reviews;
 
     @Builder.Default
     private Boolean isActive = true;

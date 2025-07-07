@@ -6,12 +6,13 @@ import com.enigmacamp.pawtner.entity.Service;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
+import java.math.BigDecimal;
 import java.util.UUID;
 
 public interface ServiceService {
     ServiceResponseDTO createService(ServiceRequestDTO serviceRequestDTO);
     ServiceResponseDTO getServiceById(UUID id);
-    Page<ServiceResponseDTO> getAllServices(Pageable pageable);
+    Page<ServiceResponseDTO> getAllServices(Pageable pageable, String name, BigDecimal minPrice, BigDecimal maxPrice);
     Page<ServiceResponseDTO> getAllServicesByBusiness(UUID businessId, Pageable pageable);
     ServiceResponseDTO updateService(ServiceRequestDTO serviceRequestDTO);
     void deleteService(UUID id);

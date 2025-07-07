@@ -8,12 +8,15 @@ import com.enigmacamp.pawtner.util.ResponseUtil;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import java.math.BigDecimal;
 import java.util.UUID;
 
 @RestController
@@ -37,9 +40,24 @@ public class ProductController {
     }
 
     @GetMapping
-    public ResponseEntity<CommonResponse<Page<ProductResponseDTO>>> getAllProducts(Pageable pageable) {
-        Page<ProductResponseDTO> responseDTOPage = productService.getAllProducts(pageable);
-        return ResponseUtil.createResponse(HttpStatus.OK, "Successfully fetched all products", responseDTOPage);
+    public ResponseEntity<CommonResponse<Page<ProductResponseDTO>>> getAllProducts(
+            @RequestParam(name = "page", defaultValue = "0") int page,
+            @RequestParam(name = "size", defaultValue = "10") int size,
+            @RequestParam(name = "sortBy", defaultValue = "name") String sortBy,
+            @RequestParam(name = "direction", defaultValue = "asc") String direction,
+            @RequestParam(name = "name", required = false) String name,
+            @RequestParam(name = "minPrice", required = false) BigDecimal minPrice,
+            @RequestParam(name = "maxPrice", required = false) BigDecimal maxPrice
+    ) {
+        Sort.Direction sortDirection = Sort.Direction.fromString(direction);
+        Pageable pageable = PageRequest.of(page, size, Sort.by(sortDirection, sortBy));
+        Page<ProductResponseDTO> responseDTOPage = productService.getAllProducts(pageable, name, minPrice, maxPrice);
+
+        return ResponseUtil.createResponse(
+                HttpStatus.OK,
+                "Successfully fetched all products",
+                responseDTOPage
+        );
     }
 
     @GetMapping("/my-products/{businessId}")
