@@ -40,8 +40,8 @@ public class PrescriptionController {
 
     @GetMapping
     @PreAuthorize("hasAuthority('BUSINESS_OWNER') or hasAuthority('ADMIN')")
-    public ResponseEntity<CommonResponse<Page<PrescriptionResponseDTO>>> getAllPrescriptions(Pageable pageable) {
-        Page<PrescriptionResponseDTO> responseDTOPage = prescriptionService.getAllPrescriptions(pageable);
+    public ResponseEntity<CommonResponse<Page<PrescriptionResponseDTO>>> getAllPrescriptions(Authentication authentication, Pageable pageable) {
+        Page<PrescriptionResponseDTO> responseDTOPage = prescriptionService.getAllPrescriptions(authentication, pageable);
         return ResponseUtil.createResponse(HttpStatus.OK, "Successfully fetched all prescriptions", responseDTOPage);
     }
 

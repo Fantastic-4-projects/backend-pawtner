@@ -10,10 +10,12 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -53,8 +55,22 @@ public class ReviewServiceImpl implements ReviewService {
     }
 
     @Override
-    public Page<ReviewResponseDTO> getAllReviews(Pageable pageable) {
-        return reviewRepository.findAll(pageable).map(this::toReviewResponseDTO);
+    public Page<ReviewResponseDTO> getAllReviews(Authentication authentication, Pageable pageable) {
+        User user = (User) authentication.getPrincipal();
+
+        if (user.getRole().name().equals("CUSTOMER")) {
+            return reviewRepository.findByUser(user, pageable).map(this::toReviewResponseDTO);
+        } else if (user.getRole().name().equals("BUSINESS_OWNER")) {
+            List<com.enigmacamp.pawtner.entity.Business> businesses = businessRepository.findAllByOwner_Id(user.getId());
+            if (businesses.isEmpty()) {
+                return Page.empty(pageable);
+            }
+            return reviewRepository.findByBusinessIn(businesses, pageable).map(this::toReviewResponseDTO);
+        } else if (user.getRole().name().equals("ADMIN")) {
+            return reviewRepository.findAll(pageable).map(this::toReviewResponseDTO);
+        } else {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Access denied");
+        }
     }
 
     @Override

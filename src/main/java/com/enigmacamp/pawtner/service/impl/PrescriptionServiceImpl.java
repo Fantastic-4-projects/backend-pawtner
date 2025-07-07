@@ -9,6 +9,7 @@ import com.enigmacamp.pawtner.entity.Booking;
 import com.enigmacamp.pawtner.entity.Business;
 import com.enigmacamp.pawtner.entity.Pet;
 import com.enigmacamp.pawtner.entity.Prescription;
+import com.enigmacamp.pawtner.entity.User;
 import com.enigmacamp.pawtner.entity.PrescriptionItem;
 import com.enigmacamp.pawtner.repository.BusinessRepository;
 import com.enigmacamp.pawtner.repository.PetRepository;
@@ -85,9 +86,22 @@ public class PrescriptionServiceImpl implements PrescriptionService {
     }
 
     @Override
-    public Page<PrescriptionResponseDTO> getAllPrescriptions(Pageable pageable) {
-        Page<Prescription> prescriptions = prescriptionRepository.findAll(pageable);
-        return prescriptions.map(this::convertToResponseDTO);
+    public Page<PrescriptionResponseDTO> getAllPrescriptions(Authentication authentication, Pageable pageable) {
+        User user = (User) authentication.getPrincipal();
+
+        if (user.getRole().name().equals("CUSTOMER")) {
+            return prescriptionRepository.findByPetOwner(user, pageable).map(this::convertToResponseDTO);
+        } else if (user.getRole().name().equals("BUSINESS_OWNER")) {
+            List<Business> businesses = businessRepository.findAllByOwner_Id(user.getId());
+            if (businesses.isEmpty()) {
+                return Page.empty(pageable);
+            }
+            return prescriptionRepository.findByIssuingBusinessIn(businesses, pageable).map(this::convertToResponseDTO);
+        } else if (user.getRole().name().equals("ADMIN")) {
+            return prescriptionRepository.findAll(pageable).map(this::convertToResponseDTO);
+        } else {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Access denied");
+        }
     }
 
     @Override

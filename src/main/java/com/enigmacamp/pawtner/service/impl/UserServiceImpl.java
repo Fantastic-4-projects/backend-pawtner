@@ -7,6 +7,7 @@ import com.enigmacamp.pawtner.repository.UserRepository;
 import com.enigmacamp.pawtner.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -72,9 +73,15 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public List<UserResponseDTO> getAllUser() {
-        List<User> users = userRepository.findAll();
-        return users.stream().map(this::mapToResponse).collect(Collectors.toList());
+    public List<UserResponseDTO> getAllUser(Authentication authentication) {
+        User user = (User) authentication.getPrincipal();
+
+        if (user.getRole().name().equals("ADMIN")) {
+            List<User> users = userRepository.findAll();
+            return users.stream().map(this::mapToResponse).collect(Collectors.toList());
+        } else {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Access denied");
+        }
     }
 
     @Override

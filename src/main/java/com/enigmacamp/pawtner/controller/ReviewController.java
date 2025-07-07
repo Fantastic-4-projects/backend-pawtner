@@ -32,8 +32,8 @@ public class ReviewController {
     }
 
     @GetMapping
-    public ResponseEntity<CommonResponse<Page<ReviewResponseDTO>>> getAllReviews(Pageable pageable) {
-        Page<ReviewResponseDTO> responseDTOPage = reviewService.getAllReviews(pageable);
+    public ResponseEntity<CommonResponse<Page<ReviewResponseDTO>>> getAllReviews(Authentication authentication, Pageable pageable) {
+        Page<ReviewResponseDTO> responseDTOPage = reviewService.getAllReviews(authentication, pageable);
         return ResponseUtil.createResponse(HttpStatus.OK, "Successfully fetched all reviews", responseDTOPage);
     }
 

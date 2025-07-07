@@ -11,7 +11,7 @@ import java.util.UUID;
 public interface PrescriptionService {
     PrescriptionResponseDTO createPrescription(PrescriptionRequestDTO requestDTO, Authentication authentication);
     PrescriptionResponseDTO getPrescriptionById(String id);
-    Page<PrescriptionResponseDTO> getAllPrescriptions(Pageable pageable);
+    Page<PrescriptionResponseDTO> getAllPrescriptions(Authentication authentication, Pageable pageable);
     void deletePrescription(String id);
     PrescriptionResponseDTO getPerceptionByBookingId(UUID bookingId, Authentication authentication);
 }

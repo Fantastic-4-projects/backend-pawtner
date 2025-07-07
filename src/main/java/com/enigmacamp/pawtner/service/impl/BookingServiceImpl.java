@@ -42,8 +42,10 @@ import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Collections;
+import java.util.List;
 import java.util.UUID;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -138,10 +140,46 @@ public class BookingServiceImpl implements BookingService {
 
     @Override
     public Page<BookingResponseDTO> getAllBookings(Authentication authentication, Pageable pageable) {
-        // This logic can be expanded based on roles
         User user = userRepository.findByEmail(authentication.getName())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
-        return bookingRepository.findAll(pageable).map(this::toBookingResponseDTO);
+
+        if (user.getRole().name().equals("CUSTOMER")) {
+            return getAllBookingsByCustomer(user.getEmail(), pageable);
+        } else if (user.getRole().name().equals("BUSINESS_OWNER")) {
+            return getAllBookingsByBusinessOwner(user.getEmail(), pageable);
+        } else if (user.getRole().name().equals("ADMIN")) {
+            return bookingRepository.findAll(pageable).map(this::toBookingResponseDTO);
+        } else {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Access denied");
+        }
+    }
+
+    @Override
+    public Page<BookingResponseDTO> getAllBookingsByCustomer(String customerEmail, Pageable pageable) {
+        User customer = userRepository.findByEmail(customerEmail)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Customer not found"));
+        return bookingRepository.findByCustomer(customer, pageable).map(this::toBookingResponseDTO);
+    }
+
+    @Override
+    public Page<BookingResponseDTO> getAllBookingsByBusinessOwner(String ownerEmail, Pageable pageable) {
+        User owner = userRepository.findByEmail(ownerEmail)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Owner not found"));
+
+        List<com.enigmacamp.pawtner.entity.Business> businesses = businessRepository.findAllByOwner_Id(owner.getId());
+        if (businesses.isEmpty()) {
+            return Page.empty(pageable);
+        }
+
+        List<com.enigmacamp.pawtner.entity.Service> services = businesses.stream()
+                .flatMap(business -> serviceRepository.findAllByBusiness(business).stream())
+                .collect(Collectors.toList());
+
+        if (services.isEmpty()) {
+            return Page.empty(pageable);
+        }
+
+        return bookingRepository.findByServiceIn(services, pageable).map(this::toBookingResponseDTO);
     }
 
     @Override
