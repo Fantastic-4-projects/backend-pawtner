@@ -58,6 +58,13 @@ public class Booking {
     @Column(nullable = false)
     private BookingStatus status = BookingStatus.REQUESTED;
 
+    @Column(name = "snap_token")
+    private String snapToken;
+
+    @OneToOne(cascade = CascadeType.ALL)
+    @JoinColumn(name = "payment_id", referencedColumnName = "id")
+    private Payment payment;
+
     @Builder.Default
     @Column(updatable = false)
     private LocalDateTime createdAt = LocalDateTime.now();

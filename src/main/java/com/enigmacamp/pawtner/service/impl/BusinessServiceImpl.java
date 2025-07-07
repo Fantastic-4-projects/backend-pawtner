@@ -20,6 +20,9 @@ import java.util.stream.Collectors;
 
 import com.enigmacamp.pawtner.service.ImageUploadService;
 import org.springframework.web.multipart.MultipartFile;
+import org.locationtech.jts.geom.Point;
+import org.locationtech.jts.geom.GeometryFactory;
+import org.locationtech.jts.geom.Coordinate;
 
 import java.io.IOException;
 
@@ -30,6 +33,7 @@ public class BusinessServiceImpl implements BusinessService {
     private final BusinessRepository businessRepository;
     private final ImageUploadService imageUploadService;
     private final UserRepository userRepository;
+    private final GeometryFactory geometryFactory = new GeometryFactory();
 
     @Transactional(rollbackOn = Exception.class)
     @Override
@@ -56,11 +60,10 @@ public class BusinessServiceImpl implements BusinessService {
                     .businessType(businessRequestDTO.getBusinessType())
                     .businessEmail(businessRequestDTO.getBusinessEmail())
                     .businessPhone(businessRequestDTO.getBusinessPhone())
-                    .businessImageUrl(businessImageUrl) // boleh null
-                    .certificateImageUrl(certificateImageUrl) // boleh null
-                    .latitude(businessRequestDTO.getLatitude())
-                    .longitude(businessRequestDTO.getLongitude())
+                    .businessImageUrl(businessImageUrl)
+                    .certificateImageUrl(certificateImageUrl)
                     .operationHours(businessRequestDTO.getOperationHours())
+                    .location(geometryFactory.createPoint(new Coordinate(businessRequestDTO.getLongitude().doubleValue(), businessRequestDTO.getLatitude().doubleValue())))
                     .build();
 
             businessRepository.save(newBusiness);
@@ -99,8 +102,7 @@ public class BusinessServiceImpl implements BusinessService {
             business.setBusinessPhone(businessRequestDTO.getBusinessPhone());
             business.setEmergencyPhone(businessRequestDTO.getEmergencyPhone());
             business.setAddress(businessRequestDTO.getBusinessAddress());
-            business.setLatitude(businessRequestDTO.getLatitude());
-            business.setLongitude(businessRequestDTO.getLongitude());
+            business.setLocation(geometryFactory.createPoint(new Coordinate(businessRequestDTO.getLongitude().doubleValue(), businessRequestDTO.getLatitude().doubleValue())));
             business.setBusinessImageUrl(businessImageUrl);
             business.setCertificateImageUrl(certificateImageUrl);
 
@@ -153,6 +155,15 @@ public class BusinessServiceImpl implements BusinessService {
         businessRepository.save(business);
 
         return mapToResponse(business);
+    }
+
+    @Override
+    public List<BusinessResponseDTO> findNearbyBusinesses(double lat, double lon, double radiusKm) {
+        Point userLocation = geometryFactory.createPoint(new Coordinate(lon, lat));
+        double distanceInMeters = radiusKm * 1000;
+        return businessRepository.findNearbyBusinesses(userLocation, distanceInMeters)
+                .stream().map(this::mapToResponse)
+                .collect(Collectors.toList());
     }
 
     @Override

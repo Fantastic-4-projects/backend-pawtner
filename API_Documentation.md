@@ -174,6 +174,20 @@ Retrieves a list of all businesses for admin review.
 Retrieves the business profiles owned by the current user.
 - **Roles Permitted**: `BUSINESS_OWNER`
 
+### `GET /api/business/nearby`
+Retrieves a list of businesses near a specified location, optionally within a given radius.
+- **Roles Permitted**: `Public`
+
+**Query Parameters**
+- `lat` (double, required): Latitude of the user's location.
+- `lon` (double, required): Longitude of the user's location.
+- `radiusKm` (double, optional): Search radius in kilometers. Defaults to 15km if not provided.
+
+**Example Request**
+```
+GET /api/business/nearby?lat=-6.200000&lon=106.816666&radiusKm=5
+```
+
 ### `PATCH /api/business/{id}`
 Approves or rejects a business registration.
 - **Roles Permitted**: `ADMIN`
@@ -348,7 +362,7 @@ Retrieves a paginated list of orders associated with the authenticated business 
 ## Bookings (`/api/bookings`)
 
 ### `POST /api/bookings`
-Creates a new service booking.
+Creates a new service booking, including calculation of delivery fee based on user and business location. Returns a `snap_token` for payment.
 - **Roles Permitted**: `CUSTOMER`
 
 **Request Body (`application/json`)**
@@ -357,7 +371,47 @@ Creates a new service booking.
   "petId": "p1e2t3p4-e5f6-a7b8-c9d0-e1f2a3b4c5d6",
   "serviceId": "s1e2r3v4-e5f6-a7b8-c9d0-e1f2a3b4c5d6",
   "startTime": "2025-12-24T10:00:00",
-  "endTime": "2025-12-26T12:00:00"
+  "endTime": "2025-12-26T12:00:00",
+  "latitude": -6.200000,  // User's latitude for delivery calculation
+  "longitude": 106.816666 // User's longitude for delivery calculation
+}
+```
+
+**Response Data (`BookingResponseDTO`)**
+```json
+{
+    "id": "b1o2o3k4-i5d6-a7b8-c9d0-e1f2a3b4c5d6",
+    "customer": {
+        "id": "c4a5b6c7-d8e9-f0a1-b2c3-d4e5f6a7b8c9",
+        "name": "John Doe",
+        "email": "customer@example.com",
+        "address": "123 Main Street, Anytown",
+        "phone": "081234567890",
+        "imageUrl": null
+    },
+    "pet": {
+        "id": "p1e2t3p4-e5f6-a7b8-c9d0-e1f2a3c4d5e6",
+        "name": "Buddy",
+        "species": "Dog",
+        "breed": "Golden Retriever",
+        "age": 5,
+        "gender": "MALE",
+        "imageUrl": null,
+        "notes": "Loves to play fetch.",
+        "ownerName": "John Doe"
+    },
+    "petName": "Buddy",
+    "serviceId": "s1e2r3v4-e5f6-a7b8-c9d0-e1f2a3b4c5d6",
+    "serviceName": "Full Grooming Package",
+    "businessId": "b1c2d3e4-f5a6-b7c8-d9e0-f1a2b3c4d5e6",
+    "businessName": "Pawtner Pet Grooming",
+    "bookingNumber": "BOOK-ABC-123",
+    "startTime": "2025-12-24T10:00:00",
+    "endTime": "2025-12-26T12:00:00",
+    "totalPrice": 150000.00,
+    "status": "PENDING_PAYMENT",
+    "snapToken": "...<midtrans-snap-token>...",
+    "createdAt": "2025-07-05T14:30:00"
 }
 ```
 
@@ -387,7 +441,7 @@ Cancels and deletes a booking.
 ## Payments (`/api/payments`)
 
 ### `POST /api/payments/webhook`
-Handles incoming payment notification webhooks from Midtrans.
+Handles incoming payment notification webhooks from Midtrans for both orders and bookings.
 - **Roles Permitted**: `Public`
 
 **Request Body (`application/json`)**

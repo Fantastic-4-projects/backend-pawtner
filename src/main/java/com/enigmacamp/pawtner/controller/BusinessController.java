@@ -116,4 +116,17 @@ public class BusinessController {
                 null
         );
     }
+
+    @GetMapping("/nearby")
+    public ResponseEntity<CommonResponse<List<BusinessResponseDTO>>> getNearbyBusinesses(
+            @RequestParam double lat,
+            @RequestParam double lon,
+            @RequestParam(defaultValue = "15") double radiusKm
+    ) {
+        return ResponseUtil.createResponse(
+                HttpStatus.OK,
+                "Bisnis terdekat berhasil didapatkan",
+                businessService.findNearbyBusinesses(lat, lon, radiusKm)
+        );
+    }
 }

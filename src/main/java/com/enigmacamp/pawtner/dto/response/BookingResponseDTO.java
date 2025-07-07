@@ -27,5 +27,6 @@ public class BookingResponseDTO {
     private LocalDateTime endTime;
     private Double totalPrice;
     private String status;
+    private String snapToken;
     private LocalDateTime createdAt;
 }
