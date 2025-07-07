@@ -8,6 +8,7 @@ import com.enigmacamp.pawtner.dto.response.BookingResponseDTO;
 import com.enigmacamp.pawtner.entity.Booking;
 import com.enigmacamp.pawtner.entity.Business;
 import com.enigmacamp.pawtner.entity.Payment;
+import com.enigmacamp.pawtner.entity.Business;
 import com.enigmacamp.pawtner.entity.Pet;
 import com.enigmacamp.pawtner.entity.User;
 import com.enigmacamp.pawtner.mapper.BookingMapper;
@@ -22,6 +23,7 @@ import com.enigmacamp.pawtner.service.NotificationService;
 import com.enigmacamp.pawtner.service.PaymentService;
 import com.midtrans.httpclient.error.MidtransError;
 import com.midtrans.service.MidtransCoreApi;
+import com.enigmacamp.pawtner.service.BusinessService;
 import com.enigmacamp.pawtner.service.BusinessService;
 import lombok.RequiredArgsConstructor;
 import org.json.JSONObject;
@@ -218,6 +220,14 @@ public class BookingServiceImpl implements BookingService {
         Business business = businessService.getBusinessByIdForInternal(uuid);
         Page<Booking> bookings = bookingRepository.findAllByService_Business(business, pageable);
         return bookings.map(BookingMapper::mapToResponse);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Page<BookingResponseDTO> getAllBookingsByBusiness(UUID uuid, Pageable pageable) {
+        Business business = businessService.getBusinessByIdForInternal(uuid);
+        Page<Booking> bookings = bookingRepository.findAllByService_Business(business, pageable);
+        return bookings.map(this::toBookingResponseDTO);
     }
 
     @Override
