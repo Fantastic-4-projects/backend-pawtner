@@ -60,7 +60,7 @@ public class BookingServiceImpl implements BookingService {
     private final BusinessRepository businessRepository;
     private final PaymentService paymentService;
     private final PaymentRepository paymentRepository;
-    
+
     private final NotificationService notificationService;
     private final GeometryFactory geometryFactory = new GeometryFactory();
 
@@ -75,6 +75,28 @@ public class BookingServiceImpl implements BookingService {
         com.enigmacamp.pawtner.entity.Service service = serviceRepository.findById(requestDTO.getServiceId())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Service not found"));
 
+        if (service.getCapacityPerDay() != null && service.getCapacityPerDay() > 0) {
+            LocalDate bookingDate = requestDTO.getStartTime().toLocalDate();
+            LocalDateTime startOfDay = bookingDate.atStartOfDay();
+            LocalDateTime endOfDay = startOfDay.plusDays(1);
+
+            List<BookingStatus> activeStatuses = Arrays.asList(
+                    BookingStatus.REQUESTED,
+                    BookingStatus.AWAITING_PAYMENT,
+                    BookingStatus.CONFIRMED
+            );
+
+            long existingBookings = bookingRepository.countActiveBookingsForServiceOnDate(
+                    service.getId(),
+                    activeStatuses,
+                    startOfDay,
+                    endOfDay
+            );
+
+            if (existingBookings >= service.getCapacityPerDay()) {
+                throw new ResponseStatusException(HttpStatus.CONFLICT, "Kapasitas layanan penuh untuk tanggal yang dipilih.");
+            }
+        }
         // Calculate delivery fee
         Point userLocation = geometryFactory.createPoint(new Coordinate(requestDTO.getLongitude().doubleValue(), requestDTO.getLatitude().doubleValue()));
         userLocation.setSRID(4326); // Set SRID to 4326
@@ -117,6 +139,7 @@ public class BookingServiceImpl implements BookingService {
                 .startTime(requestDTO.getStartTime())
                 .endTime(requestDTO.getEndTime())
                 .totalPrice(totalPrice) // Use the rounded total price
+                .totalPrice(service.getBasePrice()) // Simplified for now
                 .status(BookingStatus.REQUESTED)
                 .createdAt(LocalDateTime.now())
                 .build();
