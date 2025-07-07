@@ -97,9 +97,9 @@ public class BusinessController {
     }
 
     @PatchMapping("/{businessId}/toggle-open")
-    public ResponseEntity<CommonResponse<BusinessResponseDTO>> openBusiness(@PathVariable UUID businessId){
-        BusinessResponseDTO response = businessService.openBusiness(businessId);
-        String message = response.getIsOpen() ? "Bisnis berhasil dibuka" : "Bisnis berhasil ditutup";
+    public ResponseEntity<CommonResponse<BusinessResponseDTO>> openBusiness(@PathVariable UUID businessId, @RequestBody BusinessRequestDTO businessRequestDTO) {
+        BusinessResponseDTO response = businessService.openBusiness(businessId,  businessRequestDTO);
+        String message = "Status realtime berubah menjadi " + response.getStatusRealTime().name();
         return ResponseUtil.createResponse(
                 HttpStatus.OK,
                 message,

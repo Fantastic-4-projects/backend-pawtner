@@ -1,3 +1,5 @@
+package com.enigmacamp.pawtner.controller;
+
 import com.enigmacamp.pawtner.dto.request.PrescriptionRequestDTO;
 import com.enigmacamp.pawtner.dto.response.CommonResponse;
 import com.enigmacamp.pawtner.dto.response.PrescriptionResponseDTO;

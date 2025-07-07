@@ -42,6 +42,12 @@ public class ProductController {
         return ResponseUtil.createResponse(HttpStatus.OK, "Successfully fetched all products", responseDTOPage);
     }
 
+    @GetMapping("/my-products/{businessId}")
+    public ResponseEntity<CommonResponse<Page<ProductResponseDTO>>> getProductsByBusinessId(@PathVariable UUID businessId, Pageable pageable) {
+        Page<ProductResponseDTO> responseDTOPage = productService.getProductsByBusiness(businessId, pageable);
+        return ResponseUtil.createResponse(HttpStatus.OK, "Successfully fetched all products", responseDTOPage);
+    }
+
     @PutMapping("/{id}")
     @PreAuthorize("hasAuthority('BUSINESS_OWNER')")
     public ResponseEntity<CommonResponse<ProductResponseDTO>> updateProduct(@PathVariable UUID id, @Valid @ModelAttribute ProductRequestDTO productRequestDTO) {

@@ -13,6 +13,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.io.IOException;
@@ -68,6 +69,15 @@ public class ProductServiceImpl implements ProductService {
     @Override
     public Page<ProductResponseDTO> getAllProducts(Pageable pageable) {
         Page<Product> products = productRepository.findAll(pageable);
+        return products.map(this::mapToResponseDTO);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Page<ProductResponseDTO> getProductsByBusiness(UUID business, Pageable pageable) {
+        Business businessEntity = businessService.getBusinessByIdForInternal(business);
+        Page<Product> products = productRepository.findAllByBusiness(businessEntity, pageable);
+
         return products.map(this::mapToResponseDTO);
     }
 

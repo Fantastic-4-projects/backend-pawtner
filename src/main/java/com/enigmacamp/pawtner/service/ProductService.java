@@ -12,6 +12,7 @@ public interface ProductService {
     ProductResponseDTO createProduct(ProductRequestDTO productRequestDTO);
     ProductResponseDTO getProductById(UUID id);
     Page<ProductResponseDTO> getAllProducts(Pageable pageable);
+    Page<ProductResponseDTO> getProductsByBusiness(UUID ownerId, Pageable pageable);
     ProductResponseDTO updateProduct(ProductRequestDTO productRequestDTO);
     void deleteProduct(UUID id);
     Product getProductEntityById(UUID id);
