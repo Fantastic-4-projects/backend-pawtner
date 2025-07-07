@@ -121,6 +121,8 @@ public class ServiceServiceImpl implements ServiceService {
                 .basePrice(service.getBasePrice())
                 .capacityPerDay(service.getCapacityPerDay())
                 .imageUrl(service.getImageUrl())
+                .reviewCount(service.getReviewCount())
+                .averageRating(service.getAverageRating())
                 .isActive(service.getIsActive())
                 .build();
     }

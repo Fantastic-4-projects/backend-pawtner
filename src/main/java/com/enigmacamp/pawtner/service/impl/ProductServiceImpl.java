@@ -129,6 +129,8 @@ public class ProductServiceImpl implements ProductService {
                 .price(product.getPrice())
                 .stockQuantity(product.getStockQuantity())
                 .imageUrl(product.getImageUrl())
+                .averageRating(product.getAverageRating())
+                .reviewCount(product.getReviewCount())
                 .isActive(product.getIsActive())
                 .build();
     }
