@@ -134,7 +134,9 @@ public class BusinessServiceImpl implements BusinessService {
     public List<BusinessResponseDTO> viewMyBusiness() {
         User currentUser = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         return businessRepository.findAllByOwner_Id(currentUser.getId())
-                .stream().map(this::mapToResponse)
+                .stream()
+                .filter(Business::getIsActive)
+                .map(this::mapToResponse)
                 .collect(Collectors.toList());
     }
 
@@ -176,7 +178,8 @@ public class BusinessServiceImpl implements BusinessService {
     @Override
     public void deleteBusiness(UUID businessId) {
         Business business = getBusinessByIdForInternal(businessId);
-        businessRepository.delete(business);
+        business.setIsActive(false);
+        businessRepository.save(business);
     }
 
     @Override

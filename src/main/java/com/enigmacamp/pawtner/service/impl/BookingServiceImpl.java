@@ -7,6 +7,7 @@ import com.enigmacamp.pawtner.dto.response.BookingResponseDTO;
 import com.enigmacamp.pawtner.dto.response.PetResponseDTO;
 import com.enigmacamp.pawtner.dto.response.UserResponseDTO;
 import com.enigmacamp.pawtner.entity.Booking;
+import com.enigmacamp.pawtner.entity.Business;
 import com.enigmacamp.pawtner.entity.Payment;
 import com.enigmacamp.pawtner.entity.Pet;
 import com.enigmacamp.pawtner.entity.User;
@@ -21,6 +22,7 @@ import com.enigmacamp.pawtner.service.NotificationService;
 import com.enigmacamp.pawtner.service.PaymentService;
 import com.midtrans.httpclient.error.MidtransError;
 import com.midtrans.service.MidtransCoreApi;
+import com.enigmacamp.pawtner.service.BusinessService;
 import lombok.RequiredArgsConstructor;
 import org.json.JSONObject;
 import org.springframework.data.domain.Page;
@@ -34,8 +36,11 @@ import org.locationtech.jts.geom.Point;
 import org.locationtech.jts.geom.GeometryFactory;
 import org.locationtech.jts.geom.Coordinate;
 
+import java.time.LocalDate;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
@@ -50,6 +55,7 @@ public class BookingServiceImpl implements BookingService {
     private final PetRepository petRepository;
     private final ServiceRepository serviceRepository;
     private final BookingRepository bookingRepository;
+    private final BusinessService businessService;
     private final BusinessRepository businessRepository;
     private final PaymentService paymentService;
     private final PaymentRepository paymentRepository;
@@ -72,6 +78,29 @@ public class BookingServiceImpl implements BookingService {
         Point userLocation = geometryFactory.createPoint(new Coordinate(requestDTO.getLongitude().doubleValue(), requestDTO.getLatitude().doubleValue()));
         Double distanceInMeters = businessRepository.calculateDistanceToBusiness(service.getBusiness().getId(), userLocation);
         double deliveryFee = calculateDeliveryFee(distanceInMeters);
+
+        if (service.getCapacityPerDay() != null && service.getCapacityPerDay() > 0) {
+            LocalDate bookingDate = requestDTO.getStartTime().toLocalDate();
+            LocalDateTime startOfDay = bookingDate.atStartOfDay();
+            LocalDateTime endOfDay = startOfDay.plusDays(1);
+
+            List<BookingStatus> activeStatuses = Arrays.asList(
+                    BookingStatus.REQUESTED,
+                    BookingStatus.AWAITING_PAYMENT,
+                    BookingStatus.CONFIRMED
+            );
+
+            long existingBookings = bookingRepository.countActiveBookingsForServiceOnDate(
+                    service.getId(),
+                    activeStatuses,
+                    startOfDay,
+                    endOfDay
+            );
+
+            if (existingBookings >= service.getCapacityPerDay()) {
+                throw new ResponseStatusException(HttpStatus.CONFLICT, "Kapasitas layanan penuh untuk tanggal yang dipilih.");
+            }
+        }
 
         Booking booking = Booking.builder()
                 .customer(customer)
@@ -151,6 +180,14 @@ public class BookingServiceImpl implements BookingService {
         }
 
         return bookingRepository.findByServiceIn(services, pageable).map(this::toBookingResponseDTO);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Page<BookingResponseDTO> getAllBookingsByBusiness(UUID uuid, Pageable pageable) {
+        Business business = businessService.getBusinessByIdForInternal(uuid);
+        Page<Booking> bookings = bookingRepository.findAllByService_Business(business, pageable);
+        return bookings.map(this::toBookingResponseDTO);
     }
 
     @Override
