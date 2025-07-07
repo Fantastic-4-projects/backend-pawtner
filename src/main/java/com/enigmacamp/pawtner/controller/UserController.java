@@ -1,5 +1,6 @@
 package com.enigmacamp.pawtner.controller;
 
+import com.enigmacamp.pawtner.dto.request.ChangePasswordRequestDTO;
 import com.enigmacamp.pawtner.dto.request.UpdateFcmTokenRequestDTO;
 import com.enigmacamp.pawtner.dto.request.UserRequestDTO;
 import com.enigmacamp.pawtner.dto.response.CommonResponse;
@@ -86,6 +87,20 @@ public class UserController {
                 HttpStatus.OK,
                 "Berhasil mengubah status " + action + " menjadi " + value,
                 userService.updateUserStatus(id, action, value)
+        );
+    }
+
+    @PatchMapping("/change-password")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<CommonResponse<String>> changePassword(
+            @Valid @RequestBody ChangePasswordRequestDTO requestDTO,
+            Authentication authentication
+    ) {
+        userService.changePassword(requestDTO, authentication);
+        return ResponseUtil.createResponse(
+                HttpStatus.OK,
+                "Password berhasil diubah.",
+                null
         );
     }
 }
