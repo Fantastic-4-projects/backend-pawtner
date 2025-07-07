@@ -15,6 +15,8 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 import java.util.Optional;
 import java.time.LocalDateTime;
+import java.util.List;
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Repository
@@ -26,8 +28,6 @@ public interface BookingRepository extends JpaRepository<Booking, UUID> {
             @Param("startDate") LocalDateTime startDate,
             @Param("endDate") LocalDateTime endDate
     );
-
-    Page<Booking> findAllByService_Business(Business serviceBusiness, Pageable pageable);
     Optional<Booking> findByBookingNumber(String bookingNumber);
     Page<Booking> findByCustomer(User customer, Pageable pageable);
     Page<Booking> findByServiceIn(List<Service> services, Pageable pageable);
