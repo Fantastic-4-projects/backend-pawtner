@@ -88,7 +88,8 @@ public class SecurityConfig {
                                 "/api/services", // POST create service
                                 "/api/services/{id}", // PUT update service, DELETE delete service
                                 "/api/business/register", // POST register business
-                                "/api/business/my-business" // GET my business
+                                "/api/business/my-business", // GET my business
+                                "/api/orders/business"
                         ).hasAuthority(UserRole.BUSINESS_OWNER.name())
 
                         // Endpoints for CUSTOMER
@@ -96,7 +97,6 @@ public class SecurityConfig {
                                 "/api/cart/**", // All cart operations
                                 "/api/orders/checkout", // Checkout
                                 "/api/orders", // GET my orders
-                                "/api/orders/{id}", // GET order by ID (customer specific)
                                 "/api/pets/**", // All pet operations
                                 "/api/reviews" // POST create review, PUT update review
                         ).hasAuthority(UserRole.CUSTOMER.name())
@@ -107,10 +107,12 @@ public class SecurityConfig {
                                 "/api/users/{id}", // DELETE user by ID, PATCH update user status
                                 "/api/users/{id}/status", // PATCH update user status
                                 "/api/auth/user/set-role", // PATCH set user role
-                                "/api/orders/{id}", // PUT update order status, DELETE delete order
                                 "/api/reviews/{id}", // DELETE review
                                 "/api/business/{id}" // PATCH approve business
                         ).hasAuthority(UserRole.ADMIN.name())
+
+                        .requestMatchers("/api/orders/{order_id}"
+                        ).hasAnyAuthority(UserRole.CUSTOMER.name(), UserRole.BUSINESS_OWNER.name(), UserRole.ADMIN.name())
 
                         .anyRequest().authenticated() // Fallback for any other authenticated requests
                 )

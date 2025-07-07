@@ -51,6 +51,7 @@ public class PetController {
     @PreAuthorize("hasAuthority('CUSTOMER')")
     public ResponseEntity<CommonResponse<PetResponseDTO>> updatePet(@PathVariable UUID id, @Valid @RequestPart("pet") PetRequestDTO petRequestDTO, @RequestPart(value = "image", required = false) MultipartFile image, Authentication authentication) {
         petRequestDTO.setId(id);
+        petRequestDTO.setImage(image);
         PetResponseDTO responseDTO = petService.updatePet(petRequestDTO, authentication.getName());
         return ResponseUtil.createResponse(HttpStatus.OK, "Successfully updated pet", responseDTO);
     }

@@ -52,8 +52,8 @@ public class OrderController {
 
     @GetMapping("/business")
     @PreAuthorize("hasAuthority('BUSINESS_OWNER')")
-    public ResponseEntity<CommonResponse<Page<OrderResponseDTO>>> getAllOrdersForBusiness(Authentication authentication, Pageable pageable) {
-        Page<OrderResponseDTO> responseDTOPage = orderService.getAllOrdersByBusinessOwnerId(authentication.getName(), pageable);
+    public ResponseEntity<CommonResponse<Page<OrderResponseDTO>>> getAllOrdersForBusiness(@RequestParam UUID businessId, Pageable pageable) {
+        Page<OrderResponseDTO> responseDTOPage = orderService.getAllOrdersByBusinessId(businessId, pageable);
         return ResponseUtil.createResponse(HttpStatus.OK, "Successfully fetched all orders for business", responseDTOPage);
     }
 }

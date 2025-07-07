@@ -54,11 +54,13 @@ public class UserServiceImpl implements UserService {
         UserDetails userDetails = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         User user = userRepository.findByEmail(userDetails.getUsername()).get();
 
-        try {
-            String imageUrl = imageUploadService.upload(profileImage);
-            user.setImageUrl(imageUrl);
-        } catch (IOException e) {
-            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Failed to upload image");
+        if (profileImage != null && !profileImage.isEmpty()) {
+            try {
+                String imageUrl = imageUploadService.upload(profileImage);
+                user.setImageUrl(imageUrl);
+            } catch (IOException e) {
+                throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Failed to upload image");
+            }
         }
 
         user.setName(userRequestDTO.getName());

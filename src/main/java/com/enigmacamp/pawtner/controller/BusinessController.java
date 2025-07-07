@@ -51,11 +51,16 @@ public class BusinessController {
     }
 
     @PutMapping("/{businessId}/update")
-    public ResponseEntity<CommonResponse<BusinessResponseDTO>> updateBusiness(@PathVariable UUID businessId, @RequestBody BusinessRequestDTO businessRequestDTO) {
+    public ResponseEntity<CommonResponse<BusinessResponseDTO>> updateBusiness(
+            @PathVariable UUID businessId,
+            @RequestPart(required = false, name = "business") BusinessRequestDTO businessRequestDTO,
+            @RequestPart(required = false, name = "businessImage") MultipartFile businessImage,
+            @RequestPart(required = false, name = "certificateImage") MultipartFile certificateImage
+    ) {
         return ResponseUtil.createResponse(
                 HttpStatus.OK,
                 "Berhasil memperbaharui profil bisnis",
-                businessService.updateBusiness(businessId, businessRequestDTO)
+                businessService.updateBusiness(businessId, businessRequestDTO, businessImage, certificateImage)
         );
     }
 

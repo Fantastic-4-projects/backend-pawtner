@@ -224,8 +224,8 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     @Transactional(readOnly = true)
-    public Page<OrderResponseDTO> getAllOrdersByBusinessOwnerId(String businessOwnerEmail, Pageable pageable) {
-        Business business = businessService.getBusinessByOwnerEmailForInternal(businessOwnerEmail);
+    public Page<OrderResponseDTO> getAllOrdersByBusinessId(UUID businessId, Pageable pageable) {
+        Business business = businessService.getBusinessByIdForInternal(businessId);
         Page<Order> orders = orderRepository.findByBusiness(business, pageable);
         return orders.map(order -> mapToOrderResponseDTO(order, orderItemRepository.findByOrder(order)));
     }
