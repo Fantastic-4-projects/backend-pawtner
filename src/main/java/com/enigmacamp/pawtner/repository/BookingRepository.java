@@ -1,5 +1,6 @@
 package com.enigmacamp.pawtner.repository;
 
+import com.enigmacamp.pawtner.constant.BookingStatus;
 import com.enigmacamp.pawtner.entity.Booking;
 import com.enigmacamp.pawtner.entity.Business;
 import org.springframework.data.domain.Page;
