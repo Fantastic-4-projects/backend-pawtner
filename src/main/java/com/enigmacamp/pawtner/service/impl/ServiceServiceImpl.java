@@ -13,6 +13,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.io.IOException;
@@ -61,6 +62,14 @@ public class ServiceServiceImpl implements ServiceService {
     @Override
     public Page<ServiceResponseDTO> getAllServices(Pageable pageable) {
         Page<Service> services = serviceRepository.findAll(pageable);
+        return services.map(this::mapToResponseDTO);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Page<ServiceResponseDTO> getAllServicesByBusiness(UUID businessId, Pageable pageable) {
+        Business business = businessService.getBusinessByIdForInternal(businessId);
+        Page<Service> services = serviceRepository.findAllByBusiness(business, pageable);
         return services.map(this::mapToResponseDTO);
     }
 

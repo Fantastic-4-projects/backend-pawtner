@@ -81,9 +81,6 @@ public class Business {
     private BusinessStatus statusRealtime = BusinessStatus.CLOSED;
 
     @Builder.Default
-    private Boolean isOpen = false;
-
-    @Builder.Default
     private Boolean isApproved = null;
 
     @Builder.Default

@@ -42,6 +42,12 @@ public class ServiceController {
         return ResponseUtil.createResponse(HttpStatus.OK, "Successfully fetched all services", responseDTOPage);
     }
 
+    @GetMapping("/my-services/{businessId}")
+    public ResponseEntity<CommonResponse<Page<ServiceResponseDTO>>> getAllServicesByBusiness(@PathVariable UUID businessId, Pageable pageable) {
+        Page<ServiceResponseDTO> responseDTOPage = serviceService.getAllServicesByBusiness(businessId, pageable);
+        return ResponseUtil.createResponse(HttpStatus.OK, "Successfully fetched all services", responseDTOPage);
+    }
+
     @PutMapping("/{id}")
     @PreAuthorize("hasAuthority('BUSINESS_OWNER')")
     public ResponseEntity<CommonResponse<ServiceResponseDTO>> updateService(@PathVariable UUID id, @Valid @ModelAttribute ServiceRequestDTO serviceRequestDTO) {

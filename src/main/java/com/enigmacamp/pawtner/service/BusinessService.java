@@ -20,6 +20,6 @@ public interface BusinessService {
     Business getBusinessByIdForInternal(UUID id);
     BusinessResponseDTO approveBusiness(UUID businessId, Boolean approved);
     Business getBusinessByOwnerEmailForInternal(String ownerEmail);
-    BusinessResponseDTO openBusiness(UUID businessId);
+    BusinessResponseDTO openBusiness(UUID businessId,  BusinessRequestDTO businessRequestDTO);
     void deleteBusiness(UUID businessId);
 }
