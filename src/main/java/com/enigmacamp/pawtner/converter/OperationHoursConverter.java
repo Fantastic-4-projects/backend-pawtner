@@ -13,6 +13,9 @@ public class OperationHoursConverter implements AttributeConverter<OperationHour
 
     @Override
     public String convertToDatabaseColumn(OperationHoursDTO attribute) {
+        if (attribute == null) {
+            return null;
+        }
         try {
             return objectMapper.writeValueAsString(attribute);
         } catch (JsonProcessingException e) {
@@ -22,6 +25,9 @@ public class OperationHoursConverter implements AttributeConverter<OperationHour
 
     @Override
     public OperationHoursDTO convertToEntityAttribute(String dbData) {
+        if (dbData == null ||  dbData.isEmpty()) {
+            return null;
+        }
         try {
             return objectMapper.readValue(dbData, OperationHoursDTO.class);
         } catch (Exception e) {
