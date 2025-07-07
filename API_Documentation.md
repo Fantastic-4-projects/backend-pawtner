@@ -2046,8 +2046,30 @@ Updates an existing service.
 ```
 
 ### `DELETE /api/services/{id}`
-Deletes a service.
+Deletes a service offering.
 - **Roles Permitted**: `BUSINESS_OWNER`
+
+---
+
+## Users (`/api/users`)
+
+### `PATCH /api/users/change-password`
+Changes the password for the currently authenticated user.
+- **Roles Permitted**: `Authenticated`
+
+**Request Body (`application/json`)**
+```json
+{
+  "oldPassword": "currentStrongPassword123",
+  "newPassword": "newStrongerPassword456"
+}
+```
+
+**Response Data (`String`)**
+```json
+null
+```
+
 
 **Path Variable**: `id` (UUID)
 

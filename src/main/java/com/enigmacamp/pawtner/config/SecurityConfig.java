@@ -5,14 +5,11 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
@@ -27,11 +24,6 @@ public class SecurityConfig {
     private final AuthTokenFilter authTokenFilter;
     private final OAuth2SuccessHandler oAuth2SuccessHandler;
     private final CustomAuthenticationEntryPoint customAuthenticationEntryPoint; // Inject the custom entry point
-
-    @Bean
-    public PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder();
-    }
 
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration) throws Exception {
@@ -78,7 +70,8 @@ public class SecurityConfig {
                                 "/api/reviews", // GET all reviews
                                 "/api/reviews/{id}", // GET review by ID
                                 "/api/users", // PUT update user
-                                "/api/users/{id}" // GET user by ID
+                                "/api/users/{id}", // GET user by ID
+                                "/api/users/change-password"
                         ).authenticated()
 
                         // Endpoints for BUSINESS_OWNER

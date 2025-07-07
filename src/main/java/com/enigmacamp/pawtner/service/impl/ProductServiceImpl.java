@@ -8,15 +8,18 @@ import com.enigmacamp.pawtner.repository.ProductRepository;
 import com.enigmacamp.pawtner.service.BusinessService;
 import com.enigmacamp.pawtner.service.ImageUploadService;
 import com.enigmacamp.pawtner.service.ProductService;
+import com.enigmacamp.pawtner.specification.ProductSpecification;
 import lombok.AllArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.util.UUID;
 
 @Service
@@ -67,8 +70,10 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    public Page<ProductResponseDTO> getAllProducts(Pageable pageable) {
-        Page<Product> products = productRepository.findAll(pageable);
+    public Page<ProductResponseDTO> getAllProducts(Pageable pageable, String name, BigDecimal minPrice, BigDecimal maxPrice) {
+        Specification<Product> spec = ProductSpecification.getSpecification(name, minPrice, maxPrice);
+
+        Page<Product> products = productRepository.findAll(spec, pageable);
         return products.map(this::mapToResponseDTO);
     }
 

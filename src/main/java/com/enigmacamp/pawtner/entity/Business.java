@@ -13,7 +13,6 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.locationtech.jts.geom.Point;
 
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
@@ -69,7 +68,7 @@ public class Business {
     @Column(length = 2000)
     private String address;
 
-    @Column(name = "location", columnDefinition = "TEXT")
+    @Column(name = "location", columnDefinition = "geometry(Point, 4326)")
     private Point location;
 
     @Convert(converter = OperationHoursConverter.class)
