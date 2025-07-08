@@ -10,6 +10,10 @@ public class BusinessMapper {
         BigDecimal latitude = null;
         BigDecimal longitude = null;
 
+        if (business == null) {
+            return null; // atau lempar exception custom kalau wajib ada
+        }
+
         if (business.getLocation() != null) {
             latitude = BigDecimal.valueOf(business.getLocation().getY());
             longitude = BigDecimal.valueOf(business.getLocation().getX());

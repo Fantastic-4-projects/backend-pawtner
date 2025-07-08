@@ -20,7 +20,7 @@ public class ServiceSpecification {
         return (root, query, criteriaBuilder) -> {
             List<Predicate> predicates = new ArrayList<>();
 
-            Join<Product, Business> businessJoin = root.join("business");
+            Join<Service, Business> businessJoin = root.join("business");
 
             if (name != null && !name.isEmpty()) {
                 predicates.add(criteriaBuilder.like(criteriaBuilder.lower(root.get("name")), "%" + name.toLowerCase() + "%"));
