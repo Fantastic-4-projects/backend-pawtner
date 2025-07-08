@@ -4,13 +4,12 @@ import com.enigmacamp.pawtner.constant.BookingStatus;
 import com.enigmacamp.pawtner.constant.PaymentStatus;
 import com.enigmacamp.pawtner.dto.request.BookingRequestDTO;
 import com.enigmacamp.pawtner.dto.response.BookingResponseDTO;
-import com.enigmacamp.pawtner.dto.response.PetResponseDTO;
-import com.enigmacamp.pawtner.dto.response.UserResponseDTO;
 import com.enigmacamp.pawtner.entity.Booking;
 import com.enigmacamp.pawtner.entity.Business;
 import com.enigmacamp.pawtner.entity.Payment;
 import com.enigmacamp.pawtner.entity.Pet;
 import com.enigmacamp.pawtner.entity.User;
+import com.enigmacamp.pawtner.mapper.BookingMapper;
 import com.enigmacamp.pawtner.repository.BookingRepository;
 import com.enigmacamp.pawtner.repository.PetRepository;
 import com.enigmacamp.pawtner.repository.ServiceRepository;
@@ -42,7 +41,6 @@ import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Collections;
-import java.util.List;
 import java.util.UUID;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -128,14 +126,14 @@ public class BookingServiceImpl implements BookingService {
         booking.setPayment(payment);
         bookingRepository.save(booking);
 
-        return toBookingResponseDTO(booking);
+        return BookingMapper.mapToResponse(booking);
     }
 
     @Override
     public BookingResponseDTO getBookingById(UUID id) {
         Booking booking = bookingRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Booking not found"));
-        return toBookingResponseDTO(booking);
+        return BookingMapper.mapToResponse(booking);
     }
 
     @Override
@@ -148,7 +146,7 @@ public class BookingServiceImpl implements BookingService {
         } else if (user.getRole().name().equals("BUSINESS_OWNER")) {
             return getAllBookingsByBusinessOwner(user.getEmail(), pageable);
         } else if (user.getRole().name().equals("ADMIN")) {
-            return bookingRepository.findAll(pageable).map(this::toBookingResponseDTO);
+            return bookingRepository.findAll(pageable).map(BookingMapper::mapToResponse);
         } else {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Access denied");
         }
@@ -158,7 +156,7 @@ public class BookingServiceImpl implements BookingService {
     public Page<BookingResponseDTO> getAllBookingsByCustomer(String customerEmail, Pageable pageable) {
         User customer = userRepository.findByEmail(customerEmail)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Customer not found"));
-        return bookingRepository.findByCustomer(customer, pageable).map(this::toBookingResponseDTO);
+        return bookingRepository.findByCustomer(customer, pageable).map(BookingMapper::mapToResponse);
     }
 
     @Override
@@ -179,7 +177,7 @@ public class BookingServiceImpl implements BookingService {
             return Page.empty(pageable);
         }
 
-        return bookingRepository.findByServiceIn(services, pageable).map(this::toBookingResponseDTO);
+        return bookingRepository.findByServiceIn(services, pageable).map(BookingMapper::mapToResponse);
     }
 
     @Override
@@ -187,7 +185,7 @@ public class BookingServiceImpl implements BookingService {
     public Page<BookingResponseDTO> getAllBookingsByBusiness(UUID uuid, Pageable pageable) {
         Business business = businessService.getBusinessByIdForInternal(uuid);
         Page<Booking> bookings = bookingRepository.findAllByService_Business(business, pageable);
-        return bookings.map(this::toBookingResponseDTO);
+        return bookings.map(BookingMapper::mapToResponse);
     }
 
     @Override
@@ -196,7 +194,7 @@ public class BookingServiceImpl implements BookingService {
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Booking not found"));
         booking.setStatus(BookingStatus.valueOf(status.toUpperCase()));
         bookingRepository.save(booking);
-        return toBookingResponseDTO(booking);
+        return BookingMapper.mapToResponse(booking);
     }
 
     @Override
@@ -283,49 +281,5 @@ public class BookingServiceImpl implements BookingService {
         } catch (MidtransError e) {
             throw new RuntimeException(e.getMessage(), e);
         }
-    }
-
-    private BookingResponseDTO toBookingResponseDTO(Booking booking) {
-        return BookingResponseDTO.builder()
-                .id(booking.getId())
-                .customer(mapToUserResponseDTO(booking.getCustomer()))
-                .pet(mapToPetResponseDTO(booking.getPet()))
-                .petName(booking.getPet().getName())
-                .serviceId(booking.getService().getId())
-                .serviceName(booking.getService().getName())
-                .businessId(booking.getService().getBusiness().getId())
-                .businessName(booking.getService().getBusiness().getName())
-                .bookingNumber(booking.getBookingNumber())
-                .startTime(booking.getStartTime())
-                .endTime(booking.getEndTime())
-                .totalPrice(booking.getTotalPrice().doubleValue())
-                .status(booking.getStatus().name())
-                .snapToken(booking.getSnapToken())
-                .createdAt(LocalDateTime.now())
-                .build();
-    }
-
-    private UserResponseDTO mapToUserResponseDTO(User user) {
-        return UserResponseDTO.builder()
-                .id(user.getId().toString())
-                .name(user.getName())
-                .email(user.getEmail())
-                .address(user.getAddress())
-                .phone(user.getPhoneNumber())
-                .imageUrl(user.getImageUrl())
-                .build();
-    }
-
-    private PetResponseDTO mapToPetResponseDTO(Pet pet) {
-        return PetResponseDTO.builder()
-                .id(pet.getId())
-                .name(pet.getName())
-                .species(pet.getSpecies())
-                .breed(pet.getBreed())
-                .age(pet.getAge())
-                .imageUrl(pet.getImageUrl())
-                .notes(pet.getNotes())
-                .ownerName(pet.getOwner().getName())
-                .build();
     }
 }

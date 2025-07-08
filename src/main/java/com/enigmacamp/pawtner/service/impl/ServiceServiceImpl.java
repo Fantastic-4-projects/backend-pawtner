@@ -3,13 +3,12 @@ package com.enigmacamp.pawtner.service.impl;
 import com.enigmacamp.pawtner.dto.request.ServiceRequestDTO;
 import com.enigmacamp.pawtner.dto.response.ServiceResponseDTO;
 import com.enigmacamp.pawtner.entity.Business;
-import com.enigmacamp.pawtner.entity.Product;
 import com.enigmacamp.pawtner.entity.Service;
+import com.enigmacamp.pawtner.mapper.ServiceMapper;
 import com.enigmacamp.pawtner.repository.ServiceRepository;
 import com.enigmacamp.pawtner.service.BusinessService;
 import com.enigmacamp.pawtner.service.ImageUploadService;
 import com.enigmacamp.pawtner.service.ServiceService;
-import com.enigmacamp.pawtner.specification.ProductSpecification;
 import com.enigmacamp.pawtner.specification.ServiceSpecification;
 import lombok.AllArgsConstructor;
 import org.locationtech.jts.geom.Coordinate;
@@ -58,14 +57,14 @@ public class ServiceServiceImpl implements ServiceService {
                 .isActive(true)
                 .build();
         serviceRepository.save(service);
-        return mapToResponseDTO(service);
+        return ServiceMapper.mapToResponse(service);
     }
 
     @Override
     public ServiceResponseDTO getServiceById(UUID id) {
         Service service = serviceRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Service not found"));
-        return mapToResponseDTO(service);
+        return ServiceMapper.mapToResponse(service);
     }
 
     @Override
@@ -80,7 +79,7 @@ public class ServiceServiceImpl implements ServiceService {
         Specification<Service> spec = ServiceSpecification.getSpecification(name, minPrice, maxPrice, userLocation, radiusInMeters);
 
         Page<Service> services = serviceRepository.findAll(spec, pageable);
-        return services.map(this::mapToResponseDTO);
+        return services.map(ServiceMapper::mapToResponse);
     }
 
     @Override
@@ -88,7 +87,7 @@ public class ServiceServiceImpl implements ServiceService {
     public Page<ServiceResponseDTO> getAllServicesByBusiness(UUID businessId, Pageable pageable) {
         Business business = businessService.getBusinessByIdForInternal(businessId);
         Page<Service> services = serviceRepository.findAllByBusiness(business, pageable);
-        return services.map(this::mapToResponseDTO);
+        return services.map(ServiceMapper::mapToResponse);
     }
 
     @Override
@@ -112,7 +111,7 @@ public class ServiceServiceImpl implements ServiceService {
         existingService.setImageUrl(imageUrl);
 
         serviceRepository.save(existingService);
-        return mapToResponseDTO(existingService);
+        return ServiceMapper.mapToResponse(existingService);
     }
 
     @Override
@@ -121,21 +120,6 @@ public class ServiceServiceImpl implements ServiceService {
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Service not found"));
         service.setIsActive(false);
         serviceRepository.save(service);
-    }
-
-    private ServiceResponseDTO mapToResponseDTO(Service service) {
-        return ServiceResponseDTO.builder()
-                .id(service.getId())
-                .businessId(service.getBusiness().getId())
-                .category(service.getCategory())
-                .name(service.getName())
-                .basePrice(service.getBasePrice())
-                .capacityPerDay(service.getCapacityPerDay())
-                .imageUrl(service.getImageUrl())
-                .reviewCount(service.getReviewCount())
-                .averageRating(service.getAverageRating())
-                .isActive(service.getIsActive())
-                .build();
     }
 
     @Override

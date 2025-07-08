@@ -14,9 +14,8 @@ import java.util.UUID;
 @Builder
 public class ReviewResponseDTO {
     private UUID id;
-    private UUID userId;
-    private String userName;
-    private UUID businessId;
+    private UserResponseDTO user;
+    private BusinessResponseDTO business;
     private UUID productId;
     private UUID serviceId;
     private Integer rating;

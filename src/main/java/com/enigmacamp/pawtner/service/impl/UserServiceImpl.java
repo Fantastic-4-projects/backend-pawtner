@@ -4,6 +4,7 @@ import com.enigmacamp.pawtner.dto.request.ChangePasswordRequestDTO;
 import com.enigmacamp.pawtner.dto.request.UserRequestDTO;
 import com.enigmacamp.pawtner.dto.response.UserResponseDTO;
 import com.enigmacamp.pawtner.entity.User;
+import com.enigmacamp.pawtner.mapper.UserMapper;
 import com.enigmacamp.pawtner.repository.UserRepository;
 import com.enigmacamp.pawtner.service.UserService;
 import lombok.RequiredArgsConstructor;
@@ -53,7 +54,7 @@ public class UserServiceImpl implements UserService {
     public UserResponseDTO getUserById(String id) {
         User user = userRepository.findById(UUID.fromString(id))
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
-        return mapToResponse(user);
+        return UserMapper.mapToResponse(user);
     }
 
     @Override
@@ -75,7 +76,7 @@ public class UserServiceImpl implements UserService {
         user.setPhoneNumber(userRequestDTO.getPhone());
         userRepository.save(user);
 
-        return mapToResponse(user);
+        return UserMapper.mapToResponse(user);
     }
 
     @Override
@@ -84,7 +85,7 @@ public class UserServiceImpl implements UserService {
 
         if (user.getRole().name().equals("ADMIN")) {
             List<User> users = userRepository.findAll();
-            return users.stream().map(this::mapToResponse).collect(Collectors.toList());
+            return users.stream().map(UserMapper::mapToResponse).collect(Collectors.toList());
         } else {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Access denied");
         }
@@ -102,7 +103,7 @@ public class UserServiceImpl implements UserService {
         }
 
         userRepository.save(user);
-        return mapToResponse(user);
+        return UserMapper.mapToResponse(user);
     }
 
 
@@ -127,20 +128,5 @@ public class UserServiceImpl implements UserService {
         userRepository.save(currentUser);
 
         log.info("Password untuk pengguna {} telah berhasil diubah.", currentUser.getEmail());
-    }
-
-    private UserResponseDTO mapToResponse(User user) {
-        return UserResponseDTO.builder()
-                .id(user.getId().toString())
-                .email(user.getEmail())
-                .name(user.getName())
-                .address(user.getAddress())
-                .phone(user.getPhoneNumber())
-                .imageUrl(user.getImageUrl())
-                .isEnable(user.getIsEnabled())
-                .isNoLocked(user.getIsAccountNonLocked())
-                .createdAt(user.getCreatedAt())
-                .updatedAt(user.getCreatedAt())
-                .build();
     }
 }

@@ -1,9 +1,6 @@
 package com.enigmacamp.pawtner.service.impl;
 
 import com.enigmacamp.pawtner.dto.request.PrescriptionRequestDTO;
-import com.enigmacamp.pawtner.dto.response.BusinessResponseDTO;
-import com.enigmacamp.pawtner.dto.response.PetResponseDTO;
-import com.enigmacamp.pawtner.dto.response.PrescriptionItemResponseDTO;
 import com.enigmacamp.pawtner.dto.response.PrescriptionResponseDTO;
 import com.enigmacamp.pawtner.entity.Booking;
 import com.enigmacamp.pawtner.entity.Business;
@@ -11,6 +8,7 @@ import com.enigmacamp.pawtner.entity.Pet;
 import com.enigmacamp.pawtner.entity.Prescription;
 import com.enigmacamp.pawtner.entity.User;
 import com.enigmacamp.pawtner.entity.PrescriptionItem;
+import com.enigmacamp.pawtner.mapper.PrescriptionMapper;
 import com.enigmacamp.pawtner.repository.BusinessRepository;
 import com.enigmacamp.pawtner.repository.PetRepository;
 import com.enigmacamp.pawtner.repository.PrescriptionRepository;
@@ -75,14 +73,14 @@ public class PrescriptionServiceImpl implements PrescriptionService {
         prescription.setPrescriptionItems(prescriptionItems);
         prescriptionRepository.save(prescription);
 
-        return convertToResponseDTO(prescription);
+        return PrescriptionMapper.mapToResponse(prescription);
     }
 
     @Override
     public PrescriptionResponseDTO getPrescriptionById(String id) {
         Prescription prescription = prescriptionRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Prescription not found"));
-        return convertToResponseDTO(prescription);
+        return PrescriptionMapper.mapToResponse(prescription);
     }
 
     @Override
@@ -90,15 +88,15 @@ public class PrescriptionServiceImpl implements PrescriptionService {
         User user = (User) authentication.getPrincipal();
 
         if (user.getRole().name().equals("CUSTOMER")) {
-            return prescriptionRepository.findByPetOwner(user, pageable).map(this::convertToResponseDTO);
+            return prescriptionRepository.findByPetOwner(user, pageable).map(PrescriptionMapper::mapToResponse);
         } else if (user.getRole().name().equals("BUSINESS_OWNER")) {
             List<Business> businesses = businessRepository.findAllByOwner_Id(user.getId());
             if (businesses.isEmpty()) {
                 return Page.empty(pageable);
             }
-            return prescriptionRepository.findByIssuingBusinessIn(businesses, pageable).map(this::convertToResponseDTO);
+            return prescriptionRepository.findByIssuingBusinessIn(businesses, pageable).map(PrescriptionMapper::mapToResponse);
         } else if (user.getRole().name().equals("ADMIN")) {
-            return prescriptionRepository.findAll(pageable).map(this::convertToResponseDTO);
+            return prescriptionRepository.findAll(pageable).map(PrescriptionMapper::mapToResponse);
         } else {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Access denied");
         }
@@ -124,36 +122,6 @@ public class PrescriptionServiceImpl implements PrescriptionService {
         // Tambahkan validasi kepemilikan bisnis di sini jika diperlukan
         // Misalnya: if (!prescription.getIssuingBusiness().getOwner().getEmail().equals(authentication.getName())) { ... }
 
-        return convertToResponseDTO(prescription);
-    }
-
-    private PrescriptionResponseDTO convertToResponseDTO(Prescription prescription) {
-        List<PrescriptionItemResponseDTO> itemDTOs = prescription.getPrescriptionItems().stream()
-                .map(item -> PrescriptionItemResponseDTO.builder()
-                        .id(item.getId())
-                        .medicationName(item.getMedicationName())
-                        .dosage(item.getDosage())
-                        .frequency(item.getFrequency())
-                        .durationDays(item.getDurationDays())
-                        .instructions(item.getInstructions())
-                        .build())
-                .collect(Collectors.toList());
-
-        return PrescriptionResponseDTO.builder()
-                .id(prescription.getId())
-                .pet(PetResponseDTO.builder()
-                        .id(prescription.getPet().getId())
-                        .name(prescription.getPet().getName())
-                        .build())
-                .issuingBusiness(BusinessResponseDTO.builder()
-                        .businessId(prescription.getIssuingBusiness().getId())
-                        .businessName(prescription.getIssuingBusiness().getName())
-                        .build())
-                .bookingId(prescription.getBooking() != null ? prescription.getBooking().getId() : null)
-                .issueDate(prescription.getIssueDate())
-                .notes(prescription.getNotes())
-                .prescriptionItems(itemDTOs)
-                .createdAt(prescription.getCreatedAt())
-                .build();
+        return PrescriptionMapper.mapToResponse(prescription);
     }
 }
