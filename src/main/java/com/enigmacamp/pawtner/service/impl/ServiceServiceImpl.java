@@ -12,6 +12,9 @@ import com.enigmacamp.pawtner.service.ServiceService;
 import com.enigmacamp.pawtner.specification.ProductSpecification;
 import com.enigmacamp.pawtner.specification.ServiceSpecification;
 import lombok.AllArgsConstructor;
+import org.locationtech.jts.geom.Coordinate;
+import org.locationtech.jts.geom.GeometryFactory;
+import org.locationtech.jts.geom.Point;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
@@ -31,6 +34,7 @@ public class ServiceServiceImpl implements ServiceService {
     private final ServiceRepository serviceRepository;
     private final BusinessService businessService;
     private final ImageUploadService imageUploadService;
+    private final GeometryFactory geometryFactory = new GeometryFactory();
 
     @Override
     public ServiceResponseDTO createService(ServiceRequestDTO serviceRequestDTO) {
@@ -65,8 +69,15 @@ public class ServiceServiceImpl implements ServiceService {
     }
 
     @Override
-    public Page<ServiceResponseDTO> getAllServices(Pageable pageable, String name, BigDecimal minPrice, BigDecimal maxPrice) {
-        Specification<Service> spec = ServiceSpecification.getSpecification(name, minPrice, maxPrice);
+    public Page<ServiceResponseDTO> getAllServices(Pageable pageable, String name, BigDecimal minPrice, BigDecimal maxPrice, Double userLat, Double userLon, Double radiusKm) {
+        Point userLocation = null;
+        Double radiusInMeters = null;
+
+        if (userLat != null && userLon != null) {
+            userLocation = geometryFactory.createPoint(new Coordinate(userLon, userLat));
+            radiusInMeters = (radiusKm != null ? radiusKm : 15.0) * 1000.0;
+        }
+        Specification<Service> spec = ServiceSpecification.getSpecification(name, minPrice, maxPrice, userLocation, radiusInMeters);
 
         Page<Service> services = serviceRepository.findAll(spec, pageable);
         return services.map(this::mapToResponseDTO);
@@ -121,6 +132,8 @@ public class ServiceServiceImpl implements ServiceService {
                 .basePrice(service.getBasePrice())
                 .capacityPerDay(service.getCapacityPerDay())
                 .imageUrl(service.getImageUrl())
+                .reviewCount(service.getReviewCount())
+                .averageRating(service.getAverageRating())
                 .isActive(service.getIsActive())
                 .build();
     }

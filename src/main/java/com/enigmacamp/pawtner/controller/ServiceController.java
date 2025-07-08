@@ -48,11 +48,14 @@ public class ServiceController {
             @RequestParam(name = "direction", defaultValue = "asc") String direction,
             @RequestParam(name = "name", required = false) String name,
             @RequestParam(name = "minPrice", required = false) BigDecimal minPrice,
-            @RequestParam(name = "maxPrice", required = false) BigDecimal maxPrice
+            @RequestParam(name = "maxPrice", required = false) BigDecimal maxPrice,
+            @RequestParam(name = "userLat", required = false) Double userLat,
+            @RequestParam(name = "userLon", required = false) Double userLon,
+            @RequestParam(name = "radiusKm", defaultValue = "15") Double radiusKm
     ) {
         Sort.Direction sortDirection = Sort.Direction.fromString(direction);
         Pageable pageable = PageRequest.of(page, size, Sort.by(sortDirection, sortBy));
-        Page<ServiceResponseDTO> responseDTOPage = serviceService.getAllServices(pageable, name, minPrice, maxPrice);
+        Page<ServiceResponseDTO> responseDTOPage = serviceService.getAllServices(pageable, name, minPrice, maxPrice, userLat, userLon, radiusKm);
         return ResponseUtil.createResponse(
                 HttpStatus.OK,
                 "Successfully fetched all services",

@@ -11,7 +11,7 @@ import com.enigmacamp.pawtner.entity.Business;
 import org.springframework.web.multipart.MultipartFile;
 
 public interface BusinessService {
-    void registerBusiness(BusinessRequestDTO businessRequestDTO, MultipartFile businessImage, MultipartFile certificateImage);
+    BusinessResponseDTO registerBusiness(BusinessRequestDTO businessRequestDTO, MultipartFile businessImage, MultipartFile certificateImage);
     BusinessResponseDTO profileBusiness(UUID businessId);
     BusinessResponseDTO updateBusiness(UUID businessId, BusinessRequestDTO businessRequestDTO, MultipartFile businessImage, MultipartFile certificateImage);
     List<BusinessResponseDTO> viewBusiness();

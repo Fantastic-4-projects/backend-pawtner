@@ -39,7 +39,7 @@ public class BusinessServiceImpl implements BusinessService {
 
     @Transactional(rollbackOn = Exception.class)
     @Override
-    public void registerBusiness(BusinessRequestDTO businessRequestDTO, MultipartFile businessImage, MultipartFile certificateImage) {
+    public BusinessResponseDTO registerBusiness(BusinessRequestDTO businessRequestDTO, MultipartFile businessImage, MultipartFile certificateImage) {
         User currentUser = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
         try {
@@ -71,7 +71,7 @@ public class BusinessServiceImpl implements BusinessService {
                     .location(geometryFactory.createPoint(new Coordinate(businessRequestDTO.getLongitude().doubleValue(), businessRequestDTO.getLatitude().doubleValue())))
                     .build();
 
-            businessRepository.save(newBusiness);
+           return mapToResponse(businessRepository.save(newBusiness));
         } catch (IOException e) {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Failed to upload image");
         }

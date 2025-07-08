@@ -10,6 +10,9 @@ import com.enigmacamp.pawtner.service.ImageUploadService;
 import com.enigmacamp.pawtner.service.ProductService;
 import com.enigmacamp.pawtner.specification.ProductSpecification;
 import lombok.AllArgsConstructor;
+import org.locationtech.jts.geom.Coordinate;
+import org.locationtech.jts.geom.GeometryFactory;
+import org.locationtech.jts.geom.Point;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
@@ -29,6 +32,7 @@ public class ProductServiceImpl implements ProductService {
     private final ProductRepository productRepository;
     private final BusinessService businessService;
     private final ImageUploadService imageUploadService;
+    private final GeometryFactory geometryFactory = new GeometryFactory();
 
     @Override
     public Product getProductEntityById(UUID id) {
@@ -70,8 +74,23 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    public Page<ProductResponseDTO> getAllProducts(Pageable pageable, String name, BigDecimal minPrice, BigDecimal maxPrice) {
-        Specification<Product> spec = ProductSpecification.getSpecification(name, minPrice, maxPrice);
+    public Page<ProductResponseDTO> getAllProducts(Pageable pageable, String name, BigDecimal minPrice, BigDecimal maxPrice, Double userLat, Double userLon, Double radiusKm) {
+
+        Point userLocation = null;
+        Double radiusInMeters = null;
+
+        if (userLat != null && userLon != null) {
+            userLocation = geometryFactory.createPoint(new Coordinate(userLon, userLat));
+            radiusInMeters = (radiusKm != null ? radiusKm : 15.0) * 1000.0;
+        }
+
+        Specification<Product> spec = ProductSpecification.getSpecification(
+                name,
+                minPrice,
+                maxPrice,
+                userLocation,
+                radiusInMeters
+        );
 
         Page<Product> products = productRepository.findAll(spec, pageable);
         return products.map(this::mapToResponseDTO);
@@ -129,6 +148,8 @@ public class ProductServiceImpl implements ProductService {
                 .price(product.getPrice())
                 .stockQuantity(product.getStockQuantity())
                 .imageUrl(product.getImageUrl())
+                .averageRating(product.getAverageRating())
+                .reviewCount(product.getReviewCount())
                 .isActive(product.getIsActive())
                 .build();
     }
