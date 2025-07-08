@@ -11,6 +11,7 @@ import com.enigmacamp.pawtner.service.ImageUploadService;
 import com.enigmacamp.pawtner.service.ServiceService;
 import com.enigmacamp.pawtner.specification.ServiceSpecification;
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.GeometryFactory;
 import org.locationtech.jts.geom.Point;
@@ -26,6 +27,7 @@ import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.UUID;
 
+@Slf4j
 @Component
 @AllArgsConstructor
 public class ServiceServiceImpl implements ServiceService {
@@ -89,6 +91,9 @@ public class ServiceServiceImpl implements ServiceService {
     public Page<ServiceResponseDTO> getAllServicesByBusiness(UUID businessId, Pageable pageable) {
         Business business = businessService.getBusinessByIdForInternal(businessId);
         Page<Service> services = serviceRepository.findAllByBusiness(business, pageable);
+        services.stream().findFirst().ifPresent(service ->
+                log.info("Review: {}", service.getReviews().get(0).getComment())
+        );
         return services.map(ServiceMapper::mapToResponse);
     }
 
