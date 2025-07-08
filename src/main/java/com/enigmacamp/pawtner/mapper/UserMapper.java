@@ -12,6 +12,7 @@ public class UserMapper {
                 .address(user.getAddress())
                 .phone(user.getPhoneNumber())
                 .imageUrl(user.getImageUrl())
+                .role(user.getRole())
                 .isEnable(user.getIsEnabled())
                 .isNoLocked(user.getIsAccountNonLocked())
                 .createdAt(user.getCreatedAt())
