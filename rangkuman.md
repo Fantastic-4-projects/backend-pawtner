@@ -28,13 +28,11 @@ Fitur-fitur berikut telah diimplementasikan dengan benar dan sesuai dengan solus
 
 ---
 
-## ❌ Belum Diimplementasikan (Not Implemented)
+## ✅ Sudah Selesai (Implemented)
 
-Fitur berikut direncanakan tetapi belum ada dalam kode sumber saat ini.
-
-### 1. Pencarian Bantuan Darurat Berbasis Lokasi
-- **Status**: **Belum Ada**.
-- **Detail**: Tidak ditemukan endpoint atau logika bisnis di `BusinessController` maupun `BusinessServiceImpl` untuk memfilter klinik hewan yang menyediakan layanan darurat (`has_emergency_services`) dan mengurutkannya berdasarkan kedekatan lokasi pengguna.
+### 5. Pencarian Bantuan Darurat Berbasis Lokasi
+- **Status**: **Selesai**.
+- **Bukti**: Endpoint `/api/business/nearby` di `BusinessController` dan logika bisnis di `BusinessServiceImpl` sudah diimplementasikan untuk mencari bisnis terdekat berdasarkan lokasi pengguna (latitude, longitude) dan radius. Fitur ini memanfaatkan PostGIS untuk kueri spasial.
 
 ---
 
