@@ -7,6 +7,14 @@ import java.math.BigDecimal;
 
 public class BusinessMapper {
     public static BusinessResponseDTO mapToResponse(Business business) {
+        BigDecimal latitude = null;
+        BigDecimal longitude = null;
+
+        if (business.getLocation() != null) {
+            latitude = BigDecimal.valueOf(business.getLocation().getY());
+            longitude = BigDecimal.valueOf(business.getLocation().getX());
+        }
+
         return BusinessResponseDTO.builder()
                 .businessId(business.getId())
                 .ownerName(business.getOwner().getName())
@@ -19,8 +27,8 @@ public class BusinessMapper {
                 .emergencyPhone(business.getEmergencyPhone())
                 .businessImageUrl(business.getBusinessImageUrl())
                 .certificateImageUrl(business.getCertificateImageUrl())
-                .latitude(BigDecimal.valueOf(business.getLocation().getY()))
-                .longitude(BigDecimal.valueOf(business.getLocation().getX()))
+                .latitude(latitude)
+                .longitude(longitude)
                 .statusRealTime(business.getStatusRealtime())
                 .businessAddress(business.getAddress())
                 .operationHours(business.getOperationHours())

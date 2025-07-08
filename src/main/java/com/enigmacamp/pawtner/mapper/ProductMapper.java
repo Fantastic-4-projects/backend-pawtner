@@ -4,13 +4,14 @@ import com.enigmacamp.pawtner.dto.response.ProductResponseDTO;
 import com.enigmacamp.pawtner.dto.response.ReviewResponseDTO;
 import com.enigmacamp.pawtner.entity.Product;
 
+import java.util.Collections;
 import java.util.List;
 
 public class ProductMapper {
     public static ProductResponseDTO mapToResponse(Product product) {
-        List<ReviewResponseDTO> reviews = product.getReviews().stream()
-                .map(ReviewMapper::mapToResponse)
-                .toList();
+        List<ReviewResponseDTO> reviews = (product.getReviews() != null)
+                ? product.getReviews().stream().map(ReviewMapper::mapToResponse).toList()
+                : Collections.emptyList();
 
         return ProductResponseDTO.builder()
                 .id(product.getId())

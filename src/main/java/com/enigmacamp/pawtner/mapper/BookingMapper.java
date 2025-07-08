@@ -3,7 +3,6 @@ package com.enigmacamp.pawtner.mapper;
 import com.enigmacamp.pawtner.dto.response.BookingResponseDTO;
 import com.enigmacamp.pawtner.entity.Booking;
 
-import java.time.LocalDateTime;
 
 public class BookingMapper {
     public static BookingResponseDTO mapToResponse(Booking booking){
@@ -22,7 +21,7 @@ public class BookingMapper {
                 .totalPrice(booking.getTotalPrice().doubleValue())
                 .status(booking.getStatus().name())
                 .snapToken(booking.getSnapToken())
-                .createdAt(LocalDateTime.now())
+                .createdAt(booking.getCreatedAt())
                 .build();
     }
 }

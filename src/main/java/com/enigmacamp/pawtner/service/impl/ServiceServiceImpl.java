@@ -61,6 +61,7 @@ public class ServiceServiceImpl implements ServiceService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public ServiceResponseDTO getServiceById(UUID id) {
         Service service = serviceRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Service not found"));
@@ -68,6 +69,7 @@ public class ServiceServiceImpl implements ServiceService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public Page<ServiceResponseDTO> getAllServices(Pageable pageable, String name, BigDecimal minPrice, BigDecimal maxPrice, Double userLat, Double userLon, Double radiusKm) {
         Point userLocation = null;
         Double radiusInMeters = null;
