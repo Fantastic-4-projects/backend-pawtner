@@ -4,6 +4,7 @@ import com.enigmacamp.pawtner.dto.request.ReviewRequestDTO;
 import com.enigmacamp.pawtner.dto.response.ReviewResponseDTO;
 import com.enigmacamp.pawtner.entity.Review;
 import com.enigmacamp.pawtner.entity.User;
+import com.enigmacamp.pawtner.mapper.ReviewMapper;
 import com.enigmacamp.pawtner.repository.*;
 import com.enigmacamp.pawtner.service.ReviewService;
 import lombok.RequiredArgsConstructor;
@@ -51,7 +52,7 @@ public class ReviewServiceImpl implements ReviewService {
         }
 
         reviewRepository.save(review);
-        return toReviewResponseDTO(review);
+        return ReviewMapper.mapToResponse(review);
     }
 
     @Override
@@ -59,15 +60,15 @@ public class ReviewServiceImpl implements ReviewService {
         User user = (User) authentication.getPrincipal();
 
         if (user.getRole().name().equals("CUSTOMER")) {
-            return reviewRepository.findByUser(user, pageable).map(this::toReviewResponseDTO);
+            return reviewRepository.findByUser(user, pageable).map(ReviewMapper::mapToResponse);
         } else if (user.getRole().name().equals("BUSINESS_OWNER")) {
             List<com.enigmacamp.pawtner.entity.Business> businesses = businessRepository.findAllByOwner_Id(user.getId());
             if (businesses.isEmpty()) {
                 return Page.empty(pageable);
             }
-            return reviewRepository.findByBusinessIn(businesses, pageable).map(this::toReviewResponseDTO);
+            return reviewRepository.findByBusinessIn(businesses, pageable).map(ReviewMapper::mapToResponse);
         } else if (user.getRole().name().equals("ADMIN")) {
-            return reviewRepository.findAll(pageable).map(this::toReviewResponseDTO);
+            return reviewRepository.findAll(pageable).map(ReviewMapper::mapToResponse);
         } else {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Access denied");
         }
@@ -77,7 +78,7 @@ public class ReviewServiceImpl implements ReviewService {
     public ReviewResponseDTO getReviewById(UUID id) {
         Review review = reviewRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Review not found"));
-        return toReviewResponseDTO(review);
+        return ReviewMapper.mapToResponse(review);
     }
 
     @Override
@@ -92,7 +93,7 @@ public class ReviewServiceImpl implements ReviewService {
         review.setRating(requestDTO.getRating());
         review.setComment(requestDTO.getComment());
         reviewRepository.save(review);
-        return toReviewResponseDTO(review);
+        return ReviewMapper.mapToResponse(review);
     }
 
     @Override
@@ -106,19 +107,5 @@ public class ReviewServiceImpl implements ReviewService {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "You are not authorized to delete this review");
         }
         reviewRepository.delete(review);
-    }
-
-    private ReviewResponseDTO toReviewResponseDTO(Review review) {
-        return ReviewResponseDTO.builder()
-                .id(review.getId())
-                .userId(review.getUser().getId())
-                .userName(review.getUser().getName())
-                .businessId(review.getBusiness() != null ? review.getBusiness().getId() : null)
-                .productId(review.getProduct() != null ? review.getProduct().getId() : null)
-                .serviceId(review.getService() != null ? review.getService().getId() : null)
-                .rating(review.getRating())
-                .comment(review.getComment())
-                .createdAt(review.getCreatedAt())
-                .build();
     }
 }

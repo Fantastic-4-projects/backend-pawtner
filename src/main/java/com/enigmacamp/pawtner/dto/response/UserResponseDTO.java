@@ -1,5 +1,6 @@
 package com.enigmacamp.pawtner.dto.response;
 
+import com.enigmacamp.pawtner.constant.UserRole;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -18,6 +19,7 @@ public class UserResponseDTO {
     private String address;
     private String phone;
     private String imageUrl;
+    private UserRole role;
     private Boolean isEnable;
     private Boolean isNoLocked;
     private LocalDateTime createdAt;

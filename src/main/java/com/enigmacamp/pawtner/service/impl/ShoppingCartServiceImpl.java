@@ -2,9 +2,9 @@ package com.enigmacamp.pawtner.service.impl;
 
 import com.enigmacamp.pawtner.dto.request.AddToCartRequestDTO;
 import com.enigmacamp.pawtner.dto.request.UpdateCartItemRequestDTO;
-import com.enigmacamp.pawtner.dto.response.CartItemResponseDTO;
 import com.enigmacamp.pawtner.dto.response.ShoppingCartResponseDTO;
 import com.enigmacamp.pawtner.entity.*;
+import com.enigmacamp.pawtner.mapper.ShoppingCartMapper;
 import com.enigmacamp.pawtner.repository.CartItemRepository;
 import com.enigmacamp.pawtner.repository.ShoppingCartRepository;
 import com.enigmacamp.pawtner.service.BusinessService;
@@ -17,11 +17,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
-import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 @Service
 @AllArgsConstructor
@@ -85,25 +83,9 @@ public class ShoppingCartServiceImpl implements ShoppingCartService {
         // For now, we'll return the first one found or handle multiple carts as needed.
         // If a customer can only have one active cart across all businesses, this logic needs adjustment.
         ShoppingCart shoppingCart = shoppingCarts.get(0);
-
         List<CartItem> cartItems = cartItemRepository.findByShoppingCart(shoppingCart);
 
-        List<CartItemResponseDTO> itemDTOs = cartItems.stream()
-                .map(this::mapToCartItemResponseDTO)
-                .collect(Collectors.toList());
-
-        BigDecimal totalPrice = itemDTOs.stream()
-                .map(CartItemResponseDTO::getSubTotal)
-                .reduce(BigDecimal.ZERO, BigDecimal::add);
-
-        return ShoppingCartResponseDTO.builder()
-                .id(shoppingCart.getId())
-                .customerId(shoppingCart.getCustomer().getId())
-                .businessId(shoppingCart.getBusiness().getId())
-                .businessName(shoppingCart.getBusiness().getName())
-                .items(itemDTOs)
-                .totalPrice(totalPrice)
-                .build();
+        return ShoppingCartMapper.mapToResponse(shoppingCart, cartItems);
     }
 
     @Override
@@ -156,17 +138,5 @@ public class ShoppingCartServiceImpl implements ShoppingCartService {
 
         cartItemRepository.deleteAll(cartItems);
         shoppingCartRepository.delete(shoppingCart);
-    }
-
-    private CartItemResponseDTO mapToCartItemResponseDTO(CartItem cartItem) {
-        BigDecimal subTotal = cartItem.getProduct().getPrice().multiply(BigDecimal.valueOf(cartItem.getQuantity()));
-        return CartItemResponseDTO.builder()
-                .id(cartItem.getId())
-                .productId(cartItem.getProduct().getId())
-                .productName(cartItem.getProduct().getName())
-                .productPrice(cartItem.getProduct().getPrice())
-                .quantity(cartItem.getQuantity())
-                .subTotal(subTotal)
-                .build();
     }
 }

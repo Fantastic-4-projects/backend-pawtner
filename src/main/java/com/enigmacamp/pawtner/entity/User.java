@@ -83,6 +83,9 @@ public class User implements UserDetails {
     private LocalDateTime createdAt = LocalDateTime.now();
 
     @Builder.Default
+    private LocalDateTime updatedAt = LocalDateTime.now();
+
+    @Builder.Default
     @Column(nullable = false)
     private Boolean isAccountNonExpired = true;
 
@@ -106,6 +109,11 @@ public class User implements UserDetails {
         if (createdAt == null) {
             createdAt = LocalDateTime.now();
         }
+    }
+
+    @PreUpdate
+    protected void onUpdate() {
+        createdAt = LocalDateTime.now();
     }
 
     @Override

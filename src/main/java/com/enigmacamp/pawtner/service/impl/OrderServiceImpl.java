@@ -2,10 +2,10 @@ package com.enigmacamp.pawtner.service.impl;
 
 import com.enigmacamp.pawtner.constant.OrderStatus;
 import com.enigmacamp.pawtner.constant.PaymentStatus;
-import com.enigmacamp.pawtner.dto.response.OrderItemResponseDTO;
 import com.enigmacamp.pawtner.dto.response.OrderResponseDTO;
 import com.enigmacamp.pawtner.dto.response.ShoppingCartResponseDTO;
 import com.enigmacamp.pawtner.entity.*;
+import com.enigmacamp.pawtner.mapper.OrderMapper;
 import com.enigmacamp.pawtner.repository.OrderItemRepository;
 import com.enigmacamp.pawtner.repository.OrderRepository;
 import com.enigmacamp.pawtner.service.*;
@@ -20,7 +20,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
-import java.math.BigDecimal;
 import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
@@ -106,7 +105,7 @@ public class OrderServiceImpl implements OrderService {
         );
 
 
-        OrderResponseDTO responseDTO = mapToOrderResponseDTO(order, orderItems);
+        OrderResponseDTO responseDTO = OrderMapper.mapToResponse(order, orderItems);
         responseDTO.setSnapToken(payment.getSnapToken());
         return responseDTO;
     }
@@ -117,7 +116,7 @@ public class OrderServiceImpl implements OrderService {
         Order order = orderRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Order not found"));
         List<OrderItem> orderItems = orderItemRepository.findByOrder(order);
-        return mapToOrderResponseDTO(order, orderItems);
+        return OrderMapper.mapToResponse(order, orderItems);
     }
 
     @Override
@@ -125,7 +124,7 @@ public class OrderServiceImpl implements OrderService {
     public Page<OrderResponseDTO> getAllOrdersByCustomerId(String customerEmail, Pageable pageable) {
         User customer = userService.getUserByEmailForInternal(customerEmail);
         Page<Order> orders = orderRepository.findByCustomer(customer, pageable);
-        return orders.map(order -> mapToOrderResponseDTO(order, orderItemRepository.findByOrder(order)));
+        return orders.map(order ->  OrderMapper.mapToResponse(order, orderItemRepository.findByOrder(order)));
     }
 
     @Override
@@ -173,36 +172,6 @@ public class OrderServiceImpl implements OrderService {
         }
     }
 
-    private String generateOrderNumber() {
-        return "ORD-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase();
-    }
-
-    private OrderResponseDTO mapToOrderResponseDTO(Order order, List<OrderItem> orderItems) {
-        List<OrderItemResponseDTO> itemDTOs = orderItems.stream()
-                .map(orderItem -> OrderItemResponseDTO.builder()
-                        .id(orderItem.getId())
-                        .productId(orderItem.getProduct().getId())
-                        .productName(orderItem.getProduct().getName())
-                        .quantity(orderItem.getQuantity())
-                        .pricePerUnit(orderItem.getPricePerUnit())
-                        .subTotal(orderItem.getPricePerUnit().multiply(BigDecimal.valueOf(orderItem.getQuantity())))
-                        .build())
-                .collect(Collectors.toList());
-
-        return OrderResponseDTO.builder()
-                .id(order.getId())
-                .orderNumber(order.getOrderNumber())
-                .customerId(order.getCustomer().getId())
-                .customerName(order.getCustomer().getName())
-                .businessId(order.getBusiness().getId())
-                .businessName(order.getBusiness().getName())
-                .totalAmount(order.getTotalAmount())
-                .status(order.getStatus())
-                .createdAt(order.getCreatedAt())
-                .items(itemDTOs)
-                .build();
-    }
-
     @Override
     @Transactional
     public OrderResponseDTO updateOrderStatus(UUID orderId, String newStatus, String businessOwnerEmail) {
@@ -228,7 +197,7 @@ public class OrderServiceImpl implements OrderService {
                     Collections.singletonMap("orderId", order.getId().toString())
             );
 
-            return mapToOrderResponseDTO(order, orderItemRepository.findByOrder(order));
+            return OrderMapper.mapToResponse(order, orderItemRepository.findByOrder(order));
         } catch (IllegalArgumentException e) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid order status: " + newStatus);
         }
@@ -239,6 +208,10 @@ public class OrderServiceImpl implements OrderService {
     public Page<OrderResponseDTO> getAllOrdersByBusinessId(UUID businessId, Pageable pageable) {
         Business business = businessService.getBusinessByIdForInternal(businessId);
         Page<Order> orders = orderRepository.findByBusiness(business, pageable);
-        return orders.map(order -> mapToOrderResponseDTO(order, orderItemRepository.findByOrder(order)));
+        return orders.map(order -> OrderMapper.mapToResponse(order, orderItemRepository.findByOrder(order)));
+    }
+
+    private String generateOrderNumber() {
+        return "ORD-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase();
     }
 }

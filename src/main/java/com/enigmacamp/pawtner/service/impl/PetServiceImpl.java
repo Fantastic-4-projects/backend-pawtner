@@ -1,10 +1,10 @@
 package com.enigmacamp.pawtner.service.impl;
 
-import com.enigmacamp.pawtner.constant.PetGender;
 import com.enigmacamp.pawtner.dto.request.PetRequestDTO;
 import com.enigmacamp.pawtner.dto.response.PetResponseDTO;
 import com.enigmacamp.pawtner.entity.Pet;
 import com.enigmacamp.pawtner.entity.User;
+import com.enigmacamp.pawtner.mapper.PetMapper;
 import com.enigmacamp.pawtner.repository.PetRepository;
 import com.enigmacamp.pawtner.service.ImageUploadService;
 import com.enigmacamp.pawtner.service.PetService;
@@ -53,13 +53,13 @@ public class PetServiceImpl implements PetService {
                 .notes(petRequestDTO.getNotes())
                 .build();
         petRepository.save(pet);
-        return mapToResponseDTO(pet);
+        return PetMapper.mapToResponse(pet);
     }
 
     @Override
     public PetResponseDTO getPetById(UUID id) {
         Pet pet = getPetEntityById(id);
-        return mapToResponseDTO(pet);
+        return PetMapper.mapToResponse(pet);
     }
 
     @Override
@@ -72,7 +72,7 @@ public class PetServiceImpl implements PetService {
     public Page<PetResponseDTO> getAllPetsByOwner(String ownerEmail, Pageable pageable) {
         User owner = userService.getUserByEmailForInternal(ownerEmail);
         Page<Pet> pets = petRepository.findByOwner(owner, pageable);
-        return pets.map(this::mapToResponseDTO);
+        return pets.map(PetMapper::mapToResponse);
     }
 
     @Override
@@ -103,7 +103,7 @@ public class PetServiceImpl implements PetService {
         existingPet.setNotes(petRequestDTO.getNotes());
 
         petRepository.save(existingPet);
-        return mapToResponseDTO(existingPet);
+        return PetMapper.mapToResponse(existingPet);
     }
 
     @Override
@@ -116,19 +116,5 @@ public class PetServiceImpl implements PetService {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Pet does not belong to the authenticated user");
         }
         petRepository.delete(pet);
-    }
-
-    private PetResponseDTO mapToResponseDTO(Pet pet) {
-        return PetResponseDTO.builder()
-                .id(pet.getId())
-                .name(pet.getName())
-                .species(pet.getSpecies())
-                .breed(pet.getBreed())
-                .age(pet.getAge())
-                .gender(pet.getGender())
-                .imageUrl(pet.getImageUrl())
-                .notes(pet.getNotes())
-                .ownerName(pet.getOwner().getName())
-                .build();
     }
 }

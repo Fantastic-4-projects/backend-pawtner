@@ -4,6 +4,7 @@ import com.enigmacamp.pawtner.dto.request.ProductRequestDTO;
 import com.enigmacamp.pawtner.dto.response.ProductResponseDTO;
 import com.enigmacamp.pawtner.entity.Business;
 import com.enigmacamp.pawtner.entity.Product;
+import com.enigmacamp.pawtner.mapper.ProductMapper;
 import com.enigmacamp.pawtner.repository.ProductRepository;
 import com.enigmacamp.pawtner.service.BusinessService;
 import com.enigmacamp.pawtner.service.ImageUploadService;
@@ -63,17 +64,19 @@ public class ProductServiceImpl implements ProductService {
                 .isActive(true)
                 .build();
         productRepository.save(product);
-        return mapToResponseDTO(product);
+        return ProductMapper.mapToResponse(product);
     }
 
     @Override
+    @Transactional(readOnly = true)
     public ProductResponseDTO getProductById(UUID id) {
         Product product = productRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Product not found"));
-        return mapToResponseDTO(product);
+        return ProductMapper.mapToResponse(product);
     }
 
     @Override
+    @Transactional(readOnly = true)
     public Page<ProductResponseDTO> getAllProducts(Pageable pageable, String name, BigDecimal minPrice, BigDecimal maxPrice, Double userLat, Double userLon, Double radiusKm) {
 
         Point userLocation = null;
@@ -93,7 +96,7 @@ public class ProductServiceImpl implements ProductService {
         );
 
         Page<Product> products = productRepository.findAll(spec, pageable);
-        return products.map(this::mapToResponseDTO);
+        return products.map(ProductMapper::mapToResponse);
     }
 
     @Override
@@ -102,7 +105,7 @@ public class ProductServiceImpl implements ProductService {
         Business businessEntity = businessService.getBusinessByIdForInternal(business);
         Page<Product> products = productRepository.findAllByBusiness(businessEntity, pageable);
 
-        return products.map(this::mapToResponseDTO);
+        return products.map(ProductMapper::mapToResponse);
     }
 
     @Override
@@ -127,7 +130,7 @@ public class ProductServiceImpl implements ProductService {
         existingProduct.setImageUrl(imageUrl);
 
         productRepository.save(existingProduct);
-        return mapToResponseDTO(existingProduct);
+        return ProductMapper.mapToResponse(existingProduct);
     }
 
     @Override
@@ -136,21 +139,5 @@ public class ProductServiceImpl implements ProductService {
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Product not found"));
         product.setIsActive(false);
         productRepository.save(product);
-    }
-
-    private ProductResponseDTO mapToResponseDTO(Product product) {
-        return ProductResponseDTO.builder()
-                .id(product.getId())
-                .businessId(product.getBusiness().getId())
-                .name(product.getName())
-                .category(product.getCategory())
-                .description(product.getDescription())
-                .price(product.getPrice())
-                .stockQuantity(product.getStockQuantity())
-                .imageUrl(product.getImageUrl())
-                .averageRating(product.getAverageRating())
-                .reviewCount(product.getReviewCount())
-                .isActive(product.getIsActive())
-                .build();
     }
 }

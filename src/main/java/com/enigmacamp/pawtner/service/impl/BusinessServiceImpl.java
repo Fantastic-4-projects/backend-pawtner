@@ -4,6 +4,7 @@ import com.enigmacamp.pawtner.dto.request.BusinessRequestDTO;
 import com.enigmacamp.pawtner.dto.response.BusinessResponseDTO;
 import com.enigmacamp.pawtner.entity.Business;
 import com.enigmacamp.pawtner.entity.User;
+import com.enigmacamp.pawtner.mapper.BusinessMapper;
 import com.enigmacamp.pawtner.repository.BusinessRepository;
 import com.enigmacamp.pawtner.repository.UserRepository;
 import com.enigmacamp.pawtner.service.BusinessService;
@@ -15,8 +16,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
-import java.math.BigDecimal;
-import java.time.LocalDateTime;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -71,7 +70,7 @@ public class BusinessServiceImpl implements BusinessService {
                     .location(geometryFactory.createPoint(new Coordinate(businessRequestDTO.getLongitude().doubleValue(), businessRequestDTO.getLatitude().doubleValue())))
                     .build();
 
-           return mapToResponse(businessRepository.save(newBusiness));
+           return BusinessMapper.mapToResponse(businessRepository.save(newBusiness));
         } catch (IOException e) {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Failed to upload image");
         }
@@ -80,7 +79,7 @@ public class BusinessServiceImpl implements BusinessService {
     @Override
     public BusinessResponseDTO profileBusiness(UUID businessId) {
         Business business = getBusinessByIdForInternal(businessId);
-        return mapToResponse(business);
+        return BusinessMapper.mapToResponse(business);
     }
 
     @Override
@@ -114,7 +113,7 @@ public class BusinessServiceImpl implements BusinessService {
             business.setCertificateImageUrl(certificateImageUrl);
 
             businessRepository.save(business);
-            return mapToResponse(business);
+            return BusinessMapper.mapToResponse(business);
 
         } catch (IOException e) {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Failed to upload image");
@@ -126,7 +125,7 @@ public class BusinessServiceImpl implements BusinessService {
     @Override
     public List<BusinessResponseDTO> viewBusiness() {
         return businessRepository.findAll()
-                .stream().map(this::mapToResponse)
+                .stream().map(BusinessMapper::mapToResponse)
                 .collect(Collectors.toList());
     }
 
@@ -136,7 +135,7 @@ public class BusinessServiceImpl implements BusinessService {
         return businessRepository.findAllByOwner_Id(currentUser.getId())
                 .stream()
                 .filter(Business::getIsActive)
-                .map(this::mapToResponse)
+                .map(BusinessMapper::mapToResponse)
                 .collect(Collectors.toList());
     }
 
@@ -153,7 +152,7 @@ public class BusinessServiceImpl implements BusinessService {
         business.setIsApproved(approved);
         businessRepository.save(business);
 
-        return mapToResponse(business);
+        return BusinessMapper.mapToResponse(business);
     }
 
     @Override
@@ -163,7 +162,7 @@ public class BusinessServiceImpl implements BusinessService {
         business.setStatusRealtime(businessRequestDTO.getBusinessStatus());
         businessRepository.save(business);
 
-        return mapToResponse(business);
+        return BusinessMapper.mapToResponse(business);
     }
 
     @Override
@@ -171,7 +170,7 @@ public class BusinessServiceImpl implements BusinessService {
         Point userLocation = geometryFactory.createPoint(new Coordinate(lon, lat));
         double distanceInMeters = radiusKm * 1000;
         return businessRepository.findNearbyBusinessesWithFilters(userLocation, distanceInMeters, hasEmergencyServices, statusRealtime)
-                .stream().map(this::mapToResponse)
+                .stream().map(BusinessMapper::mapToResponse)
                 .collect(Collectors.toList());
     }
 
@@ -188,31 +187,5 @@ public class BusinessServiceImpl implements BusinessService {
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
         return businessRepository.findByOwner(owner)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Business not found for this owner"));
-    }
-
-    private BusinessResponseDTO mapToResponse(Business business) {
-        return BusinessResponseDTO.builder()
-                .businessId(business.getId())
-                .ownerName(business.getOwner().getName())
-                .businessName(business.getName())
-                .description(business.getDescription())
-                .businessType(business.getBusinessType())
-                .hasEmergencyServices(business.getHasEmergencyServices())
-                .businessEmail(business.getBusinessEmail())
-                .businessPhone(business.getBusinessPhone())
-                .emergencyPhone(business.getEmergencyPhone())
-                .businessImageUrl(business.getBusinessImageUrl())
-                .certificateImageUrl(business.getCertificateImageUrl())
-                .latitude(BigDecimal.valueOf(business.getLocation().getY()))
-                .longitude(BigDecimal.valueOf(business.getLocation().getX()))
-                .statusRealTime(business.getStatusRealtime())
-                .businessAddress(business.getAddress())
-                .operationHours(business.getOperationHours())
-                .statusApproved(
-                        business.getIsApproved() == null ? "Pending"
-                                : business.getIsApproved() ? "Approved"
-                                : "Rejected"
-                )
-                .build();
     }
 }
