@@ -33,11 +33,11 @@ public class BusinessController {
             @RequestPart(required = false, name = "businessImage") MultipartFile businessImage,
             @RequestPart(required = false, name = "certificateImage") MultipartFile certificateImage
     ) {
-        businessService.registerBusiness(businessRequestDTO, businessImage, certificateImage);
+        BusinessResponseDTO businessResponseDTO = businessService.registerBusiness(businessRequestDTO, businessImage, certificateImage);
         return ResponseUtil.createResponse(
                 HttpStatus.CREATED,
                 "Profil bisnis berhasil dibuat",
-                null
+                businessResponseDTO
         );
     }
 
