@@ -126,7 +126,20 @@ public class BusinessController {
         return ResponseUtil.createResponse(
                 HttpStatus.OK,
                 "Bisnis terdekat berhasil didapatkan",
-                businessService.findNearbyBusinesses(lat, lon, radiusKm)
+                businessService.findNearbyBusinesses(lat, lon, radiusKm, null, null)
+        );
+    }
+
+    @GetMapping("/nearby/emergency")
+    public ResponseEntity<CommonResponse<List<BusinessResponseDTO>>> getNearbyEmergencyBusinesses(
+            @RequestParam double lat,
+            @RequestParam double lon,
+            @RequestParam(defaultValue = "15") double radiusKm
+    ) {
+        return ResponseUtil.createResponse(
+                HttpStatus.OK,
+                "Bisnis darurat terdekat berhasil didapatkan",
+                businessService.findNearbyBusinesses(lat, lon, radiusKm, true, "ACCEPTING_PATIENTS")
         );
     }
 }

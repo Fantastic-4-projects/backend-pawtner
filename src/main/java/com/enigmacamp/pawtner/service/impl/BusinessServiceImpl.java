@@ -167,10 +167,10 @@ public class BusinessServiceImpl implements BusinessService {
     }
 
     @Override
-    public List<BusinessResponseDTO> findNearbyBusinesses(double lat, double lon, double radiusKm) {
+    public List<BusinessResponseDTO> findNearbyBusinesses(double lat, double lon, double radiusKm, Boolean hasEmergencyServices, String statusRealtime) {
         Point userLocation = geometryFactory.createPoint(new Coordinate(lon, lat));
         double distanceInMeters = radiusKm * 1000;
-        return businessRepository.findNearbyBusinesses(userLocation, distanceInMeters)
+        return businessRepository.findNearbyBusinessesWithFilters(userLocation, distanceInMeters, hasEmergencyServices, statusRealtime)
                 .stream().map(this::mapToResponse)
                 .collect(Collectors.toList());
     }

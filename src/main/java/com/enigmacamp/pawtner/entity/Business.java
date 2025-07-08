@@ -80,6 +80,7 @@ public class Business {
     private BusinessStatus statusRealtime = BusinessStatus.CLOSED;
 
     @Builder.Default
+
     private Boolean isActive = true;
 
     @Builder.Default
