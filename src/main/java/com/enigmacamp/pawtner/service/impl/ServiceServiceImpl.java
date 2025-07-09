@@ -53,6 +53,7 @@ public class ServiceServiceImpl implements ServiceService {
                 .business(business)
                 .category(serviceRequestDTO.getCategory())
                 .name(serviceRequestDTO.getName())
+                .description(serviceRequestDTO.getDescription())
                 .basePrice(serviceRequestDTO.getBasePrice())
                 .capacityPerDay(serviceRequestDTO.getCapacityPerDay())
                 .imageUrl(imageUrl)
@@ -91,9 +92,6 @@ public class ServiceServiceImpl implements ServiceService {
     public Page<ServiceResponseDTO> getAllServicesByBusiness(UUID businessId, Pageable pageable) {
         Business business = businessService.getBusinessByIdForInternal(businessId);
         Page<Service> services = serviceRepository.findAllByBusiness(business, pageable);
-        services.stream().findFirst().ifPresent(service ->
-                log.info("Review: {}", service.getReviews().get(0).getComment())
-        );
         return services.map(ServiceMapper::mapToResponse);
     }
 
@@ -113,6 +111,7 @@ public class ServiceServiceImpl implements ServiceService {
 
         existingService.setCategory(serviceRequestDTO.getCategory());
         existingService.setName(serviceRequestDTO.getName());
+        existingService.setDescription(serviceRequestDTO.getDescription());
         existingService.setBasePrice(serviceRequestDTO.getBasePrice());
         existingService.setCapacityPerDay(serviceRequestDTO.getCapacityPerDay());
         existingService.setImageUrl(imageUrl);

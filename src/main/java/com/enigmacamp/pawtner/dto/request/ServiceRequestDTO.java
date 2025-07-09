@@ -29,6 +29,8 @@ public class ServiceRequestDTO {
     @NotBlank(message = "Service name is required")
     private String name;
 
+    private String description;
+
     @NotNull(message = "Base price is required")
     @Min(value = 0, message = "Price must be non-negative")
     private BigDecimal basePrice;

@@ -39,6 +39,9 @@ public class Service {
     @Size(max = 255)
     private String name;
 
+    @Column(columnDefinition = "TEXT")
+    private String description;
+
     @NotNull(message = "Base price is required")
     @DecimalMin(value = "0.0", inclusive = false)
     @Digits(integer = 10, fraction = 2)
