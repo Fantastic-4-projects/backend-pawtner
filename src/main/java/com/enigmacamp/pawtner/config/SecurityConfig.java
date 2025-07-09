@@ -53,7 +53,7 @@ public class SecurityConfig {
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         return http
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
-                .csrf(AbstractHttpConfigurer::disable)
+          .csrf(AbstractHttpConfigurer::disable)
                 .httpBasic(AbstractHttpConfigurer::disable)
                 .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .exceptionHandling(exception -> exception.authenticationEntryPoint(customAuthenticationEntryPoint)) // Use custom entry point
@@ -70,7 +70,7 @@ public class SecurityConfig {
                         ).permitAll() // Publicly accessible GET endpoints
 
                         // Endpoints requiring authentication (any role)
-                        .requestMatchers(
+                              .requestMatchers(
                                 "/api/reviews", // GET all reviews
                                 "/api/reviews/{id}", // GET review by ID
                                 "/api/users", // PUT update user
