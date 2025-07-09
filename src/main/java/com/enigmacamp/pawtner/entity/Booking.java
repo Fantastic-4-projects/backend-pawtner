@@ -49,7 +49,7 @@ public class Booking {
 
     @NotNull(message = "Total price is required")
     @DecimalMin(value = "0.0", inclusive = false)
-    @Digits(integer = 10, fraction = 2)
+    @Digits(integer = 18, fraction = 2)
     private BigDecimal totalPrice;
 
     @Builder.Default

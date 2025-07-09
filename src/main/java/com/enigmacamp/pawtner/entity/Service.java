@@ -41,7 +41,7 @@ public class Service {
 
     @NotNull(message = "Base price is required")
     @DecimalMin(value = "0.0", inclusive = false)
-    @Digits(integer = 10, fraction = 2)
+    @Digits(integer = 18, fraction = 2)
     private BigDecimal basePrice;
 
     @Min(0)
