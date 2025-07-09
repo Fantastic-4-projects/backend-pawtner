@@ -8,11 +8,11 @@ import com.enigmacamp.pawtner.entity.*;
 import com.enigmacamp.pawtner.mapper.OrderMapper;
 import com.enigmacamp.pawtner.repository.OrderItemRepository;
 import com.enigmacamp.pawtner.repository.OrderRepository;
+import com.enigmacamp.pawtner.repository.PaymentRepository;
 import com.enigmacamp.pawtner.service.*;
-import com.midtrans.httpclient.error.MidtransError;
-import com.midtrans.service.MidtransCoreApi;
+
+
 import lombok.AllArgsConstructor;
-import org.json.JSONObject;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
@@ -37,8 +37,9 @@ public class OrderServiceImpl implements OrderService {
     private final ProductService productService;
     private final PaymentService paymentService;
     private final NotificationService notificationService;
+    private final PaymentRepository paymentRepository;
     private final BusinessService businessService;
-    private final MidtransCoreApi midtransCoreApi;
+    
 
 
     @Override
@@ -107,6 +108,8 @@ public class OrderServiceImpl implements OrderService {
 
         OrderResponseDTO responseDTO = OrderMapper.mapToResponse(order, orderItems);
         responseDTO.setSnapToken(payment.getSnapToken());
+    // Gunakan redirect_url dari Midtrans, bukan format manual
+    responseDTO.setRedirectUrl(payment.getRedirectUrl()); // Asumsi Payment entity memiliki field redirectUrl
         return responseDTO;
     }
 
@@ -127,49 +130,55 @@ public class OrderServiceImpl implements OrderService {
         return orders.map(order ->  OrderMapper.mapToResponse(order, orderItemRepository.findByOrder(order)));
     }
 
-    @Override
-    @Transactional
+    @Override @Transactional
     public void handleWebhook(Map<String, Object> payload) {
-        try {
-            String orderId = (String) payload.get("order_id");
-            JSONObject transactionResult = midtransCoreApi.checkTransaction(orderId);
+        String orderId = (String) payload.get("order_id");
+        String transactionStatus = (String) payload.get("transaction_status");
+        String fraudStatus = (String) payload.get("fraud_status");
 
-            String transactionStatus = (String) transactionResult.get("transaction_status");
-            String fraudStatus = (String) transactionResult.get("fraud_status");
+        System.out.println("Webhook received: " + payload);
 
-            Order order = orderRepository.findByOrderNumber(orderId)
-                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Order not found"));
+        Order order = orderRepository.findByOrderNumber(orderId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Order not found"));
 
-            OrderStatus oldStatus = order.getStatus();
-            OrderStatus newStatus = oldStatus;
+        OrderStatus oldStatus = order.getStatus();
+        OrderStatus newStatus = getOrderStatus(oldStatus, transactionStatus, fraudStatus);
 
-            if (transactionStatus.equals("capture")) {
-                if (fraudStatus.equals("accept")) {
-                    newStatus = OrderStatus.PROCESSING;
-                }
-            } else if (transactionStatus.equals("settlement")) {
-                newStatus = OrderStatus.COMPLETED;
-            } else if (transactionStatus.equals("cancel") || transactionStatus.equals("deny") || transactionStatus.equals("expire")) {
-                newStatus = OrderStatus.CANCELLED;
-            } else if (transactionStatus.equals("pending")) {
-                newStatus = OrderStatus.PENDING_PAYMENT;
-            }
+        if (oldStatus != newStatus) {
+            order.setStatus(newStatus);
+            orderRepository.save(order);
 
-            if (oldStatus != newStatus) {
-                order.setStatus(newStatus);
-                orderRepository.save(order);
+            // Update payment status
+            Payment payment = paymentRepository.findByOrder(order)
+                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Payment not found"));
+            payment.setStatus(PaymentStatus.valueOf(transactionStatus.toUpperCase()));
+            paymentRepository.save(payment);
 
-                // Send notification to customer
-                notificationService.sendNotification(
-                        order.getCustomer(),
-                        "Order Status Updated",
-                        "Your order " + order.getOrderNumber() + " is now " + newStatus.name(),
-                        Collections.singletonMap("orderId", order.getId().toString())
-                );
-            }
-        } catch (MidtransError e) {
-            throw new RuntimeException(e.getMessage(), e);
+            // Send notification to customer
+            notificationService.sendNotification(
+                    order.getCustomer(),
+                    "Order Status Updated",
+                    "Your order " + order.getOrderNumber() + " is now " + newStatus.name(),
+                    Collections.singletonMap("orderId", order.getId().toString())
+            );
         }
+    }
+
+    private static OrderStatus getOrderStatus(OrderStatus oldStatus, String transactionStatus, String fraudStatus) {
+        OrderStatus newStatus = oldStatus;
+
+        if (transactionStatus.equals("capture")) {
+            if (fraudStatus.equals("accept")) {
+                newStatus = OrderStatus.PROCESSING;
+            }
+        } else if (transactionStatus.equals("settlement")) {
+            newStatus = OrderStatus.COMPLETED;
+        } else if (transactionStatus.equals("cancel") || transactionStatus.equals("deny") || transactionStatus.equals("expire")) {
+            newStatus = OrderStatus.CANCELLED;
+        } else if (transactionStatus.equals("pending")) {
+            newStatus = OrderStatus.PENDING_PAYMENT;
+        }
+        return newStatus;
     }
 
     @Override

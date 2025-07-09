@@ -1493,3 +1493,5 @@ There are:
 * [SNAP documentation](http://snap-docs.midtrans.com)
 * [Core API documentation](http://api-docs.midtrans.com)
 * Can't find answer you looking for? email to [support@midtrans.com](mailto:support@midtrans.com)
+
+![img.png](img.png)

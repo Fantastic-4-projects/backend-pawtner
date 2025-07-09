@@ -55,6 +55,9 @@ public class Payment {
     @Size(max = 255)
     private String snapToken;
 
+    @Column(name = "redirect_url")
+    private String redirectUrl;
+
     @Column(columnDefinition = "TEXT")
     private String webhookPayload;
 
