@@ -52,6 +52,10 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
 //        Menyesuaikan dengan redirect FE mas eris
         String targetUrl = UriComponentsBuilder.fromUriString("http://localhost:3000/oauth-redirect")
                 .queryParam("token", token)
+                .queryParam("userId", user.getId())
+                .queryParam("name", user.getName())
+                .queryParam("email", user.getEmail())
+                .queryParam("role", user.getRole().name())
                 .build().toUriString();
 
         clearAuthenticationAttributes(request);
