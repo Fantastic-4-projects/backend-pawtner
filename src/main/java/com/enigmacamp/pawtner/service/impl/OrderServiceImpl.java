@@ -106,7 +106,7 @@ public class OrderServiceImpl implements OrderService {
         );
 
 
-        OrderResponseDTO responseDTO = OrderMapper.mapToResponse(order, orderItems);
+        OrderResponseDTO responseDTO = OrderMapper.mapToResponse(order, orderItems, paymentRepository);
         responseDTO.setSnapToken(payment.getSnapToken());
     // Gunakan redirect_url dari Midtrans, bukan format manual
     responseDTO.setRedirectUrl(payment.getRedirectUrl()); // Asumsi Payment entity memiliki field redirectUrl
@@ -119,7 +119,7 @@ public class OrderServiceImpl implements OrderService {
         Order order = orderRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Order not found"));
         List<OrderItem> orderItems = orderItemRepository.findByOrder(order);
-        return OrderMapper.mapToResponse(order, orderItems);
+        return OrderMapper.mapToResponse(order, orderItems, paymentRepository);
     }
 
     @Override
@@ -127,7 +127,7 @@ public class OrderServiceImpl implements OrderService {
     public Page<OrderResponseDTO> getAllOrdersByCustomerId(String customerEmail, Pageable pageable) {
         User customer = userService.getUserByEmailForInternal(customerEmail);
         Page<Order> orders = orderRepository.findByCustomer(customer, pageable);
-        return orders.map(order ->  OrderMapper.mapToResponse(order, orderItemRepository.findByOrder(order)));
+        return orders.map(order ->  OrderMapper.mapToResponse(order, orderItemRepository.findByOrder(order), paymentRepository));
     }
 
     @Override @Transactional
@@ -206,7 +206,7 @@ public class OrderServiceImpl implements OrderService {
                     Collections.singletonMap("orderId", order.getId().toString())
             );
 
-            return OrderMapper.mapToResponse(order, orderItemRepository.findByOrder(order));
+            return OrderMapper.mapToResponse(order, orderItemRepository.findByOrder(order), paymentRepository);
         } catch (IllegalArgumentException e) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid order status: " + newStatus);
         }
@@ -217,7 +217,7 @@ public class OrderServiceImpl implements OrderService {
     public Page<OrderResponseDTO> getAllOrdersByBusinessId(UUID businessId, Pageable pageable) {
         Business business = businessService.getBusinessByIdForInternal(businessId);
         Page<Order> orders = orderRepository.findByBusiness(business, pageable);
-        return orders.map(order -> OrderMapper.mapToResponse(order, orderItemRepository.findByOrder(order)));
+        return orders.map(order -> OrderMapper.mapToResponse(order, orderItemRepository.findByOrder(order), paymentRepository));
     }
 
     private String generateOrderNumber() {

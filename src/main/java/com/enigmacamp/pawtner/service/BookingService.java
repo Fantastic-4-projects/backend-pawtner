@@ -1,6 +1,7 @@
 package com.enigmacamp.pawtner.service;
 
 import com.enigmacamp.pawtner.dto.request.BookingRequestDTO;
+import com.enigmacamp.pawtner.dto.response.BookingPriceCalculationResponseDTO;
 import com.enigmacamp.pawtner.dto.response.BookingResponseDTO;
 import com.enigmacamp.pawtner.entity.Booking;
 import org.springframework.data.domain.Page;
@@ -22,4 +23,5 @@ public interface BookingService {
     void handleWebhook(Map<String, Object> payload);
     double calculateDeliveryFee(double distanceInMeters);
     Booking getBookingEntityById(UUID id);
+    BookingPriceCalculationResponseDTO calculateBookingPrice(UUID serviceId, Double latitude, Double longitude);
 }

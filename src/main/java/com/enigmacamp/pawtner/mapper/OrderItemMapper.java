@@ -14,6 +14,7 @@ public class OrderItemMapper {
                 .quantity(orderItem.getQuantity())
                 .pricePerUnit(orderItem.getPricePerUnit())
                 .subTotal(orderItem.getPricePerUnit().multiply(BigDecimal.valueOf(orderItem.getQuantity())))
+                .imageUrl(orderItem.getProduct().getImageUrl())
                 .build();
     }
 }

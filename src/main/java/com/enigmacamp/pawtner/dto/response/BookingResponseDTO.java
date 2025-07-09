@@ -21,6 +21,7 @@ public class BookingResponseDTO {
     private String petName;
     private UUID serviceId;
     private String serviceName;
+    private String serviceImageUrl;
     private UUID businessId;
     private String businessName;
     private String bookingNumber;

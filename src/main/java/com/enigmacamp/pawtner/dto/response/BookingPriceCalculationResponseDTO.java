@@ -12,12 +12,9 @@ import java.util.UUID;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class OrderItemResponseDTO {
-    private UUID id;
-    private UUID productId;
-    private String productName;
-    private Integer quantity;
-    private BigDecimal pricePerUnit;
-    private BigDecimal subTotal;
-    private String imageUrl;
+public class BookingPriceCalculationResponseDTO {
+    private UUID serviceId;
+    private BigDecimal basePrice;
+    private BigDecimal deliveryFee;
+    private BigDecimal totalPrice;
 }
