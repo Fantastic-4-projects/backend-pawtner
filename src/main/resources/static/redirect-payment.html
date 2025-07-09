@@ -1,0 +1,22 @@
+<!-- redirect-payment.html -->
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Redirecting...</title>
+    <script>
+      const url = new URL(window.location.href);
+      const orderId = url.searchParams.get("order_id");
+      const status = url.pathname.includes("success")
+        ? "settlement"
+        : url.pathname.includes("failed")
+        ? "failed"
+        : "pending";
+
+      const redirectTo = `pawtner://payment/${status}?order_id=${orderId}`;
+      window.location.href = redirectTo;
+    </script>
+  </head>
+  <body>
+    <h1>Redirecting to app...</h1>
+  </body>
+</html>

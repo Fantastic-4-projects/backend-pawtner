@@ -27,4 +27,5 @@ public class OrderResponseDTO {
     private LocalDateTime createdAt;
     private List<OrderItemResponseDTO> items;
     private String snapToken;
+    private String redirectUrl;
 }

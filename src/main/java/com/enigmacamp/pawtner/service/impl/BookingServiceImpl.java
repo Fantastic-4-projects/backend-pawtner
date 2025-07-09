@@ -57,7 +57,7 @@ public class BookingServiceImpl implements BookingService {
     private final BusinessRepository businessRepository;
     private final PaymentService paymentService;
     private final PaymentRepository paymentRepository;
-    private final MidtransCoreApi midtransCoreApi;
+    
     private final NotificationService notificationService;
     private final GeometryFactory geometryFactory = new GeometryFactory();
 
@@ -228,58 +228,52 @@ public class BookingServiceImpl implements BookingService {
     @Override
     @Transactional
     public void handleWebhook(Map<String, Object> payload) {
-        try {
-            String bookingNumber = (String) payload.get("order_id");
-            JSONObject transactionResult = midtransCoreApi.checkTransaction(bookingNumber);
+        String bookingNumber = (String) payload.get("order_id");
+        String transactionStatus = (String) payload.get("transaction_status");
+        String fraudStatus = (String) payload.get("fraud_status");
 
-            String transactionStatus = (String) transactionResult.get("transaction_status");
-            String fraudStatus = (String) transactionResult.get("fraud_status");
+        Booking booking = bookingRepository.findByBookingNumber(bookingNumber)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Booking not found"));
 
-            Booking booking = bookingRepository.findByBookingNumber(bookingNumber)
-                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Booking not found"));
+        BookingStatus oldStatus = booking.getStatus();
+        BookingStatus newStatus = oldStatus;
 
-            BookingStatus oldStatus = booking.getStatus();
-            BookingStatus newStatus = oldStatus;
-
-            if (transactionStatus.equals("capture")) {
-                if (fraudStatus.equals("accept")) {
-                    newStatus = BookingStatus.CONFIRMED;
-                }
-            } else if (transactionStatus.equals("settlement")) {
+        if (transactionStatus.equals("capture")) {
+            if (fraudStatus.equals("accept")) {
                 newStatus = BookingStatus.CONFIRMED;
-            } else if (transactionStatus.equals("cancel") || transactionStatus.equals("deny") || transactionStatus.equals("expire")) {
-                newStatus = BookingStatus.CANCELLED;
-            } else if (transactionStatus.equals("pending")) {
-                newStatus = BookingStatus.PENDING_PAYMENT;
             }
+        } else if (transactionStatus.equals("settlement")) {
+            newStatus = BookingStatus.CONFIRMED;
+        } else if (transactionStatus.equals("cancel") || transactionStatus.equals("deny") || transactionStatus.equals("expire")) {
+            newStatus = BookingStatus.CANCELLED;
+        } else if (transactionStatus.equals("pending")) {
+            newStatus = BookingStatus.PENDING_PAYMENT;
+        }
 
-            if (oldStatus != newStatus) {
-                booking.setStatus(newStatus);
-                bookingRepository.save(booking);
+        if (oldStatus != newStatus) {
+            booking.setStatus(newStatus);
+            bookingRepository.save(booking);
 
-                // Update payment status
-                Payment payment = booking.getPayment();
-                if (payment != null) {
-                    if (newStatus == BookingStatus.CONFIRMED) {
-                        payment.setStatus(PaymentStatus.SUCCESS);
-                    } else if (newStatus == BookingStatus.CANCELLED) {
-                        payment.setStatus(PaymentStatus.FAILED);
-                    } else if (newStatus == BookingStatus.PENDING_PAYMENT) {
-                        payment.setStatus(PaymentStatus.PENDING);
-                    }
-                    paymentRepository.save(payment);
+            // Update payment status
+            Payment payment = booking.getPayment();
+            if (payment != null) {
+                if (newStatus == BookingStatus.CONFIRMED) {
+                    payment.setStatus(PaymentStatus.SUCCESS);
+                } else if (newStatus == BookingStatus.CANCELLED) {
+                    payment.setStatus(PaymentStatus.FAILED);
+                } else if (newStatus == BookingStatus.PENDING_PAYMENT) {
+                    payment.setStatus(PaymentStatus.PENDING);
                 }
-
-                // Send notification to customer
-                notificationService.sendNotification(
-                        booking.getCustomer(),
-                        "Booking Status Updated",
-                        "Your booking " + booking.getBookingNumber() + " is now " + newStatus.name(),
-                        Collections.singletonMap("bookingId", booking.getId().toString())
-                );
+                paymentRepository.save(payment);
             }
-        } catch (MidtransError e) {
-            throw new RuntimeException(e.getMessage(), e);
+
+            // Send notification to customer
+            notificationService.sendNotification(
+                    booking.getCustomer(),
+                    "Booking Status Updated",
+                    "Your booking " + booking.getBookingNumber() + " is now " + newStatus.name(),
+                    Collections.singletonMap("bookingId", booking.getId().toString())
+            );
         }
     }
 }
