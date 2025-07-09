@@ -18,6 +18,7 @@ public class ServiceMapper {
                 .business(BusinessMapper.mapToResponse(service.getBusiness()))
                 .category(service.getCategory())
                 .name(service.getName())
+                .description(service.getDescription())
                 .basePrice(service.getBasePrice())
                 .capacityPerDay(service.getCapacityPerDay())
                 .imageUrl(service.getImageUrl())

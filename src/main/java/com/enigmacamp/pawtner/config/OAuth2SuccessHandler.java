@@ -50,7 +50,7 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
         log.info("Generated Pawtner JWT for user {}", email);
 
 //        Menyesuaikan dengan redirect FE mas eris
-        String targetUrl = UriComponentsBuilder.fromUriString("http://localhost:3000/oauth-redirect")
+        String targetUrl = UriComponentsBuilder.fromUriString("http://localhost:5173/oauth-redirect")
                 .queryParam("token", token)
                 .queryParam("userId", user.getId())
                 .queryParam("name", user.getName())

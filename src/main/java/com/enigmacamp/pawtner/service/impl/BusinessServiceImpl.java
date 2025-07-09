@@ -104,12 +104,13 @@ public class BusinessServiceImpl implements BusinessService {
             business.setName(businessRequestDTO.getNameBusiness());
             business.setDescription(businessRequestDTO.getDescriptionBusiness());
             business.setBusinessType(businessRequestDTO.getBusinessType());
-            business.setHasEmergencyServices(business.getHasEmergencyServices());
+            business.setHasEmergencyServices(businessRequestDTO.getHasEmergencyServices());
             business.setBusinessEmail(businessRequestDTO.getBusinessEmail());
             business.setBusinessPhone(businessRequestDTO.getBusinessPhone());
             business.setEmergencyPhone(businessRequestDTO.getEmergencyPhone());
             business.setAddress(businessRequestDTO.getBusinessAddress());
             business.setStatusRealtime(businessRequestDTO.getBusinessStatus());
+            business.setOperationHours(businessRequestDTO.getOperationHours());
             business.setLocation(geometryFactory.createPoint(new Coordinate(businessRequestDTO.getLongitude().doubleValue(), businessRequestDTO.getLatitude().doubleValue())));
             business.setBusinessImageUrl(businessImageUrl);
             business.setCertificateImageUrl(certificateImageUrl);
