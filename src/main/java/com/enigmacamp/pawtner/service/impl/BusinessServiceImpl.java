@@ -10,6 +10,7 @@ import com.enigmacamp.pawtner.repository.UserRepository;
 import com.enigmacamp.pawtner.service.BusinessService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -27,6 +28,7 @@ import org.locationtech.jts.geom.Coordinate;
 
 import java.io.IOException;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class BusinessServiceImpl implements BusinessService {
@@ -132,6 +134,7 @@ public class BusinessServiceImpl implements BusinessService {
     @Override
     public List<BusinessResponseDTO> viewMyBusiness() {
         User currentUser = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        log.info("currentUser: {}", currentUser.getUsername());
         return businessRepository.findAllByOwner_Id(currentUser.getId())
                 .stream()
                 .filter(Business::getIsActive)
