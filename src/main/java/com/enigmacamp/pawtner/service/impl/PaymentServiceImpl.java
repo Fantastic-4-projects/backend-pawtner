@@ -55,9 +55,11 @@ public class PaymentServiceImpl implements PaymentService {
             params.put("transaction_details", transactionDetails);
             params.put("customer_details", customerDetails);
 
-            params.put("finish_redirect_url", "pawtner://payment/success?order_id=" + orderId);
-            params.put("error_redirect_url", "pawtner://payment/failed?order_id=" + orderId);
-            params.put("unfinish_redirect_url", "pawtner://payment/unfinish?order_id=" + orderId);
+            Map<String, String> callbacks = new HashMap<>();
+            callbacks.put("finish", "pawtner://payment/success?order_id=" + orderId);
+            callbacks.put("error", "pawtner://payment/failed?order_id=" + orderId);
+            callbacks.put("unfinish", "pawtner://payment/unfinish?order_id=" + orderId);
+            params.put("callbacks", callbacks);
             
 
             

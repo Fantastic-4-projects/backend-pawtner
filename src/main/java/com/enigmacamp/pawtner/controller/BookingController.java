@@ -1,6 +1,7 @@
 package com.enigmacamp.pawtner.controller;
 
 import com.enigmacamp.pawtner.dto.request.BookingRequestDTO;
+import com.enigmacamp.pawtner.dto.response.BookingPriceCalculationResponseDTO;
 import com.enigmacamp.pawtner.dto.response.BookingResponseDTO;
 import com.enigmacamp.pawtner.dto.response.CommonResponse;
 import com.enigmacamp.pawtner.service.BookingService;
@@ -30,6 +31,15 @@ public class BookingController {
     public ResponseEntity<CommonResponse<BookingResponseDTO>> createBooking(@Valid @RequestBody BookingRequestDTO requestDTO, Authentication authentication) {
         BookingResponseDTO responseDTO = bookingService.createBooking(requestDTO, authentication.getName());
         return ResponseUtil.createResponse(HttpStatus.CREATED, "Successfully created booking", responseDTO);
+    }
+
+    @GetMapping("/calculate-price")
+    public ResponseEntity<CommonResponse<BookingPriceCalculationResponseDTO>> calculateBookingPrice(
+            @RequestParam UUID serviceId,
+            @RequestParam Double latitude,
+            @RequestParam Double longitude) {
+        BookingPriceCalculationResponseDTO responseDTO = bookingService.calculateBookingPrice(serviceId, latitude, longitude);
+        return ResponseUtil.createResponse(HttpStatus.OK, "Successfully calculated booking price", responseDTO);
     }
 
     @PostMapping("/webhook")

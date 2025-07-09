@@ -3,6 +3,7 @@ package com.enigmacamp.pawtner.service.impl;
 import com.enigmacamp.pawtner.constant.BookingStatus;
 import com.enigmacamp.pawtner.constant.PaymentStatus;
 import com.enigmacamp.pawtner.dto.request.BookingRequestDTO;
+import com.enigmacamp.pawtner.dto.response.BookingPriceCalculationResponseDTO;
 import com.enigmacamp.pawtner.dto.response.BookingResponseDTO;
 import com.enigmacamp.pawtner.entity.Booking;
 import com.enigmacamp.pawtner.entity.Business;
@@ -219,6 +220,28 @@ public class BookingServiceImpl implements BookingService {
     public Booking getBookingEntityById(UUID id) {
         return bookingRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Booking not found"));
+    }
+
+    @Override
+    public BookingPriceCalculationResponseDTO calculateBookingPrice(UUID serviceId, Double latitude, Double longitude) {
+        com.enigmacamp.pawtner.entity.Service service = serviceRepository.findById(serviceId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Service not found"));
+
+        Point userLocation = geometryFactory.createPoint(new Coordinate(longitude, latitude));
+        userLocation.setSRID(4326); // Set SRID to 4326
+        Double distanceInMeters = businessRepository.calculateDistanceToBusiness(service.getBusiness().getId(), userLocation);
+        double deliveryFee = calculateDeliveryFee(distanceInMeters);
+        BigDecimal roundedDeliveryFee = BigDecimal.valueOf(deliveryFee).setScale(2, BigDecimal.ROUND_HALF_UP);
+
+        MathContext mc = new MathContext(18, RoundingMode.HALF_UP); // Use 18 integer digits for consistency
+        BigDecimal totalPrice = service.getBasePrice().add(roundedDeliveryFee, mc);
+
+        return BookingPriceCalculationResponseDTO.builder()
+                .serviceId(serviceId)
+                .basePrice(service.getBasePrice())
+                .deliveryFee(roundedDeliveryFee)
+                .totalPrice(totalPrice)
+                .build();
     }
 
     @Override

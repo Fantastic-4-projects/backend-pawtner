@@ -13,6 +13,7 @@ public class BookingMapper {
                 .petName(booking.getPet().getName())
                 .serviceId(booking.getService().getId())
                 .serviceName(booking.getService().getName())
+                .serviceImageUrl(booking.getService().getImageUrl())
                 .businessId(booking.getService().getBusiness().getId())
                 .businessName(booking.getService().getBusiness().getName())
                 .bookingNumber(booking.getBookingNumber())
