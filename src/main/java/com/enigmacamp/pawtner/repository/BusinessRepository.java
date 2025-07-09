@@ -22,7 +22,7 @@ public interface BusinessRepository extends JpaRepository<Business, UUID> {
         @Param("distanceInMeters") double distanceInMeters
     );
 
-    @Query(value = "SELECT ST_Distance(b.location, :userLocation) FROM businesses b WHERE b.id = :businessId", nativeQuery = true)
+    @Query(value = "SELECT ST_Distance(b.location, ST_SetSRID(:userLocation, 4326)) FROM businesses b WHERE b.id = :businessId", nativeQuery = true)
     Double calculateDistanceToBusiness(@Param("businessId") UUID businessId, @Param("userLocation") Point userLocation);
 
     @Query(value = """

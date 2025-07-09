@@ -35,6 +35,8 @@ import org.locationtech.jts.geom.Point;
 import org.locationtech.jts.geom.GeometryFactory;
 import org.locationtech.jts.geom.Coordinate;
 
+import java.math.MathContext;
+import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -74,8 +76,10 @@ public class BookingServiceImpl implements BookingService {
 
         // Calculate delivery fee
         Point userLocation = geometryFactory.createPoint(new Coordinate(requestDTO.getLongitude().doubleValue(), requestDTO.getLatitude().doubleValue()));
+        userLocation.setSRID(4326); // Set SRID to 4326
         Double distanceInMeters = businessRepository.calculateDistanceToBusiness(service.getBusiness().getId(), userLocation);
         double deliveryFee = calculateDeliveryFee(distanceInMeters);
+        BigDecimal roundedDeliveryFee = BigDecimal.valueOf(deliveryFee).setScale(2, BigDecimal.ROUND_HALF_UP);
 
         if (service.getCapacityPerDay() != null && service.getCapacityPerDay() > 0) {
             LocalDate bookingDate = requestDTO.getStartTime().toLocalDate();
@@ -100,6 +104,10 @@ public class BookingServiceImpl implements BookingService {
             }
         }
 
+        // Use MathContext to control precision and rounding for totalPrice
+        MathContext mc = new MathContext(12, RoundingMode.HALF_UP); // 10 integer digits + 2 fractional digits = 12 precision
+        BigDecimal totalPrice = service.getBasePrice().add(roundedDeliveryFee, mc);
+
         Booking booking = Booking.builder()
                 .customer(customer)
                 .pet(pet)
@@ -107,7 +115,7 @@ public class BookingServiceImpl implements BookingService {
                 .bookingNumber("BOOK-" + UUID.randomUUID().toString())
                 .startTime(requestDTO.getStartTime())
                 .endTime(requestDTO.getEndTime())
-                .totalPrice(service.getBasePrice().add(BigDecimal.valueOf(deliveryFee))) // Add delivery fee
+                .totalPrice(totalPrice) // Use the rounded total price
                 .status(BookingStatus.REQUESTED)
                 .createdAt(LocalDateTime.now())
                 .build();

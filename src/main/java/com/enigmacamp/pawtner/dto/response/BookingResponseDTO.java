@@ -6,6 +6,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
@@ -25,8 +26,9 @@ public class BookingResponseDTO {
     private String bookingNumber;
     private LocalDateTime startTime;
     private LocalDateTime endTime;
-    private Double totalPrice;
+    private BigDecimal totalPrice;
     private String status;
     private String snapToken;
+    private String redirectUrl;
     private LocalDateTime createdAt;
 }

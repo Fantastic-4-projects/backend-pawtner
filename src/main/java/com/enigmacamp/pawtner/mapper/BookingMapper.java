@@ -18,9 +18,10 @@ public class BookingMapper {
                 .bookingNumber(booking.getBookingNumber())
                 .startTime(booking.getStartTime())
                 .endTime(booking.getEndTime())
-                .totalPrice(booking.getTotalPrice().doubleValue())
+                .totalPrice(booking.getTotalPrice())
                 .status(booking.getStatus().name())
                 .snapToken(booking.getSnapToken())
+                .redirectUrl(booking.getPayment() != null ? booking.getPayment().getRedirectUrl() : null)
                 .createdAt(booking.getCreatedAt())
                 .build();
     }
