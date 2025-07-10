@@ -31,4 +31,5 @@ public interface BookingRepository extends JpaRepository<Booking, UUID> {
     Optional<Booking> findByBookingNumber(String bookingNumber);
     Page<Booking> findByCustomer(User customer, Pageable pageable);
     Page<Booking> findByServiceIn(List<Service> services, Pageable pageable);
+    Page<Booking> findAllByService_Business(Business business, Pageable pageable);
 }
