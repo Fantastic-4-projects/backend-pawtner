@@ -40,6 +40,7 @@ public class SecurityConfig {
         configuration.addAllowedOriginPattern("http://10.10.102.128:*"); // For Expo Go on local network
         configuration.addAllowedOriginPattern("https://*.ngrok-free.app"); // For Ngrok free tier
         configuration.addAllowedOriginPattern("https://*.ngrok.io"); // For Ngrok older domains
+        configuration.addAllowedOriginPattern("http://10.10.102.68:5173/");
         configuration.addAllowedHeader("*");
         configuration.addAllowedMethod("*");
         configuration.setAllowCredentials(true);

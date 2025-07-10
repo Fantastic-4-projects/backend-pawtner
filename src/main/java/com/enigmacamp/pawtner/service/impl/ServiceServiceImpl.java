@@ -91,9 +91,6 @@ public class ServiceServiceImpl implements ServiceService {
     public Page<ServiceResponseDTO> getAllServicesByBusiness(UUID businessId, Pageable pageable) {
         Business business = businessService.getBusinessByIdForInternal(businessId);
         Page<Service> services = serviceRepository.findAllByBusiness(business, pageable);
-        services.stream().findFirst().ifPresent(service ->
-                log.info("Review: {}", service.getReviews().get(0).getComment())
-        );
         return services.map(ServiceMapper::mapToResponse);
     }
 
