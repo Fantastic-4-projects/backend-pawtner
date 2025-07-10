@@ -10,18 +10,21 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @Builder
 public class OperationHoursDTO {
-    @Builder.Default
-    private String monday = "Closed";
-    @Builder.Default
-    private String tuesday = "Closed";
-    @Builder.Default
-    private String wednesday = "Closed";
-    @Builder.Default
-    private String thursday = "Closed";
-    @Builder.Default
-    private String friday = "Closed";
-    @Builder.Default
-    private String saturday = "Closed";
-    @Builder.Default
-    private String sunday = "Closed";
+
+    private TimeSlot monday;
+    private TimeSlot tuesday;
+    private TimeSlot wednesday;
+    private TimeSlot thursday;
+    private TimeSlot friday;
+    private TimeSlot saturday;
+    private TimeSlot sunday;
+
+    @Data
+    @NoArgsConstructor
+    @AllArgsConstructor
+    @Builder
+    public static class TimeSlot {
+        private String open;
+        private String close;
+    }
 }

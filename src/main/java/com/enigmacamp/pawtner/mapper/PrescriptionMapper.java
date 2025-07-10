@@ -15,7 +15,7 @@ public class PrescriptionMapper {
                 .collect(Collectors.toList());
 
         return PrescriptionResponseDTO.builder()
-                .id(prescription.getId())
+                .id(prescription.getId().toString())
                 .pet(PetResponseDTO.builder()
                         .id(prescription.getPet().getId())
                         .name(prescription.getPet().getName())
