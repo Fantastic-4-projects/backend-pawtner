@@ -27,7 +27,7 @@ public interface BusinessRepository extends JpaRepository<Business, UUID> {
 
     @Query(value = """
         SELECT * FROM businesses b
-        WHERE ST_DWithin(b.location, :userLocation, :distanceInMeters)
+        WHERE ST_DWithin(ST_SetSRID(b.location, 4326), :userLocation, :distanceInMeters)
         AND (:hasEmergencyServices IS NULL OR b.has_emergency_services = :hasEmergencyServices)
         AND (:statusRealtime IS NULL OR b.status_realtime = :statusRealtime)
     """, nativeQuery = true)

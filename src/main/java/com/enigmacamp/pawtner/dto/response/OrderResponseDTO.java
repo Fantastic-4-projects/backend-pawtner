@@ -22,6 +22,7 @@ public class OrderResponseDTO {
     private UUID businessId;
     private String businessName;
     private BigDecimal totalAmount;
+    private BigDecimal shippingFee;
     private OrderStatus status;
     private LocalDateTime createdAt;
     private List<OrderItemResponseDTO> items;
