@@ -15,6 +15,5 @@ import java.util.UUID;
 
 @Repository
 public interface ServiceRepository extends JpaRepository<Service, UUID>, JpaSpecificationExecutor<Service> {
-    Page<Service> findAllByBusiness(Business business, Pageable pageable);
     List<Service> findAllByBusiness(Business business);
 }

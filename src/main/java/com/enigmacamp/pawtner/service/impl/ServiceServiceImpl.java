@@ -1,5 +1,6 @@
 package com.enigmacamp.pawtner.service.impl;
 
+import com.enigmacamp.pawtner.constant.ServiceCategory;
 import com.enigmacamp.pawtner.dto.request.ServiceRequestDTO;
 import com.enigmacamp.pawtner.dto.response.ServiceResponseDTO;
 import com.enigmacamp.pawtner.entity.Business;
@@ -89,9 +90,10 @@ public class ServiceServiceImpl implements ServiceService {
 
     @Override
     @Transactional(readOnly = true)
-    public Page<ServiceResponseDTO> getAllServicesByBusiness(UUID businessId, Pageable pageable) {
-        Business business = businessService.getBusinessByIdForInternal(businessId);
-        Page<Service> services = serviceRepository.findAllByBusiness(business, pageable);
+    public Page<ServiceResponseDTO> getAllServicesByBusiness(UUID businessId, String name, ServiceCategory serviceCategory, Pageable pageable) {
+        businessService.getBusinessByIdForInternal(businessId);
+        Specification<Service> spec = ServiceSpecification.getSpecificationByBusiness(businessId, name, serviceCategory);
+        Page<Service> services = serviceRepository.findAll(spec, pageable);
         return services.map(ServiceMapper::mapToResponse);
     }
 
