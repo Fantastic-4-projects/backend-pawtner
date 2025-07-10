@@ -2,10 +2,12 @@ package com.enigmacamp.pawtner.service.impl;
 
 import com.enigmacamp.pawtner.constant.OrderStatus;
 import com.enigmacamp.pawtner.constant.PaymentStatus;
+import com.enigmacamp.pawtner.dto.response.OrderPriceCalculationResponseDTO;
 import com.enigmacamp.pawtner.dto.response.OrderResponseDTO;
 import com.enigmacamp.pawtner.dto.response.ShoppingCartResponseDTO;
 import com.enigmacamp.pawtner.entity.*;
 import com.enigmacamp.pawtner.mapper.OrderMapper;
+import com.enigmacamp.pawtner.repository.BusinessRepository;
 import com.enigmacamp.pawtner.repository.OrderItemRepository;
 import com.enigmacamp.pawtner.repository.OrderRepository;
 import com.enigmacamp.pawtner.repository.PaymentRepository;
@@ -25,6 +27,12 @@ import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.Map;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.math.MathContext;
+import org.locationtech.jts.geom.Point;
+import org.locationtech.jts.geom.GeometryFactory;
+import org.locationtech.jts.geom.Coordinate;
 
 @Service
 @AllArgsConstructor
@@ -39,12 +47,13 @@ public class OrderServiceImpl implements OrderService {
     private final NotificationService notificationService;
     private final PaymentRepository paymentRepository;
     private final BusinessService businessService;
-    
+    private final BusinessRepository businessRepository;
+    private final GeometryFactory geometryFactory = new GeometryFactory();
 
 
     @Override
     @Transactional
-    public OrderResponseDTO createOrderFromCart(String customerEmail) {
+    public OrderResponseDTO createOrderFromCart(String customerEmail, Double latitude, Double longitude) {
         ShoppingCartResponseDTO shoppingCartDTO = shoppingCartService.getShoppingCartByCustomerId(customerEmail);
 
         if (shoppingCartDTO.getItems().isEmpty()) {
@@ -53,6 +62,16 @@ public class OrderServiceImpl implements OrderService {
 
         User customer = userService.getUserByEmailForInternal(customerEmail);
         Business business = businessService.getBusinessByIdForInternal(shoppingCartDTO.getBusinessId());
+
+        // Calculate shipping fee
+        Point userLocation = geometryFactory.createPoint(new Coordinate(longitude, latitude));
+        userLocation.setSRID(4326); // Set SRID to 4326
+        Double distanceInMeters = businessRepository.calculateDistanceToBusiness(business.getId(), userLocation);
+        double shippingFee = calculateShippingFee(distanceInMeters);
+        BigDecimal roundedShippingFee = BigDecimal.valueOf(shippingFee).setScale(2, RoundingMode.HALF_UP);
+
+        // Calculate total amount including shipping fee
+        BigDecimal totalAmountWithShipping = shoppingCartDTO.getTotalPrice().add(roundedShippingFee, new MathContext(18, RoundingMode.HALF_UP));
 
         // Deduct stock and create order items
         List<OrderItem> orderItems = shoppingCartDTO.getItems().stream().map(cartItemDTO -> {
@@ -75,7 +94,8 @@ public class OrderServiceImpl implements OrderService {
                 .customer(customer)
                 .business(business)
                 .orderNumber(generateOrderNumber())
-                .totalAmount(shoppingCartDTO.getTotalPrice())
+                .totalAmount(totalAmountWithShipping)
+                .shippingFee(roundedShippingFee)
                 .status(OrderStatus.PENDING_PAYMENT)
                 .build();
         orderRepository.save(order);
@@ -106,7 +126,7 @@ public class OrderServiceImpl implements OrderService {
         );
 
 
-        OrderResponseDTO responseDTO = OrderMapper.mapToResponse(order, orderItems, paymentRepository);
+        OrderResponseDTO responseDTO = OrderMapper.mapToResponse(order, orderItems, paymentRepository, roundedShippingFee);
         responseDTO.setSnapToken(payment.getSnapToken());
     // Gunakan redirect_url dari Midtrans, bukan format manual
     responseDTO.setRedirectUrl(payment.getRedirectUrl()); // Asumsi Payment entity memiliki field redirectUrl
@@ -119,7 +139,7 @@ public class OrderServiceImpl implements OrderService {
         Order order = orderRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Order not found"));
         List<OrderItem> orderItems = orderItemRepository.findByOrder(order);
-        return OrderMapper.mapToResponse(order, orderItems, paymentRepository);
+        return OrderMapper.mapToResponse(order, orderItems, paymentRepository, order.getShippingFee());
     }
 
     @Override
@@ -127,7 +147,7 @@ public class OrderServiceImpl implements OrderService {
     public Page<OrderResponseDTO> getAllOrdersByCustomerId(String customerEmail, Pageable pageable) {
         User customer = userService.getUserByEmailForInternal(customerEmail);
         Page<Order> orders = orderRepository.findByCustomer(customer, pageable);
-        return orders.map(order ->  OrderMapper.mapToResponse(order, orderItemRepository.findByOrder(order), paymentRepository));
+        return orders.map(order ->  OrderMapper.mapToResponse(order, orderItemRepository.findByOrder(order), paymentRepository, order.getShippingFee()));
     }
 
     @Override @Transactional
@@ -206,7 +226,7 @@ public class OrderServiceImpl implements OrderService {
                     Collections.singletonMap("orderId", order.getId().toString())
             );
 
-            return OrderMapper.mapToResponse(order, orderItemRepository.findByOrder(order), paymentRepository);
+            return OrderMapper.mapToResponse(order, orderItemRepository.findByOrder(order), paymentRepository, order.getShippingFee());
         } catch (IllegalArgumentException e) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid order status: " + newStatus);
         }
@@ -217,10 +237,54 @@ public class OrderServiceImpl implements OrderService {
     public Page<OrderResponseDTO> getAllOrdersByBusinessId(UUID businessId, Pageable pageable) {
         Business business = businessService.getBusinessByIdForInternal(businessId);
         Page<Order> orders = orderRepository.findByBusiness(business, pageable);
-        return orders.map(order -> OrderMapper.mapToResponse(order, orderItemRepository.findByOrder(order), paymentRepository));
+        return orders.map(order -> OrderMapper.mapToResponse(order, orderItemRepository.findByOrder(order), paymentRepository, order.getShippingFee()));
     }
 
     private String generateOrderNumber() {
         return "ORD-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase();
+    }
+
+    public double calculateShippingFee(double distanceInMeters) {
+        // Example: Base fee + cost per kilometer
+        double baseFee = 5000; // Rp 5.000
+        double costPerKm = 1000; // Rp 1.000 per kilometer
+
+        // Convert meters to kilometers
+        double distanceInKm = distanceInMeters / 1000;
+
+        return baseFee + (costPerKm * distanceInKm);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public OrderPriceCalculationResponseDTO calculateOrderPrice(String customerEmail, Double latitude, Double longitude) {
+        ShoppingCartResponseDTO shoppingCartDTO = shoppingCartService.getShoppingCartByCustomerId(customerEmail);
+
+        if (shoppingCartDTO.getItems().isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Shopping cart is empty");
+        }
+
+        // Subtotal is the total price from the shopping cart before shipping fee
+        BigDecimal subtotal = shoppingCartDTO.getTotalPrice();
+
+        // Get business associated with the shopping cart items
+        // Assuming all items in the cart belong to the same business
+        Business business = businessService.getBusinessByIdForInternal(shoppingCartDTO.getBusinessId());
+
+        // Calculate shipping fee
+        Point userLocation = geometryFactory.createPoint(new Coordinate(longitude, latitude));
+        userLocation.setSRID(4326); // Set SRID to 4326
+        Double distanceInMeters = businessRepository.calculateDistanceToBusiness(business.getId(), userLocation);
+        double shippingFee = calculateShippingFee(distanceInMeters);
+        BigDecimal roundedShippingFee = BigDecimal.valueOf(shippingFee).setScale(2, RoundingMode.HALF_UP);
+
+        // Calculate total amount including shipping fee
+        BigDecimal totalAmount = subtotal.add(roundedShippingFee, new MathContext(18, RoundingMode.HALF_UP));
+
+        return OrderPriceCalculationResponseDTO.builder()
+                .subtotal(subtotal)
+                .shippingFee(roundedShippingFee)
+                .totalAmount(totalAmount)
+                .build();
     }
 }
