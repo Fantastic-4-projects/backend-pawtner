@@ -32,4 +32,11 @@ public interface BookingRepository extends JpaRepository<Booking, UUID> {
     Page<Booking> findByCustomer(User customer, Pageable pageable);
     Page<Booking> findByServiceIn(List<Service> services, Pageable pageable);
     Page<Booking> findAllByService_Business(Business business, Pageable pageable);
+
+    @Query("SELECT b FROM Booking b WHERE b.status = :status AND b.startTime BETWEEN :startTimeStart AND :startTimeEnd")
+    List<Booking> findAllByStatusAndStartTimeBetween(
+            @Param("status") BookingStatus status,
+            @Param("startTimeStart") LocalDateTime startTimeStart,
+            @Param("startTimeEnd") LocalDateTime startTimeEnd
+    );
 }
