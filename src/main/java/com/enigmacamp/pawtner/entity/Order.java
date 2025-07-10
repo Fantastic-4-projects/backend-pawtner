@@ -43,6 +43,9 @@ public class Order {
     @Digits(integer = 10, fraction = 2)
     private BigDecimal totalAmount;
 
+    @Digits(integer = 10, fraction = 2)
+    private BigDecimal shippingFee;
+
     @Builder.Default
     @NotNull(message = "Status is required")
     @Enumerated(EnumType.STRING)

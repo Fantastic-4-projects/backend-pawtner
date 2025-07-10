@@ -6,12 +6,13 @@ import com.enigmacamp.pawtner.entity.Order;
 import com.enigmacamp.pawtner.entity.OrderItem;
 import com.enigmacamp.pawtner.repository.PaymentRepository;
 import com.enigmacamp.pawtner.entity.Payment;
+import java.math.BigDecimal;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
 public class OrderMapper {
-    public static OrderResponseDTO mapToResponse(Order order, List<OrderItem> orderItems, PaymentRepository paymentRepository) {
+    public static OrderResponseDTO mapToResponse(Order order, List<OrderItem> orderItems, PaymentRepository paymentRepository, BigDecimal shippingFee) {
         List<OrderItemResponseDTO> itemDTOs = orderItems.stream()
                 .map(OrderItemMapper::mapToResponse)
                 .collect(Collectors.toList());
@@ -33,6 +34,7 @@ public class OrderMapper {
                 .businessId(order.getBusiness().getId())
                 .businessName(order.getBusiness().getName())
                 .totalAmount(order.getTotalAmount())
+                .shippingFee(shippingFee)
                 .status(order.getStatus())
                 .createdAt(order.getCreatedAt())
                 .items(itemDTOs)

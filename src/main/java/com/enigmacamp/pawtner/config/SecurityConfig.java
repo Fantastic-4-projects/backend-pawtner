@@ -94,6 +94,7 @@ public class SecurityConfig {
                                 "/api/cart/**",
                                 "/api/orders/checkout",
                                 "/api/orders",
+                                "/api/orders/calculate-price",
                                 "/api/pets/**",
                                 "/api/reviews"
                         ).hasAuthority(UserRole.CUSTOMER.name())
