@@ -19,6 +19,7 @@ public interface UserService extends UserDetailsService {
     UserResponseDTO getUserById(String id);
     UserResponseDTO updateUser(UserRequestDTO userRequestDTO, MultipartFile profileImage);
     List<UserResponseDTO> getAllUser(Authentication authentication);
+    List<User> getAllUsers();
     UserResponseDTO updateUserStatus(UUID id, String action, Boolean value);
     void deleteUser(String id);
     void changePassword(ChangePasswordRequestDTO requestDTO, Authentication authentication);

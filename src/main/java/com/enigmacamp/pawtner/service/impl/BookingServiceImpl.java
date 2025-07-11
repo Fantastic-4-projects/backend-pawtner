@@ -40,11 +40,7 @@ import java.math.MathContext;
 import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Collections;
-import java.util.UUID;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -323,12 +319,24 @@ public class BookingServiceImpl implements BookingService {
             }
 
             // Send notification to customer
-            notificationService.sendNotification(
-                    booking.getCustomer(),
-                    "Booking Status Updated",
-                    "Your booking " + booking.getBookingNumber() + " is now " + newStatus.name(),
-                    Collections.singletonMap("bookingId", booking.getId().toString())
-            );
+            if (newStatus == BookingStatus.CONFIRMED) {
+                String title = "Pemesanan Anda Dikonfirmasi!";
+                String body = String.format("Pemesanan grooming untuk %s pada %s pukul %s telah dikonfirmasi.",
+                        booking.getPet().getName(),
+                        booking.getStartTime().toLocalDate(),
+                        booking.getStartTime().toLocalTime());
+                Map<String, String> data = new HashMap<>();
+                data.put("type", "BOOKING_CONFIRMATION");
+                data.put("id", booking.getId().toString());
+                notificationService.sendNotification(booking.getCustomer(), title, body, data);
+            } else {
+                notificationService.sendNotification(
+                        booking.getCustomer(),
+                        "Booking Status Updated",
+                        "Your booking " + booking.getBookingNumber() + " is now " + newStatus.name(),
+                        Collections.singletonMap("bookingId", booking.getId().toString())
+                );
+            }
         }
     }
 }

@@ -106,7 +106,8 @@ public class SecurityConfig {
                                 "/api/users/{id}/status",
                                 "/api/auth/user/set-role",
                                 "/api/reviews/{id}",
-                                "/api/business/{id}"
+                                "/api/business/{id}",
+                                "/api/notifications/broadcast"
                         ).hasAuthority(UserRole.ADMIN.name())
 
                         .requestMatchers("/api/orders/{order_id}"

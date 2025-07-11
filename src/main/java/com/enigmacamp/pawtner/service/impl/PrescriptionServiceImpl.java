@@ -78,7 +78,7 @@ public class PrescriptionServiceImpl implements PrescriptionService {
 
     @Override
     public PrescriptionResponseDTO getPrescriptionById(String id) {
-        Prescription prescription = prescriptionRepository.findById(id)
+        Prescription prescription = prescriptionRepository.findById(UUID.fromString(id))
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Prescription not found"));
         return PrescriptionMapper.mapToResponse(prescription);
     }
@@ -105,7 +105,7 @@ public class PrescriptionServiceImpl implements PrescriptionService {
     @Override
     @Transactional(rollbackOn = Exception.class)
     public void deletePrescription(String id) {
-        Prescription prescription = prescriptionRepository.findById(id)
+        Prescription prescription = prescriptionRepository.findById(UUID.fromString(id))
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Prescription not found"));
         prescriptionRepository.delete(prescription);
     }
