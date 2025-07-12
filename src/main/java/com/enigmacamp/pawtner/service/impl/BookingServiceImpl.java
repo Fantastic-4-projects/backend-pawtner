@@ -21,9 +21,11 @@ import com.enigmacamp.pawtner.service.BookingService;
 import com.enigmacamp.pawtner.service.NotificationService;
 import com.enigmacamp.pawtner.service.PaymentService;
 import com.enigmacamp.pawtner.service.BusinessService;
+import com.enigmacamp.pawtner.specification.BookingSpecification;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
@@ -132,6 +134,7 @@ public class BookingServiceImpl implements BookingService {
                 .startTime(requestDTO.getStartTime())
                 .endTime(requestDTO.getEndTime())
                 .totalPrice(totalPrice) // Use the rounded total price
+                .totalPrice(service.getBasePrice()) // Simplified for now
                 .status(BookingStatus.REQUESTED)
                 .createdAt(LocalDateTime.now())
                 .build();
@@ -206,9 +209,11 @@ public class BookingServiceImpl implements BookingService {
 
     @Override
     @Transactional(readOnly = true)
-    public Page<BookingResponseDTO> getAllBookingsByBusiness(UUID uuid, Pageable pageable) {
-        Business business = businessService.getBusinessByIdForInternal(uuid);
-        Page<Booking> bookings = bookingRepository.findAllByService_Business(business, pageable);
+    public Page<BookingResponseDTO> getAllBookingsByBusiness(UUID uuid, String bookingNumber, String nameCustomer, String emailCustomer, BookingStatus bookingStatus,Pageable pageable) {
+        businessService.getBusinessByIdForInternal(uuid);
+        Specification<Booking> spec = BookingSpecification.getSpecificationByBusiness(uuid, bookingNumber, nameCustomer, emailCustomer, bookingStatus);
+
+        Page<Booking> bookings = bookingRepository.findAll(spec, pageable);
         return bookings.map(BookingMapper::mapToResponse);
     }
 

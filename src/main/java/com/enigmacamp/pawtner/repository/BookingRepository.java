@@ -8,6 +8,7 @@ import org.springframework.data.domain.Pageable;
 import com.enigmacamp.pawtner.entity.Service;
 import com.enigmacamp.pawtner.entity.User;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
@@ -20,7 +21,7 @@ import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Repository
-public interface BookingRepository extends JpaRepository<Booking, UUID> {
+public interface BookingRepository extends JpaRepository<Booking, UUID>, JpaSpecificationExecutor<Booking> {
     @Query("SELECT COUNT(b) FROM Booking b WHERE b.service.id = :serviceId AND b.status IN :statuses AND b.startTime >= :startDate AND b.startTime < :endDate")
     long countActiveBookingsForServiceOnDate(
             @Param("serviceId") UUID serviceId,

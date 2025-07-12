@@ -1,11 +1,13 @@
 package com.enigmacamp.pawtner.service.impl;
 
 import com.enigmacamp.pawtner.dto.request.ChangePasswordRequestDTO;
+import com.enigmacamp.pawtner.dto.request.UpdateUserStatusRequestDTO;
 import com.enigmacamp.pawtner.dto.request.UserRequestDTO;
 import com.enigmacamp.pawtner.dto.response.UserResponseDTO;
 import com.enigmacamp.pawtner.entity.User;
 import com.enigmacamp.pawtner.mapper.UserMapper;
 import com.enigmacamp.pawtner.repository.UserRepository;
+import com.enigmacamp.pawtner.service.EmailService;
 import com.enigmacamp.pawtner.service.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -36,6 +38,7 @@ public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
     private final ImageUploadService imageUploadService;
     private final PasswordEncoder passwordEncoder;
+    private final EmailService emailService;
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
@@ -97,17 +100,31 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public UserResponseDTO updateUserStatus(UUID id, String action, Boolean value) {
+    public UserResponseDTO updateUserStatus(UUID id, UpdateUserStatusRequestDTO updateUserStatus) {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
 
-        switch (action.toLowerCase()) {
+        String action = updateUserStatus.getAction().toLowerCase();
+        Boolean value = updateUserStatus.getValue();
+
+        switch (action) {
             case "ban" -> user.setIsEnabled(value);
             case "suspend" -> user.setIsAccountNonLocked(value);
-            default -> throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid action");
+            default -> throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Aksi tidak valid: " + updateUserStatus.getAction());
         }
 
         userRepository.save(user);
+
+        if (updateUserStatus.getIsSend()) {
+            emailService.sendUserStatusChangeEmail(
+                    user.getEmail(),
+                    user.getName(),
+                    action,
+                    value,
+                    updateUserStatus.getReason()
+            );
+        }
+
         return UserMapper.mapToResponse(user);
     }
 

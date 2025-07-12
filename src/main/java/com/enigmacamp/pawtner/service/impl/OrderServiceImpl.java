@@ -14,9 +14,11 @@ import com.enigmacamp.pawtner.repository.PaymentRepository;
 import com.enigmacamp.pawtner.service.*;
 
 
+import com.enigmacamp.pawtner.specification.OrderSpecification;
 import lombok.AllArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -234,9 +236,12 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     @Transactional(readOnly = true)
-    public Page<OrderResponseDTO> getAllOrdersByBusinessId(UUID businessId, Pageable pageable) {
-        Business business = businessService.getBusinessByIdForInternal(businessId);
-        Page<Order> orders = orderRepository.findByBusiness(business, pageable);
+    public Page<OrderResponseDTO> getAllOrdersByBusinessId(
+            UUID businessId, String orderNumber, String nameCustomer, String emailCustomer, OrderStatus orderStatus, Pageable pageable
+    ) {
+        businessService.getBusinessByIdForInternal(businessId);
+        Specification<Order> spec = OrderSpecification.getSpecificationByBusiness(businessId, orderNumber, nameCustomer, emailCustomer, orderStatus);
+        Page<Order> orders = orderRepository.findAll(spec, pageable);
         return orders.map(order -> OrderMapper.mapToResponse(order, orderItemRepository.findByOrder(order), paymentRepository, order.getShippingFee()));
     }
 

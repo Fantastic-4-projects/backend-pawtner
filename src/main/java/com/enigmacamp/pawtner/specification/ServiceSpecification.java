@@ -1,5 +1,6 @@
 package com.enigmacamp.pawtner.specification;
 
+import com.enigmacamp.pawtner.constant.ServiceCategory;
 import com.enigmacamp.pawtner.entity.Business;
 import com.enigmacamp.pawtner.entity.Product;
 import com.enigmacamp.pawtner.entity.Service;
@@ -12,6 +13,7 @@ import org.springframework.data.jpa.domain.Specification;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 public class ServiceSpecification {
     public static Specification<Service> getSpecification(
@@ -21,6 +23,8 @@ public class ServiceSpecification {
             List<Predicate> predicates = new ArrayList<>();
 
             Join<Service, Business> businessJoin = root.join("business");
+
+            predicates.add(criteriaBuilder.isTrue(root.get("isActive")));
 
             if (name != null && !name.isEmpty()) {
                 predicates.add(criteriaBuilder.like(criteriaBuilder.lower(root.get("name")), "%" + name.toLowerCase() + "%"));
@@ -47,6 +51,28 @@ public class ServiceSpecification {
             query.groupBy(root.get("id"));
 
             return query.where(predicates.toArray(new Predicate[0])).getRestriction();
+        };
+    }
+
+    public static Specification<Service> getSpecificationByBusiness(
+            UUID businessId, String name, ServiceCategory serviceCategory
+    ) {
+        return (root, query, criteriaBuilder) -> {
+            List<Predicate> predicates = new ArrayList<>();
+
+            predicates.add(criteriaBuilder.isTrue(root.get("isActive")));
+
+            predicates.add(criteriaBuilder.equal(root.get("business").get("id"), businessId));
+
+            if (name != null && !name.isEmpty()) {
+                predicates.add(criteriaBuilder.like(root.get("name"), "%" + name.toLowerCase() + "%"));
+            }
+
+            if (serviceCategory != null) {
+                predicates.add(criteriaBuilder.equal(root.get("serviceCategory"), serviceCategory));
+            }
+
+            return  criteriaBuilder.and(predicates.toArray(new Predicate[0]));
         };
     }
 }

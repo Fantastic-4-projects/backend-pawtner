@@ -1,5 +1,6 @@
 package com.enigmacamp.pawtner.controller;
 
+import com.enigmacamp.pawtner.dto.request.ApproveBusinessRequestDTO;
 import com.enigmacamp.pawtner.dto.request.BusinessRequestDTO;
 import com.enigmacamp.pawtner.dto.response.BusinessResponseDTO;
 import com.enigmacamp.pawtner.dto.response.CommonResponse;
@@ -67,12 +68,11 @@ public class BusinessController {
     @PatchMapping("/{id}")
     @PreAuthorize("hasAuthority('ADMIN')")
     public ResponseEntity<CommonResponse<BusinessResponseDTO>> approveBusiness(
-            @PathVariable UUID id, @RequestBody Map<String, Boolean> body
+            @PathVariable UUID id, @RequestBody ApproveBusinessRequestDTO approve
         ){
-        Boolean approve = body.get("approve");
         return ResponseUtil.createResponse(
                 HttpStatus.OK,
-                "Berhasil mengganti status bisnis.",
+                "Bisnis berhasil diubah",
                 businessService.approveBusiness(id, approve)
         );
     }

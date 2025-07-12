@@ -19,6 +19,7 @@ public class ServiceResponseDTO {
     private BusinessResponseDTO business;
     private ServiceCategory category;
     private String name;
+    private String description;
     private BigDecimal basePrice;
     private Integer capacityPerDay;
     private String imageUrl;

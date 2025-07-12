@@ -1,5 +1,6 @@
 package com.enigmacamp.pawtner.controller;
 
+import com.enigmacamp.pawtner.constant.BookingStatus;
 import com.enigmacamp.pawtner.dto.request.BookingRequestDTO;
 import com.enigmacamp.pawtner.dto.response.BookingPriceCalculationResponseDTO;
 import com.enigmacamp.pawtner.dto.response.BookingResponseDTO;
@@ -9,7 +10,9 @@ import com.enigmacamp.pawtner.util.ResponseUtil;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -66,9 +69,18 @@ public class BookingController {
     @PreAuthorize("hasAuthority('BUSINESS_OWNER')")
     public ResponseEntity<CommonResponse<Page<BookingResponseDTO>>> getAllBookingsForBusiness(
             @PathVariable UUID businessId,
-            Pageable pageable) {
-
-        Page<BookingResponseDTO> responseDTOPage = bookingService.getAllBookingsByBusiness(businessId, pageable);
+            @RequestParam(name = "page", defaultValue = "0") int page,
+            @RequestParam(name = "size", defaultValue = "10") int size,
+            @RequestParam(name = "sortBy", defaultValue = "createdAt") String sortBy,
+            @RequestParam(name = "direction", defaultValue = "desc") String direction,
+            @RequestParam(required = false) String orderNumber,
+            @RequestParam(required = false) String nameCustomer,
+            @RequestParam(required = false) String emailCustomer,
+            @RequestParam(required = false) BookingStatus bookingStatus
+    ) {
+        Sort.Direction sortDirection = Sort.Direction.fromString(direction);
+        Pageable pageable = PageRequest.of(page, size, Sort.by(sortDirection, sortBy));
+        Page<BookingResponseDTO> responseDTOPage = bookingService.getAllBookingsByBusiness(businessId, orderNumber, nameCustomer, emailCustomer, bookingStatus, pageable);
         return ResponseUtil.createResponse(HttpStatus.OK, "Successfully fetched all bookings for the business", responseDTOPage);
     }
 

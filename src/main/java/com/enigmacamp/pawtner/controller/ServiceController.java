@@ -1,8 +1,8 @@
 package com.enigmacamp.pawtner.controller;
 
+import com.enigmacamp.pawtner.constant.ServiceCategory;
 import com.enigmacamp.pawtner.dto.request.ServiceRequestDTO;
 import com.enigmacamp.pawtner.dto.response.CommonResponse;
-import com.enigmacamp.pawtner.dto.response.ProductResponseDTO;
 import com.enigmacamp.pawtner.dto.response.ServiceResponseDTO;
 import com.enigmacamp.pawtner.service.ServiceService;
 import com.enigmacamp.pawtner.util.ResponseUtil;
@@ -64,8 +64,18 @@ public class ServiceController {
     }
 
     @GetMapping("/my-services/{businessId}")
-    public ResponseEntity<CommonResponse<Page<ServiceResponseDTO>>> getAllServicesByBusiness(@PathVariable UUID businessId, Pageable pageable) {
-        Page<ServiceResponseDTO> responseDTOPage = serviceService.getAllServicesByBusiness(businessId, pageable);
+    public ResponseEntity<CommonResponse<Page<ServiceResponseDTO>>> getAllServicesByBusiness(
+            @PathVariable UUID businessId,
+            @RequestParam(name = "page", defaultValue = "0") int page,
+            @RequestParam(name = "size", defaultValue = "10") int size,
+            @RequestParam(name = "sortBy", defaultValue = "name") String sortBy,
+            @RequestParam(name = "direction", defaultValue = "asc") String direction,
+            @RequestParam(required = false) String name,
+            @RequestParam(required = false) ServiceCategory category
+    ) {
+        Sort.Direction sortDirection = Sort.Direction.fromString(direction);
+        Pageable pageable = PageRequest.of(page, size, Sort.by(sortDirection, sortBy));
+        Page<ServiceResponseDTO> responseDTOPage = serviceService.getAllServicesByBusiness(businessId, name, category, pageable);
         return ResponseUtil.createResponse(HttpStatus.OK, "Successfully fetched all services", responseDTOPage);
     }
 

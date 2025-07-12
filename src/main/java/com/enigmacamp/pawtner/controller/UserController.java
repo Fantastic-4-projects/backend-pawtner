@@ -1,6 +1,7 @@
 package com.enigmacamp.pawtner.controller;
 
 import com.enigmacamp.pawtner.dto.request.ChangePasswordRequestDTO;
+import com.enigmacamp.pawtner.dto.request.UpdateUserStatusRequestDTO;
 import com.enigmacamp.pawtner.dto.request.UserRequestDTO;
 import com.enigmacamp.pawtner.dto.response.CommonResponse;
 import com.enigmacamp.pawtner.dto.response.UserResponseDTO;
@@ -76,13 +77,13 @@ public class UserController {
     @PreAuthorize("hasAuthority('ADMIN')")
     public ResponseEntity<CommonResponse<UserResponseDTO>> updateStatus(
             @PathVariable UUID id,
-            @RequestParam String action,
-            @RequestParam Boolean value
+            @Valid @RequestBody UpdateUserStatusRequestDTO requestDTO
     ) {
+        UserResponseDTO updatedUser = userService.updateUserStatus(id, requestDTO);
         return ResponseUtil.createResponse(
                 HttpStatus.OK,
-                "Berhasil mengubah status " + action + " menjadi " + value,
-                userService.updateUserStatus(id, action, value)
+                "Status pengguna berhasil diperbarui. Notifikasi telah dikirimkan.",
+                updatedUser
         );
     }
 

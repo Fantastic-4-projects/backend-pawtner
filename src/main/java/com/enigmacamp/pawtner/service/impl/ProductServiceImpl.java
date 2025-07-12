@@ -1,5 +1,6 @@
 package com.enigmacamp.pawtner.service.impl;
 
+import com.enigmacamp.pawtner.constant.ProductCategory;
 import com.enigmacamp.pawtner.dto.request.ProductRequestDTO;
 import com.enigmacamp.pawtner.dto.response.ProductResponseDTO;
 import com.enigmacamp.pawtner.entity.Business;
@@ -101,10 +102,10 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     @Transactional(readOnly = true)
-    public Page<ProductResponseDTO> getProductsByBusiness(UUID business, Pageable pageable) {
-        Business businessEntity = businessService.getBusinessByIdForInternal(business);
-        Page<Product> products = productRepository.findAllByBusiness(businessEntity, pageable);
-
+    public Page<ProductResponseDTO> getProductsByBusiness(UUID businessId, String name, ProductCategory category, Integer stock, Pageable pageable) {
+        businessService.getBusinessByIdForInternal(businessId);
+        Specification<Product> spec = ProductSpecification.getBusinessProductSpecification(businessId, name, category, stock);
+        Page<Product> products = productRepository.findAll(spec, pageable);
         return products.map(ProductMapper::mapToResponse);
     }
 

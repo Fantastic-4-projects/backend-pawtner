@@ -16,7 +16,7 @@ public interface BusinessRepository extends JpaRepository<Business, UUID> {
     Optional<Business> findBusinessById(UUID id);
     Optional<Business> findByOwner(User owner);
 
-    @Query(value = "SELECT * FROM businesses b WHERE ST_DWithin(b.location, :userLocation, :distanceInMeters)", nativeQuery = true)
+    @Query(value = "SELECT * FROM businesses b WHERE ST_DWithin(b.location, ST_SetSRID(:userLocation, 4326), :distanceInMeters)", nativeQuery = true)
     List<Business> findNearbyBusinesses(
         @Param("userLocation") Point userLocation,
         @Param("distanceInMeters") double distanceInMeters
@@ -27,7 +27,7 @@ public interface BusinessRepository extends JpaRepository<Business, UUID> {
 
     @Query(value = """
         SELECT * FROM businesses b
-        WHERE ST_DWithin(ST_SetSRID(b.location, 4326), :userLocation, :distanceInMeters)
+        WHERE ST_DWithin(b.location, ST_SetSRID(:userLocation, 4326), :distanceInMeters)
         AND (:hasEmergencyServices IS NULL OR b.has_emergency_services = :hasEmergencyServices)
         AND (:statusRealtime IS NULL OR b.status_realtime = :statusRealtime)
     """, nativeQuery = true)

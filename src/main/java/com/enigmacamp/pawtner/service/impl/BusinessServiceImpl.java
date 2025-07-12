@@ -1,5 +1,6 @@
 package com.enigmacamp.pawtner.service.impl;
 
+import com.enigmacamp.pawtner.dto.request.ApproveBusinessRequestDTO;
 import com.enigmacamp.pawtner.dto.request.BusinessRequestDTO;
 import com.enigmacamp.pawtner.dto.response.BusinessResponseDTO;
 import com.enigmacamp.pawtner.entity.Business;
@@ -8,6 +9,7 @@ import com.enigmacamp.pawtner.mapper.BusinessMapper;
 import com.enigmacamp.pawtner.repository.BusinessRepository;
 import com.enigmacamp.pawtner.repository.UserRepository;
 import com.enigmacamp.pawtner.service.BusinessService;
+import com.enigmacamp.pawtner.service.EmailService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -36,6 +38,7 @@ public class BusinessServiceImpl implements BusinessService {
     private final BusinessRepository businessRepository;
     private final ImageUploadService imageUploadService;
     private final UserRepository userRepository;
+    private final EmailService emailService;
     private final GeometryFactory geometryFactory = new GeometryFactory();
 
     @Transactional(rollbackOn = Exception.class)
@@ -154,11 +157,20 @@ public class BusinessServiceImpl implements BusinessService {
     }
 
     @Override
-    public BusinessResponseDTO approveBusiness(UUID businessId, Boolean approved) {
+    public BusinessResponseDTO approveBusiness(UUID businessId, ApproveBusinessRequestDTO approved) {
         Business business = getBusinessByIdForInternal(businessId);
 
-        business.setIsApproved(approved);
+        business.setIsApproved(approved.getApprove());
         businessRepository.save(business);
+
+        User owner = business.getOwner();
+        emailService.sendBusinessApprovalEmail(
+                owner.getEmail(),
+                owner.getName(),
+                business.getName(),
+                approved.getApprove(),
+                approved.getReason()
+        );
 
         return BusinessMapper.mapToResponse(business);
     }
@@ -176,8 +188,6 @@ public class BusinessServiceImpl implements BusinessService {
     @Override
     public List<BusinessResponseDTO> findNearbyBusinesses(double lat, double lon, double radiusKm, Boolean hasEmergencyServices, String statusRealtime) {
         Point userLocation = geometryFactory.createPoint(new Coordinate(lon, lat));
-        userLocation.setSRID(4326);
-        log.info("User location SRID before query: {}", userLocation.getSRID());
         double distanceInMeters = radiusKm * 1000;
         return businessRepository.findNearbyBusinessesWithFilters(userLocation, distanceInMeters, hasEmergencyServices, statusRealtime)
                 .stream().map(BusinessMapper::mapToResponse)
