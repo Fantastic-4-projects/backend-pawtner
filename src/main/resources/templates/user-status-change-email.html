@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Update on Your Pawtner Account Status</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; color: #333; }
+        .container { max-width: 600px; margin: 0 auto; border: 1px solid #ddd; border-radius: 8px; overflow: hidden; }
+        .header { background-color: #f8f8f8; padding: 20px; text-align: center; }
+        .header img { height: 100px; }
+        .content { padding: 30px; line-height: 1.6; }
+        .status-box { padding: 15px; border-radius: 5px; margin: 20px 0; font-size: 18px; font-weight: bold; text-align: center; }
+        .status-banned, .status-suspended { background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+        .status-active { background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .reason-box { background-color: #f0f0f0; padding: 15px; border-radius: 5px; border-left: 5px solid #ccc; margin-top: 15px; }
+        .footer { padding: 20px; background-color: #f8f8f8; font-size: 12px; color: #888; text-align: center; }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="header">
+        <img src="https://res.cloudinary.com/dh8gmlzth/image/upload/v1750928559/Pawtner_aeaa0x.png" alt="Pawtner Logo">
+    </div>
+    <div class="content">
+        <h2 th:text="'Hello, ' + ${userName} + '!'">Hello, Pawtner!</h2>
+        <p>Our admin has updated your Pawtner account status.</p>
+
+        <!-- Message Based on Action -->
+        <div th:switch="${action}">
+            <!-- BAN Case -->
+            <div th:case="'ban'">
+                <div th:if="${!statusValue}" class="status-box status-banned">Account Status: BANNED</div>
+                <div th:if="${statusValue}" class="status-box status-active">Account Status: REACTIVATED</div>
+                <p th:if="${!statusValue}">Your account has been deactivated, and you will no longer be able to log in. Please contact support if you believe this is a mistake.</p>
+                <p th:if="${statusValue}">Your account has been reactivated. Welcome back to Pawtner!</p>
+            </div>
+            <!-- SUSPEND Case -->
+            <div th:case="'suspend'">
+                <div th:if="${!statusValue}" class="status-box status-suspended">Account Status: SUSPENDED</div>
+                <div th:if="${statusValue}" class="status-box status-active">Account Status: SUSPENSION LIFTED</div>
+                <p th:if="${!statusValue}">Your account has been temporarily suspended. You will not be able to log in during the suspension period.</p>
+                <p th:if="${statusValue}">Your account suspension has been lifted. You may now log in again.</p>
+            </div>
+        </div>
+
+        <h4>Admin's Reason:</h4>
+        <div class="reason-box">
+            <p th:text="${reason}">This is the reason provided by the admin.</p>
+        </div>
+        <br>
+        <p>If you have any further questions, please don't hesitate to contact our support team.</p>
+    </div>
+    <div class="footer">
+        This email was automatically sent by the Pawtner system.
+    </div>
+</div>
+</body>
+</html>

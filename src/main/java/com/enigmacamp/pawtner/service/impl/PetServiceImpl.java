@@ -57,6 +57,7 @@ public class PetServiceImpl implements PetService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public PetResponseDTO getPetById(UUID id) {
         Pet pet = getPetEntityById(id);
         return PetMapper.mapToResponse(pet);

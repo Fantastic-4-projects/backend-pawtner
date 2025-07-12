@@ -3,6 +3,7 @@ package com.enigmacamp.pawtner.specification;
 import com.enigmacamp.pawtner.constant.BookingStatus;
 import com.enigmacamp.pawtner.entity.Booking;
 import jakarta.persistence.criteria.Join;
+import jakarta.persistence.criteria.JoinType; // Tambahkan import jika perlu
 import jakarta.persistence.criteria.Predicate;
 import org.springframework.data.jpa.domain.Specification;
 
@@ -21,24 +22,26 @@ public class BookingSpecification {
         return (root, query, criteriaBuilder) -> {
             List<Predicate> predicates = new ArrayList<>();
 
-            Join<Object, Object> customerJoin = root.join("customer");
+            Join<Object, Object> serviceJoin = root.join("service");
+            Join<Object, Object> businessJoin = serviceJoin.join("business");
+            predicates.add(criteriaBuilder.equal(businessJoin.get("id"), businessId));
 
-            predicates.add(criteriaBuilder.equal(root.get("business").get("id"), businessId));
-
-            if (bookingNumber != null) {
-                predicates.add(criteriaBuilder.like(criteriaBuilder.lower(root.get("bookingNumber")), "%" + bookingNumber + "%"));
+            if (bookingNumber != null && !bookingNumber.isEmpty()) {
+                predicates.add(criteriaBuilder.like(criteriaBuilder.lower(root.get("bookingNumber")), "%" + bookingNumber.toLowerCase() + "%"));
             }
 
-            if (nameCustomer != null) {
-                predicates.add(criteriaBuilder.like(criteriaBuilder.lower(customerJoin.get("nameCustomer")), nameCustomer));
+            Join<Object, Object> customerJoin = root.join("customer", JoinType.INNER);
+
+            if (nameCustomer != null && !nameCustomer.isEmpty()) {
+                predicates.add(criteriaBuilder.like(criteriaBuilder.lower(customerJoin.get("name")), "%" + nameCustomer.toLowerCase() + "%"));
             }
 
-            if (emailCustomer != null) {
-                predicates.add(criteriaBuilder.like(criteriaBuilder.lower(customerJoin.get("email")), emailCustomer));
+            if (emailCustomer != null && !emailCustomer.isEmpty()) {
+                predicates.add(criteriaBuilder.like(criteriaBuilder.lower(customerJoin.get("email")), "%" + emailCustomer.toLowerCase() + "%"));
             }
 
             if (bookingStatus != null) {
-                predicates.add(criteriaBuilder.equal(root.get("bookingStatus"), bookingStatus));
+                predicates.add(criteriaBuilder.equal(root.get("status"), bookingStatus));
             }
 
             return criteriaBuilder.and(predicates.toArray(new Predicate[0]));

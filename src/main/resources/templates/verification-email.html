@@ -2,7 +2,7 @@
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <title>Verifikasi Akun Pawtner</title>
+    <title>Pawtner Account Verification</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -54,18 +54,18 @@
         <img src="https://res.cloudinary.com/dh8gmlzth/image/upload/v1750928559/Pawtner_aeaa0x.png" alt="Pawtner Logo">
     </div>
     <div class="content">
-        <!-- 'username' akan kita kirim dari service -->
-        <h2 th:text="'Halo, ' + ${name} + '!'">Halo, Pawtner!</h2>
-        <p>Terima kasih telah mendaftar di Pawtner. Silakan gunakan kode berikut untuk memverifikasi akun Anda:</p>
+        <!-- 'name' will be sent from the service -->
+        <h2 th:text="'Hello, ' + ${name} + '!'">Hello, Pawtner!</h2>
+        <p>Thank you for registering with Pawtner. Please use the following code to verify your account:</p>
 
-        <!-- 'verificationCode' akan kita kirim dari service -->
+        <!-- 'verificationCode' will be sent from the service -->
         <div class="code" th:text="${verificationCode}">123456</div>
 
-        <p>Kode ini akan kedaluwarsa dalam <strong>3 menit</strong>.</p>
-        <p>Jika Anda tidak merasa mendaftar, mohon abaikan email ini.</p>
+        <p>This code will expire in <strong>3 minutes</strong>.</p>
+        <p>If you did not register, please ignore this email.</p>
     </div>
     <div class="footer">
-        Email ini dikirim otomatis oleh sistem Pawtner.
+        This email was automatically sent by the Pawtner system.
     </div>
 </div>
 </body>

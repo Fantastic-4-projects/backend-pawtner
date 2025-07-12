@@ -1,5 +1,6 @@
 package com.enigmacamp.pawtner.service;
 
+import com.enigmacamp.pawtner.dto.request.ApproveBusinessRequestDTO;
 import com.enigmacamp.pawtner.dto.request.BusinessRequestDTO;
 import com.enigmacamp.pawtner.dto.response.BusinessResponseDTO;
 
@@ -18,7 +19,7 @@ public interface BusinessService {
     List<BusinessResponseDTO> viewMyBusiness();
     List<BusinessResponseDTO> findNearbyBusinesses(double lat, double lon, double radiusKm, Boolean hasEmergencyServices, String statusRealtime);
     Business getBusinessByIdForInternal(UUID id);
-    BusinessResponseDTO approveBusiness(UUID businessId, Boolean approved);
+    BusinessResponseDTO approveBusiness(UUID businessId, ApproveBusinessRequestDTO approved);
     Business getBusinessByOwnerEmailForInternal(String ownerEmail);
     BusinessResponseDTO openBusiness(UUID businessId,  BusinessRequestDTO businessRequestDTO);
     void deleteBusiness(UUID businessId);

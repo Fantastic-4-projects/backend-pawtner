@@ -23,6 +23,8 @@ public class ProductSpecification {
 
             Join<Product, Business> businessJoin = root.join("business");
 
+            predicates.add(criteriaBuilder.isTrue(root.get("isActive")));
+
             if (name != null && !name.isEmpty()) {
                 predicates.add(criteriaBuilder.like(criteriaBuilder.lower(root.get("name")), "%" + name.toLowerCase() + "%"));
             }
@@ -58,6 +60,8 @@ public class ProductSpecification {
             List<Predicate> predicates = new ArrayList<>();
 
             predicates.add(criteriaBuilder.equal(root.get("business").get("id"), businessId));
+
+            predicates.add(criteriaBuilder.isTrue(root.get("isActive")));
 
             if (name != null && !name.isEmpty()) {
                 predicates.add(criteriaBuilder.like(criteriaBuilder.lower(root.get("name")), "%" + name.toLowerCase() + "%"));

@@ -24,6 +24,8 @@ public class ServiceSpecification {
 
             Join<Service, Business> businessJoin = root.join("business");
 
+            predicates.add(criteriaBuilder.isTrue(root.get("isActive")));
+
             if (name != null && !name.isEmpty()) {
                 predicates.add(criteriaBuilder.like(criteriaBuilder.lower(root.get("name")), "%" + name.toLowerCase() + "%"));
             }
@@ -57,6 +59,8 @@ public class ServiceSpecification {
     ) {
         return (root, query, criteriaBuilder) -> {
             List<Predicate> predicates = new ArrayList<>();
+
+            predicates.add(criteriaBuilder.isTrue(root.get("isActive")));
 
             predicates.add(criteriaBuilder.equal(root.get("business").get("id"), businessId));
 
