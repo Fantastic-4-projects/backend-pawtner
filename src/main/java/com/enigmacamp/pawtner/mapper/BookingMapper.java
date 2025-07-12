@@ -1,5 +1,6 @@
 package com.enigmacamp.pawtner.mapper;
 
+import com.enigmacamp.pawtner.constant.DeliveryType;
 import com.enigmacamp.pawtner.dto.response.BookingResponseDTO;
 import com.enigmacamp.pawtner.entity.Booking;
 
@@ -23,6 +24,11 @@ public class BookingMapper {
                 .status(booking.getStatus().name())
                 .snapToken(booking.getSnapToken())
                 .redirectUrl(booking.getPayment() != null ? booking.getPayment().getRedirectUrl() : null)
+                .deliveryType(booking.getDeliveryType() != null ? booking.getDeliveryType().name() : null)
+                .deliveryAddress(booking.getDeliveryType() == DeliveryType.DELIVERY ? booking.getDeliveryAddressDetail() : null)
+                .deliveryLatitude(booking.getDeliveryType() == DeliveryType.DELIVERY ? booking.getDeliveryLatitude() : null)
+                .deliveryLongitude(booking.getDeliveryType() == DeliveryType.DELIVERY ? booking.getDeliveryLongitude() : null)
+                .businessAddress(booking.getDeliveryType() == DeliveryType.PICKUP && booking.getPickupBusiness() != null ? booking.getPickupBusiness().getAddress() : null)
                 .createdAt(booking.getCreatedAt())
                 .build();
     }

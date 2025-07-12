@@ -62,7 +62,44 @@ Based on the MVP plan in `README.md`, the following core features have been impl
     - **`Exception` (Catch-All)**: A safety net that catches any other unhandled exception and returns a `500 Internal Server Error`, preventing application crashes.
 - **Logging**: Integrated SLF4J logging into `ErrorController` to record detailed error information on the server, which is essential for debugging.
 
-## 5. Unresolved Problems & Next Steps
+## 5. Recent API Updates (Implemented by Gemini CLI)
+
+The following changes have been implemented to enhance the Booking and Order APIs, particularly for frontend consumption and improved data handling:
+
+### a. Booking API: Timezone Handling (`ZonedDateTime`)
+- **Change**: The `startTime` and `endTime` fields in `Booking.java` (entity), `BookingRequestDTO.java`, and `BookingResponseDTO.java` have been changed from `LocalDateTime` to `ZonedDateTime`.
+- **Impact for Frontend**: 
+    - When sending booking requests, ensure `startTime` and `endTime` are sent in a format compatible with `ZonedDateTime` (e.g., ISO 8601 with timezone offset, like `2025-07-12T23:45:00+07:00`).
+    - When receiving booking responses, parse `startTime` and `endTime` as `ZonedDateTime` to correctly handle timezone information.
+- **Backend Adjustments**: `BookingServiceImpl.java`, `BookingRepository.java`, and `SchedulingServiceImpl.java` have been updated to correctly process and store `ZonedDateTime`.
+
+### b. Booking API: Enhanced Address and Location Details
+- **Change**: `BookingResponseDTO.java` now includes additional fields to provide comprehensive address and location information for bookings:
+    - `deliveryType` (String): Indicates "PICKUP" or "DELIVERY".
+    - `deliveryAddress` (String): Formatted delivery address if `deliveryType` is "DELIVERY". `null` otherwise.
+    - `deliveryLatitude` (Double): Latitude of delivery location if `deliveryType` is "DELIVERY". `null` otherwise.
+    - `deliveryLongitude` (Double): Longitude of delivery location if `deliveryType` is "DELIVERY". `null` otherwise.
+    - `businessAddress` (String): Address of the associated business if `deliveryType` is "PICKUP". `null` otherwise.
+- **Impact for Frontend**: 
+    - Update your `BookingResponseDTO` model to include these new fields.
+    - Implement logic to dynamically display the correct address (`deliveryAddress` or `businessAddress`) based on `deliveryType`.
+    - `deliveryLatitude` and `deliveryLongitude` can be used for map integration or reverse geocoding on the frontend to provide human-readable locations.
+- **Backend Adjustments**: `BookingMapper.java` has been updated to correctly populate these new fields based on the booking's delivery type and associated entities.
+
+### c. Order API: Enhanced Address and Location Details
+- **Change**: `OrderResponseDTO.java` now includes additional fields, similar to `BookingResponseDTO`, for comprehensive address and location information for orders:
+    - `deliveryType` (String): Indicates "PICKUP" or "DELIVERY".
+    - `deliveryAddress` (String): Formatted delivery address if `deliveryType` is "DELIVERY". `null` otherwise.
+    - `deliveryLatitude` (Double): Latitude of delivery location if `deliveryType` is "DELIVERY". `null` otherwise.
+    - `deliveryLongitude` (Double): Longitude of delivery location if `deliveryType` is "DELIVERY". `null` otherwise.
+    - `businessAddress` (String): Address of the associated business if `deliveryType` is "PICKUP". `null` otherwise.
+- **Impact for Frontend**: 
+    - Update your `OrderResponseDTO` model to include these new fields.
+    - Implement logic to dynamically display the correct address (`deliveryAddress` or `businessAddress`) based on `deliveryType`.
+    - `deliveryLatitude` and `deliveryLongitude` can be used for map integration or reverse geocoding on the frontend to provide human-readable locations.
+- **Backend Adjustments**: `OrderMapper.java` has been updated to correctly populate these new fields based on the order's delivery type and associated entities.
+
+## 6. Unresolved Problems & Next Steps
 
 While the foundational structure and error handling are now very strong, several key pieces of business logic and integration described in `README.md` are still pending implementation.
 
@@ -76,14 +113,14 @@ The error handling framework is in place, but the actual business logic that *tr
 ### b. "Petshop Nearby" & Emergency Assistance Feature
 This is a major unsolved feature that is critical to the problem statement in `README.md`.
 - **Problem**: The backend logic to calculate distances and find nearby businesses based on `latitude` and `longitude` has not been implemented.
-- **Task**:
+- **Task**: 
     - Investigate and implement a geospatial solution, likely using the **PostGIS** extension for PostgreSQL.
     - Create the specific repository methods and service logic to handle queries like `findNearest(user_lat, user_lon)`.
 
 ### c. Full Payment & Transactional Flow
 The `README.md` outlines a complete e-commerce and booking workflow that is heavily dependent on payment integration.
 - **Problem**: The actual integration with the Midtrans API is not yet implemented.
-- **Task**:
+- **Task**: 
     - Implement the `PaymentService` to make API calls to Midtrans for creating transactions and receiving a `snap_token`.
     - Implement the `POST /api/payments/webhook` endpoint to securely handle and process incoming notifications from Midtrans.
     - Ensure that a successful payment webhook correctly updates the status of `Orders` and `Bookings` and adjusts product stock.
@@ -91,3 +128,27 @@ The `README.md` outlines a complete e-commerce and booking workflow that is heav
 ### d. Resolve 403 Forbidden Error for Testing
 The authorization issue mentioned previously still needs to be addressed for efficient development and testing.
 - **Recommended Action**: For any developer needing to test `business_owner` endpoints, manually update their user's `role` in the database to `'BUSINESS_OWNER'` and then re-login to get a new JWT.
+
+## 7. Checkout and Booking Flow Enhancement
+
+To support new frontend features for `CheckoutScreen` and `BookServiceScreen`, the backend has been updated to handle different delivery and pickup options.
+
+### a. Backend Modifications for Delivery/Pickup Options
+- **New Enums**: Created `DeliveryType.java` (`DELIVERY`, `PICKUP`) and `DeliveryLocationType.java` (`CURRENT_GPS`, `HOME_ADDRESS`) to ensure type safety for the new options.
+- **Entity Updates**: 
+    - `Order.java` and `Booking.java` were updated with new fields to store the selected delivery/pickup choice:
+        - `deliveryType` (Enum)
+        - `deliveryLocationType` (Enum)
+        - `deliveryLatitude` (Double)
+        - `deliveryLongitude` (Double)
+        - `deliveryAddressDetail` (String)
+        - `pickupBusiness` (a `@ManyToOne` relationship to the `Business` entity).
+- **Service Logic Enhancement**: 
+    - `OrderServiceImpl` and `BookingServiceImpl` were refactored to:
+        - Process the new delivery/pickup fields from the request DTOs.
+        - For `DELIVERY`, calculate shipping fees based on user and business location.
+        - For `PICKUP`, validate that the selected pickup business is valid for the order/booking and skip shipping fee calculations.
+- **Response DTO Enhancement**: 
+    - Confirmed that `ProductResponseDTO` and `ServiceResponseDTO` already included full `Business` details.
+    - `ShoppingCartResponseDTO` was updated to include the full `BusinessResponseDTO` object instead of just `businessId` and `businessName`. This provides the frontend with all necessary business location data directly from the cart view, simplifying the implementation of the "Pick up at Store" option.
+- **Assumption Confirmation**: The backend logic confirms the frontend's assumption: the "Pick up at Store" option for product orders is only valid if all items in the cart belong to the same business. This is enforced by the application's shopping cart design and validated during checkout.

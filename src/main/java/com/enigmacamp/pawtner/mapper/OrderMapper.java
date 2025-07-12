@@ -1,5 +1,6 @@
 package com.enigmacamp.pawtner.mapper;
 
+import com.enigmacamp.pawtner.constant.DeliveryType;
 import com.enigmacamp.pawtner.dto.response.OrderItemResponseDTO;
 import com.enigmacamp.pawtner.dto.response.OrderResponseDTO;
 import com.enigmacamp.pawtner.entity.Order;
@@ -40,6 +41,11 @@ public class OrderMapper {
                 .items(itemDTOs)
                 .snapToken(snapToken)
                 .redirectUrl(redirectUrl)
+                .deliveryType(order.getDeliveryType() != null ? order.getDeliveryType().name() : null)
+                .deliveryAddress(order.getDeliveryType() == DeliveryType.DELIVERY ? order.getDeliveryAddressDetail() : null)
+                .deliveryLatitude(order.getDeliveryType() == DeliveryType.DELIVERY ? order.getDeliveryLatitude() : null)
+                .deliveryLongitude(order.getDeliveryType() == DeliveryType.DELIVERY ? order.getDeliveryLongitude() : null)
+                .businessAddress(order.getDeliveryType() == DeliveryType.PICKUP && order.getPickupBusiness() != null ? order.getPickupBusiness().getAddress() : null)
                 .build();
     }
 }

@@ -23,8 +23,7 @@ public class ShoppingCartMapper {
         return ShoppingCartResponseDTO.builder()
                 .id(shoppingCart.getId())
                 .customerId(shoppingCart.getCustomer().getId())
-                .businessId(shoppingCart.getBusiness().getId())
-                .businessName(shoppingCart.getBusiness().getName())
+                .business(BusinessMapper.mapToResponse(shoppingCart.getBusiness()))
                 .items(itemDTOs)
                 .totalPrice(totalPrice)
                 .build();
