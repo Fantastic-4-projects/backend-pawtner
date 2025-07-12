@@ -194,7 +194,7 @@ public class OrderServiceImpl implements OrderService {
                 newStatus = OrderStatus.PROCESSING;
             }
         } else if (transactionStatus.equals("settlement")) {
-            newStatus = OrderStatus.COMPLETED;
+            newStatus = OrderStatus.PROCESSING;
         } else if (transactionStatus.equals("cancel") || transactionStatus.equals("deny") || transactionStatus.equals("expire")) {
             newStatus = OrderStatus.CANCELLED;
         } else if (transactionStatus.equals("pending")) {

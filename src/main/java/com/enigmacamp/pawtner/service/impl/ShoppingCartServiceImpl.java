@@ -67,7 +67,8 @@ public class ShoppingCartServiceImpl implements ShoppingCartService {
         }
         cartItemRepository.save(cartItem);
 
-        return getShoppingCartByCustomerId(customerEmail);
+        List<CartItem> updatedCartItems = cartItemRepository.findByShoppingCart(shoppingCart);
+        return ShoppingCartMapper.mapToResponse(shoppingCart, updatedCartItems);
     }
 
     @Override
@@ -106,7 +107,9 @@ public class ShoppingCartServiceImpl implements ShoppingCartService {
         cartItem.setQuantity(updateCartItemRequestDTO.getQuantity());
         cartItemRepository.save(cartItem);
 
-        return getShoppingCartByCustomerId(customerEmail);
+        ShoppingCart shoppingCart = cartItem.getShoppingCart();
+        List<CartItem> updatedCartItems = cartItemRepository.findByShoppingCart(shoppingCart);
+        return ShoppingCartMapper.mapToResponse(shoppingCart, updatedCartItems);
     }
 
     @Override

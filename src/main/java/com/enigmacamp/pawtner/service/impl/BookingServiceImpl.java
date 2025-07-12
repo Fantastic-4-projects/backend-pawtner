@@ -135,7 +135,7 @@ public class BookingServiceImpl implements BookingService {
                 .endTime(requestDTO.getEndTime())
                 .totalPrice(totalPrice) // Use the rounded total price
                 .totalPrice(service.getBasePrice()) // Simplified for now
-                .status(BookingStatus.REQUESTED)
+                .status(BookingStatus.AWAITING_PAYMENT)
                 .createdAt(LocalDateTime.now())
                 .build();
 
@@ -291,10 +291,10 @@ public class BookingServiceImpl implements BookingService {
 
         if (transactionStatus.equals("capture")) {
             if (fraudStatus.equals("accept")) {
-                newStatus = BookingStatus.CONFIRMED;
+                newStatus = BookingStatus.REQUESTED;
             }
         } else if (transactionStatus.equals("settlement")) {
-            newStatus = BookingStatus.CONFIRMED;
+            newStatus = BookingStatus.REQUESTED;
         } else if (transactionStatus.equals("cancel") || transactionStatus.equals("deny") || transactionStatus.equals("expire")) {
             newStatus = BookingStatus.CANCELLED;
         } else if (transactionStatus.equals("pending")) {

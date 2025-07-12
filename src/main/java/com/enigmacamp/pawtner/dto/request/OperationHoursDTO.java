@@ -11,18 +11,18 @@ import lombok.NoArgsConstructor;
 @Builder
 public class OperationHoursDTO {
     @Builder.Default
-    private String monday = "Closed";
+    private Object monday = "Closed";
     @Builder.Default
-    private String tuesday = "Closed";
+    private Object tuesday = "Closed";
     @Builder.Default
-    private String wednesday = "Closed";
+    private Object wednesday = "Closed";
     @Builder.Default
-    private String thursday = "Closed";
+    private Object thursday = "Closed";
     @Builder.Default
-    private String friday = "Closed";
+    private Object friday = "Closed";
     @Builder.Default
-    private String saturday = "Closed";
+    private Object saturday = "Closed";
     @Builder.Default
-    private String sunday = "Closed";
+    private Object sunday = "Closed";
 }
 
