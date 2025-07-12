@@ -17,7 +17,7 @@ import java.util.UUID;
 
 public class ServiceSpecification {
     public static Specification<Service> getSpecification(
-            String name, BigDecimal minPrice, BigDecimal maxPrice, Point userLocation, Double radiusInMeters
+            String name, BigDecimal minPrice, BigDecimal maxPrice, Point userLocation, Double radiusInMeters, UUID businessId
     ) {
         return (root, query, criteriaBuilder) -> {
             List<Predicate> predicates = new ArrayList<>();
@@ -33,8 +33,13 @@ public class ServiceSpecification {
             if (minPrice != null) {
                 predicates.add(criteriaBuilder.greaterThanOrEqualTo(root.get("basePrice"), minPrice));
             }
+
             if (maxPrice != null) {
                 predicates.add(criteriaBuilder.lessThanOrEqualTo(root.get("basePrice"), maxPrice));
+            }
+
+            if (businessId != null) {
+                predicates.add(criteriaBuilder.equal(root.get("business").get("id"), businessId));
             }
 
             if (userLocation != null && radiusInMeters != null) {

@@ -78,7 +78,7 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     @Transactional(readOnly = true)
-    public Page<ProductResponseDTO> getAllProducts(Pageable pageable, String name, BigDecimal minPrice, BigDecimal maxPrice, Double userLat, Double userLon, Double radiusKm) {
+    public Page<ProductResponseDTO> getAllProducts(Pageable pageable, String name, BigDecimal minPrice, BigDecimal maxPrice, Double userLat, Double userLon, Double radiusKm, UUID businessId) {
 
         Point userLocation = null;
         Double radiusInMeters = null;
@@ -93,7 +93,8 @@ public class ProductServiceImpl implements ProductService {
                 minPrice,
                 maxPrice,
                 userLocation,
-                radiusInMeters
+                radiusInMeters,
+                businessId
         );
 
         Page<Product> products = productRepository.findAll(spec, pageable);

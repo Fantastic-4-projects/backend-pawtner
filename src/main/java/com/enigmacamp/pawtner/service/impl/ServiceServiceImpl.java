@@ -74,7 +74,7 @@ public class ServiceServiceImpl implements ServiceService {
 
     @Override
     @Transactional(readOnly = true)
-    public Page<ServiceResponseDTO> getAllServices(Pageable pageable, String name, BigDecimal minPrice, BigDecimal maxPrice, Double userLat, Double userLon, Double radiusKm) {
+    public Page<ServiceResponseDTO> getAllServices(Pageable pageable, String name, BigDecimal minPrice, BigDecimal maxPrice, Double userLat, Double userLon, Double radiusKm, UUID businessId) {
         Point userLocation = null;
         Double radiusInMeters = null;
 
@@ -82,7 +82,7 @@ public class ServiceServiceImpl implements ServiceService {
             userLocation = geometryFactory.createPoint(new Coordinate(userLon, userLat));
             radiusInMeters = (radiusKm != null ? radiusKm : 15.0) * 1000.0;
         }
-        Specification<Service> spec = ServiceSpecification.getSpecification(name, minPrice, maxPrice, userLocation, radiusInMeters);
+        Specification<Service> spec = ServiceSpecification.getSpecification(name, minPrice, maxPrice, userLocation, radiusInMeters, businessId);
 
         Page<Service> services = serviceRepository.findAll(spec, pageable);
         return services.map(ServiceMapper::mapToResponse);

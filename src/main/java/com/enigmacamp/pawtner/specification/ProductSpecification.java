@@ -16,7 +16,7 @@ import java.util.UUID;
 
 public class ProductSpecification {
     public static Specification<Product> getSpecification(
-            String name, BigDecimal minPrice, BigDecimal maxPrice, Point userLocation, Double radiusInMeters
+            String name, BigDecimal minPrice, BigDecimal maxPrice, Point userLocation, Double radiusInMeters,  UUID businessId
     ) {
         return (root, query, criteriaBuilder) -> {
             List<Predicate> predicates = new ArrayList<>();
@@ -32,8 +32,13 @@ public class ProductSpecification {
             if (minPrice != null) {
                 predicates.add(criteriaBuilder.greaterThanOrEqualTo(root.get("price"), minPrice));
             }
+
             if (maxPrice != null) {
                 predicates.add(criteriaBuilder.lessThanOrEqualTo(root.get("price"), maxPrice));
+            }
+
+            if (businessId != null) {
+                predicates.add(criteriaBuilder.equal(root.get("business").get("id"), businessId));
             }
 
             if (userLocation != null && radiusInMeters != null) {
