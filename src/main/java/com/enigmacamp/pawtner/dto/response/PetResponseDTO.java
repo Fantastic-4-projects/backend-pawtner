@@ -23,5 +23,6 @@ public class PetResponseDTO {
     private String imageUrl;
     private String notes;
     private String ownerName;
+    private Boolean isActive;
     private List<PrescriptionResponseDTO> prescriptions;
 }

@@ -9,9 +9,11 @@ import com.enigmacamp.pawtner.repository.PetRepository;
 import com.enigmacamp.pawtner.service.ImageUploadService;
 import com.enigmacamp.pawtner.service.PetService;
 import com.enigmacamp.pawtner.service.UserService;
+import com.enigmacamp.pawtner.specification.PetSpecification;
 import lombok.AllArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -72,7 +74,8 @@ public class PetServiceImpl implements PetService {
     @Override
     public Page<PetResponseDTO> getAllPetsByOwner(String ownerEmail, Pageable pageable) {
         User owner = userService.getUserByEmailForInternal(ownerEmail);
-        Page<Pet> pets = petRepository.findByOwner(owner, pageable);
+        Specification<Pet> spec = PetSpecification.getSpecification(owner, true);
+        Page<Pet> pets = petRepository.findAll(spec, pageable);
         return pets.map(PetMapper::mapToResponse);
     }
 
@@ -118,6 +121,7 @@ public class PetServiceImpl implements PetService {
         if (!pet.getOwner().getId().equals(owner.getId())) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Pet does not belong to the authenticated user");
         }
-        petRepository.delete(pet);
+        pet.setIsActive(false);
+        petRepository.save(pet);
     }
 }
