@@ -1,6 +1,8 @@
 package com.enigmacamp.pawtner.entity;
 
 import com.enigmacamp.pawtner.constant.OrderStatus;
+import com.enigmacamp.pawtner.constant.DeliveryLocationType;
+import com.enigmacamp.pawtner.constant.DeliveryType;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
 import lombok.AllArgsConstructor;
@@ -55,6 +57,22 @@ public class Order {
     @Builder.Default
     @Column(updatable = false)
     private LocalDateTime createdAt = LocalDateTime.now();
+
+    @Enumerated(EnumType.STRING)
+    private DeliveryType deliveryType;
+
+    @Enumerated(EnumType.STRING)
+    private DeliveryLocationType deliveryLocationType;
+
+    private Double deliveryLatitude;
+
+    private Double deliveryLongitude;
+
+    private String deliveryAddressDetail;
+
+    @ManyToOne
+    @JoinColumn(name = "pickup_business_id", columnDefinition = "uuid")
+    private Business pickupBusiness;
 
     @PrePersist
     protected void onCreate() {

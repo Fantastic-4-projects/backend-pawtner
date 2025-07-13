@@ -1,6 +1,7 @@
 package com.enigmacamp.pawtner.controller;
 
 import com.enigmacamp.pawtner.constant.OrderStatus;
+import com.enigmacamp.pawtner.dto.request.OrderRequestDTO;
 import com.enigmacamp.pawtner.dto.response.CommonResponse;
 import com.enigmacamp.pawtner.dto.response.OrderPriceCalculationResponseDTO;
 import com.enigmacamp.pawtner.dto.response.OrderResponseDTO;
@@ -30,21 +31,19 @@ public class OrderController {
     @PreAuthorize("hasAuthority('CUSTOMER')")
     public ResponseEntity<CommonResponse<OrderResponseDTO>> checkout(
             Authentication authentication,
-            @RequestParam Double latitude,
-            @RequestParam Double longitude
+            @RequestBody OrderRequestDTO orderRequestDTO
     ) {
-        OrderResponseDTO responseDTO = orderService.createOrderFromCart(authentication.getName(), latitude, longitude);
+        OrderResponseDTO responseDTO = orderService.createOrderFromCart(authentication.getName(), orderRequestDTO);
         return ResponseUtil.createResponse(HttpStatus.CREATED, "Order created successfully", responseDTO);
     }
 
-    @GetMapping("/calculate-price")
+    @PostMapping("/calculate-price")
     @PreAuthorize("hasAuthority('CUSTOMER')")
     public ResponseEntity<CommonResponse<OrderPriceCalculationResponseDTO>> calculateOrderPrice(
             Authentication authentication,
-            @RequestParam Double latitude,
-            @RequestParam Double longitude
+            @RequestBody OrderRequestDTO orderRequestDTO
     ) {
-        OrderPriceCalculationResponseDTO responseDTO = orderService.calculateOrderPrice(authentication.getName(), latitude, longitude);
+        OrderPriceCalculationResponseDTO responseDTO = orderService.calculateOrderPrice(authentication.getName(), orderRequestDTO);
         return ResponseUtil.createResponse(HttpStatus.OK, "Order price calculated successfully", responseDTO);
     }
 

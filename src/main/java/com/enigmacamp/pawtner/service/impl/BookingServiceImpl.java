@@ -39,7 +39,7 @@ import java.math.BigDecimal;
 import java.math.MathContext;
 import java.math.RoundingMode;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -70,39 +70,10 @@ public class BookingServiceImpl implements BookingService {
         com.enigmacamp.pawtner.entity.Service service = serviceRepository.findById(requestDTO.getServiceId())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Service not found"));
 
+        // Validate capacity
         if (service.getCapacityPerDay() != null && service.getCapacityPerDay() > 0) {
-            LocalDate bookingDate = requestDTO.getStartTime().toLocalDate();
-            LocalDateTime startOfDay = bookingDate.atStartOfDay();
-            LocalDateTime endOfDay = startOfDay.plusDays(1);
-
-            List<BookingStatus> activeStatuses = Arrays.asList(
-                    BookingStatus.REQUESTED,
-                    BookingStatus.AWAITING_PAYMENT,
-                    BookingStatus.CONFIRMED
-            );
-
-            long existingBookings = bookingRepository.countActiveBookingsForServiceOnDate(
-                    service.getId(),
-                    activeStatuses,
-                    startOfDay,
-                    endOfDay
-            );
-
-            if (existingBookings >= service.getCapacityPerDay()) {
-                throw new ResponseStatusException(HttpStatus.CONFLICT, "Kapasitas layanan penuh untuk tanggal yang dipilih.");
-            }
-        }
-        // Calculate delivery fee
-        Point userLocation = geometryFactory.createPoint(new Coordinate(requestDTO.getLongitude().doubleValue(), requestDTO.getLatitude().doubleValue()));
-        userLocation.setSRID(4326); // Set SRID to 4326
-        Double distanceInMeters = businessRepository.calculateDistanceToBusiness(service.getBusiness().getId(), userLocation);
-        double deliveryFee = calculateDeliveryFee(distanceInMeters);
-        BigDecimal roundedDeliveryFee = BigDecimal.valueOf(deliveryFee).setScale(2, BigDecimal.ROUND_HALF_UP);
-
-        if (service.getCapacityPerDay() != null && service.getCapacityPerDay() > 0) {
-            LocalDate bookingDate = requestDTO.getStartTime().toLocalDate();
-            LocalDateTime startOfDay = bookingDate.atStartOfDay();
-            LocalDateTime endOfDay = startOfDay.plusDays(1);
+            ZonedDateTime startOfDay = requestDTO.getStartTime().toLocalDate().atStartOfDay(requestDTO.getStartTime().getZone());
+            ZonedDateTime endOfDay = startOfDay.plusDays(1);
 
             List<BookingStatus> activeStatuses = Arrays.asList(
                     BookingStatus.REQUESTED,
@@ -122,23 +93,52 @@ public class BookingServiceImpl implements BookingService {
             }
         }
 
-        // Use MathContext to control precision and rounding for totalPrice
-        MathContext mc = new MathContext(12, RoundingMode.HALF_UP); // 10 integer digits + 2 fractional digits = 12 precision
-        BigDecimal totalPrice = service.getBasePrice().add(roundedDeliveryFee, mc);
-
-        Booking booking = Booking.builder()
+        Booking.BookingBuilder bookingBuilder = Booking.builder()
                 .customer(customer)
                 .pet(pet)
                 .service(service)
                 .bookingNumber("BOOK-" + UUID.randomUUID().toString())
                 .startTime(requestDTO.getStartTime())
                 .endTime(requestDTO.getEndTime())
-                .totalPrice(totalPrice) // Use the rounded total price
-                .totalPrice(service.getBasePrice()) // Simplified for now
-                .status(BookingStatus.REQUESTED)
-                .createdAt(LocalDateTime.now())
-                .build();
+                .status(BookingStatus.AWAITING_PAYMENT)
+                .createdAt(ZonedDateTime.now());
 
+        BigDecimal totalPrice;
+
+        if (requestDTO.getDeliveryType() == com.enigmacamp.pawtner.constant.DeliveryType.PICKUP) {
+            Business pickupBusiness = businessRepository.findById(requestDTO.getPickupBusinessId())
+                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Pickup business not found"));
+            
+            // Ensure the service belongs to the selected pickup business
+            if (!service.getBusiness().getId().equals(pickupBusiness.getId())) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Service does not belong to the selected pickup business.");
+            }
+
+            bookingBuilder.deliveryType(com.enigmacamp.pawtner.constant.DeliveryType.PICKUP);
+            bookingBuilder.pickupBusiness(pickupBusiness);
+            totalPrice = service.getBasePrice();
+        } else { // Default to DELIVERY
+            if (requestDTO.getDeliveryLatitude() == null || requestDTO.getDeliveryLongitude() == null) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Latitude and longitude are required for delivery.");
+            }
+            Point userLocation = geometryFactory.createPoint(new Coordinate(requestDTO.getDeliveryLongitude(), requestDTO.getDeliveryLatitude()));
+            userLocation.setSRID(4326);
+            Double distanceInMeters = businessRepository.calculateDistanceToBusiness(service.getBusiness().getId(), userLocation);
+            double deliveryFee = calculateDeliveryFee(distanceInMeters);
+            BigDecimal roundedDeliveryFee = BigDecimal.valueOf(deliveryFee).setScale(2, BigDecimal.ROUND_HALF_UP);
+
+            MathContext mc = new MathContext(12, RoundingMode.HALF_UP);
+            totalPrice = service.getBasePrice().add(roundedDeliveryFee, mc);
+
+            bookingBuilder.deliveryType(com.enigmacamp.pawtner.constant.DeliveryType.DELIVERY);
+            bookingBuilder.deliveryLocationType(requestDTO.getDeliveryLocationType());
+            bookingBuilder.deliveryLatitude(requestDTO.getDeliveryLatitude());
+            bookingBuilder.deliveryLongitude(requestDTO.getDeliveryLongitude());
+            bookingBuilder.deliveryAddressDetail(requestDTO.getDeliveryAddressDetail());
+        }
+
+        bookingBuilder.totalPrice(totalPrice);
+        Booking booking = bookingBuilder.build();
         bookingRepository.save(booking);
 
         // Create payment
@@ -291,10 +291,10 @@ public class BookingServiceImpl implements BookingService {
 
         if (transactionStatus.equals("capture")) {
             if (fraudStatus.equals("accept")) {
-                newStatus = BookingStatus.CONFIRMED;
+                newStatus = BookingStatus.REQUESTED;
             }
         } else if (transactionStatus.equals("settlement")) {
-            newStatus = BookingStatus.CONFIRMED;
+            newStatus = BookingStatus.REQUESTED;
         } else if (transactionStatus.equals("cancel") || transactionStatus.equals("deny") || transactionStatus.equals("expire")) {
             newStatus = BookingStatus.CANCELLED;
         } else if (transactionStatus.equals("pending")) {
@@ -321,10 +321,11 @@ public class BookingServiceImpl implements BookingService {
             // Send notification to customer
             if (newStatus == BookingStatus.CONFIRMED) {
                 String title = "Pemesanan Anda Dikonfirmasi!";
-                String body = String.format("Pemesanan grooming untuk %s pada %s pukul %s telah dikonfirmasi.",
+                String body = String.format("Pemesanan grooming untuk %s pada %s pukul %s %s telah dikonfirmasi.",
                         booking.getPet().getName(),
                         booking.getStartTime().toLocalDate(),
-                        booking.getStartTime().toLocalTime());
+                        booking.getStartTime().toLocalTime(),
+                        booking.getStartTime().getZone().getDisplayName(java.time.format.TextStyle.SHORT, java.util.Locale.getDefault()));
                 Map<String, String> data = new HashMap<>();
                 data.put("type", "BOOKING_CONFIRMATION");
                 data.put("id", booking.getId().toString());

@@ -28,4 +28,9 @@ public class OrderResponseDTO {
     private List<OrderItemResponseDTO> items;
     private String snapToken;
     private String redirectUrl;
+    private String deliveryType;
+    private String deliveryAddress;
+    private Double deliveryLatitude;
+    private Double deliveryLongitude;
+    private String businessAddress;
 }

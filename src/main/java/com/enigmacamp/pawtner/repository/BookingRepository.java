@@ -13,11 +13,9 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Optional;
-import java.time.LocalDateTime;
-import java.util.List;
-import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Repository
@@ -26,8 +24,8 @@ public interface BookingRepository extends JpaRepository<Booking, UUID>, JpaSpec
     long countActiveBookingsForServiceOnDate(
             @Param("serviceId") UUID serviceId,
             @Param("statuses") List<BookingStatus> statuses,
-            @Param("startDate") LocalDateTime startDate,
-            @Param("endDate") LocalDateTime endDate
+            @Param("startDate") ZonedDateTime startDate,
+            @Param("endDate") ZonedDateTime endDate
     );
     Optional<Booking> findByBookingNumber(String bookingNumber);
     Page<Booking> findByCustomer(User customer, Pageable pageable);
@@ -37,7 +35,7 @@ public interface BookingRepository extends JpaRepository<Booking, UUID>, JpaSpec
     @Query("SELECT b FROM Booking b WHERE b.status = :status AND b.startTime BETWEEN :startTimeStart AND :startTimeEnd")
     List<Booking> findAllByStatusAndStartTimeBetween(
             @Param("status") BookingStatus status,
-            @Param("startTimeStart") LocalDateTime startTimeStart,
-            @Param("startTimeEnd") LocalDateTime startTimeEnd
+            @Param("startTimeStart") ZonedDateTime startTimeStart,
+            @Param("startTimeEnd") ZonedDateTime startTimeEnd
     );
 }

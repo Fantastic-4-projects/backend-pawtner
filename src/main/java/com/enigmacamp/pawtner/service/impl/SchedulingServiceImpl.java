@@ -13,7 +13,7 @@ import com.enigmacamp.pawtner.repository.PrescriptionRepository;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -30,8 +30,8 @@ public class SchedulingServiceImpl implements SchedulingService {
     @Override
     @Scheduled(cron = "0 * * * * *") // Runs every minute
     public void sendBookingReminders() {
-        LocalDateTime now = LocalDateTime.now();
-        LocalDateTime reminderTime = now.plusHours(1);
+        ZonedDateTime now = ZonedDateTime.now();
+        ZonedDateTime reminderTime = now.plusHours(1);
 
         log.info("Checking for booking reminders between {} and {}", now, reminderTime);
 

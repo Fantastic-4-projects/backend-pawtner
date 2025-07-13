@@ -33,5 +33,6 @@ public class BusinessResponseDTO {
     private BusinessStatus statusRealTime;
     private String businessAddress;
     private OperationHoursDTO operationHours;
+    @Builder.Default
     private String statusApproved = "Pending";
 }
