@@ -87,7 +87,9 @@ public class PetServiceImpl implements PetService {
         }
 
         String imageUrl = existingPet.getImageUrl();
-        if (petRequestDTO.getImage() != null && !petRequestDTO.getImage().isEmpty()) {
+        if (Boolean.TRUE.equals(petRequestDTO.getDeleteImage())) {
+            imageUrl = null;
+        } else if (petRequestDTO.getImage() != null && !petRequestDTO.getImage().isEmpty()) {
             try {
                 imageUrl = imageUploadService.upload(petRequestDTO.getImage());
             } catch (IOException e) {
