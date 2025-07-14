@@ -3,14 +3,14 @@ package com.enigmacamp.pawtner.service.impl;
 import com.enigmacamp.pawtner.constant.BookingStatus;
 import com.enigmacamp.pawtner.constant.PaymentStatus;
 import com.enigmacamp.pawtner.dto.request.BookingRequestDTO;
+import com.enigmacamp.pawtner.dto.response.BookingPriceCalculationResponseDTO;
 import com.enigmacamp.pawtner.dto.response.BookingResponseDTO;
-import com.enigmacamp.pawtner.dto.response.PetResponseDTO;
-import com.enigmacamp.pawtner.dto.response.UserResponseDTO;
 import com.enigmacamp.pawtner.entity.Booking;
 import com.enigmacamp.pawtner.entity.Business;
 import com.enigmacamp.pawtner.entity.Payment;
 import com.enigmacamp.pawtner.entity.Pet;
 import com.enigmacamp.pawtner.entity.User;
+import com.enigmacamp.pawtner.mapper.BookingMapper;
 import com.enigmacamp.pawtner.repository.BookingRepository;
 import com.enigmacamp.pawtner.repository.PetRepository;
 import com.enigmacamp.pawtner.repository.ServiceRepository;
@@ -18,15 +18,13 @@ import com.enigmacamp.pawtner.repository.UserRepository;
 import com.enigmacamp.pawtner.repository.BusinessRepository;
 import com.enigmacamp.pawtner.repository.PaymentRepository;
 import com.enigmacamp.pawtner.service.BookingService;
-import com.enigmacamp.pawtner.service.NotificationService;
 import com.enigmacamp.pawtner.service.PaymentService;
-import com.midtrans.httpclient.error.MidtransError;
-import com.midtrans.service.MidtransCoreApi;
 import com.enigmacamp.pawtner.service.BusinessService;
+import com.enigmacamp.pawtner.specification.BookingSpecification;
 import lombok.RequiredArgsConstructor;
-import org.json.JSONObject;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
@@ -36,15 +34,11 @@ import org.locationtech.jts.geom.Point;
 import org.locationtech.jts.geom.GeometryFactory;
 import org.locationtech.jts.geom.Coordinate;
 
-import java.time.LocalDate;
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Collections;
-import java.util.List;
-import java.util.UUID;
-import java.util.Map;
+import java.math.MathContext;
+import java.math.RoundingMode;
+import java.time.ZonedDateTime;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -59,8 +53,6 @@ public class BookingServiceImpl implements BookingService {
     private final BusinessRepository businessRepository;
     private final PaymentService paymentService;
     private final PaymentRepository paymentRepository;
-    private final MidtransCoreApi midtransCoreApi;
-    private final NotificationService notificationService;
     private final GeometryFactory geometryFactory = new GeometryFactory();
 
     @Override
@@ -74,15 +66,10 @@ public class BookingServiceImpl implements BookingService {
         com.enigmacamp.pawtner.entity.Service service = serviceRepository.findById(requestDTO.getServiceId())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Service not found"));
 
-        // Calculate delivery fee
-        Point userLocation = geometryFactory.createPoint(new Coordinate(requestDTO.getLongitude().doubleValue(), requestDTO.getLatitude().doubleValue()));
-        Double distanceInMeters = businessRepository.calculateDistanceToBusiness(service.getBusiness().getId(), userLocation);
-        double deliveryFee = calculateDeliveryFee(distanceInMeters);
-
+        // Validate capacity
         if (service.getCapacityPerDay() != null && service.getCapacityPerDay() > 0) {
-            LocalDate bookingDate = requestDTO.getStartTime().toLocalDate();
-            LocalDateTime startOfDay = bookingDate.atStartOfDay();
-            LocalDateTime endOfDay = startOfDay.plusDays(1);
+            ZonedDateTime startOfDay = requestDTO.getStartTime().toLocalDate().atStartOfDay(requestDTO.getStartTime().getZone());
+            ZonedDateTime endOfDay = startOfDay.plusDays(1);
 
             List<BookingStatus> activeStatuses = Arrays.asList(
                     BookingStatus.REQUESTED,
@@ -102,21 +89,54 @@ public class BookingServiceImpl implements BookingService {
             }
         }
 
-        Booking booking = Booking.builder()
+        Booking.BookingBuilder bookingBuilder = Booking.builder()
                 .customer(customer)
                 .pet(pet)
                 .service(service)
-                .bookingNumber("BOOK-" + UUID.randomUUID().toString())
+                .bookingNumber("BOOK-" + UUID.randomUUID())
                 .startTime(requestDTO.getStartTime())
                 .endTime(requestDTO.getEndTime())
-                .totalPrice(service.getBasePrice().add(BigDecimal.valueOf(deliveryFee))) // Add delivery fee
-                .status(BookingStatus.REQUESTED)
-                .createdAt(LocalDateTime.now())
-                .build();
+                .status(BookingStatus.AWAITING_PAYMENT)
+                .createdAt(ZonedDateTime.now());
 
+        BigDecimal totalPrice;
+
+        if (requestDTO.getDeliveryType() == com.enigmacamp.pawtner.constant.DeliveryType.PICKUP) {
+            Business pickupBusiness = businessRepository.findById(requestDTO.getPickupBusinessId())
+                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Pickup business not found"));
+            
+            // Ensure the service belongs to the selected pickup business
+            if (!service.getBusiness().getId().equals(pickupBusiness.getId())) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Service does not belong to the selected pickup business.");
+            }
+
+            bookingBuilder.deliveryType(com.enigmacamp.pawtner.constant.DeliveryType.PICKUP);
+            bookingBuilder.pickupBusiness(pickupBusiness);
+            totalPrice = service.getBasePrice();
+        } else { // Default to DELIVERY
+            if (requestDTO.getDeliveryLatitude() == null || requestDTO.getDeliveryLongitude() == null) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Latitude and longitude are required for delivery.");
+            }
+            Point userLocation = geometryFactory.createPoint(new Coordinate(requestDTO.getDeliveryLongitude(), requestDTO.getDeliveryLatitude()));
+            userLocation.setSRID(4326);
+            Double distanceInMeters = businessRepository.calculateDistanceToBusiness(service.getBusiness().getId(), userLocation);
+            double deliveryFee = calculateDeliveryFee(distanceInMeters);
+            BigDecimal roundedDeliveryFee = BigDecimal.valueOf(deliveryFee).setScale(2, BigDecimal.ROUND_HALF_UP);
+
+            MathContext mc = new MathContext(12, RoundingMode.HALF_UP);
+            totalPrice = service.getBasePrice().add(roundedDeliveryFee, mc);
+
+            bookingBuilder.deliveryType(com.enigmacamp.pawtner.constant.DeliveryType.DELIVERY);
+            bookingBuilder.deliveryLocationType(requestDTO.getDeliveryLocationType());
+            bookingBuilder.deliveryLatitude(requestDTO.getDeliveryLatitude());
+            bookingBuilder.deliveryLongitude(requestDTO.getDeliveryLongitude());
+            bookingBuilder.deliveryAddressDetail(requestDTO.getDeliveryAddressDetail());
+        }
+
+        bookingBuilder.totalPrice(totalPrice);
+        Booking booking = bookingBuilder.build();
         bookingRepository.save(booking);
 
-        // Create payment
         Payment payment = Payment.builder()
                 .booking(booking)
                 .amount(booking.getTotalPrice())
@@ -124,18 +144,17 @@ public class BookingServiceImpl implements BookingService {
                 .build();
         payment = paymentService.createPayment(payment);
 
-        booking.setSnapToken(payment.getSnapToken());
         booking.setPayment(payment);
         bookingRepository.save(booking);
 
-        return toBookingResponseDTO(booking);
+        return BookingMapper.mapToResponse(booking);
     }
 
     @Override
     public BookingResponseDTO getBookingById(UUID id) {
         Booking booking = bookingRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Booking not found"));
-        return toBookingResponseDTO(booking);
+        return BookingMapper.mapToResponse(booking);
     }
 
     @Override
@@ -148,7 +167,7 @@ public class BookingServiceImpl implements BookingService {
         } else if (user.getRole().name().equals("BUSINESS_OWNER")) {
             return getAllBookingsByBusinessOwner(user.getEmail(), pageable);
         } else if (user.getRole().name().equals("ADMIN")) {
-            return bookingRepository.findAll(pageable).map(this::toBookingResponseDTO);
+            return bookingRepository.findAll(pageable).map(BookingMapper::mapToResponse);
         } else {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Access denied");
         }
@@ -158,7 +177,7 @@ public class BookingServiceImpl implements BookingService {
     public Page<BookingResponseDTO> getAllBookingsByCustomer(String customerEmail, Pageable pageable) {
         User customer = userRepository.findByEmail(customerEmail)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Customer not found"));
-        return bookingRepository.findByCustomer(customer, pageable).map(this::toBookingResponseDTO);
+        return bookingRepository.findByCustomer(customer, pageable).map(BookingMapper::mapToResponse);
     }
 
     @Override
@@ -179,15 +198,17 @@ public class BookingServiceImpl implements BookingService {
             return Page.empty(pageable);
         }
 
-        return bookingRepository.findByServiceIn(services, pageable).map(this::toBookingResponseDTO);
+        return bookingRepository.findByServiceIn(services, pageable).map(BookingMapper::mapToResponse);
     }
 
     @Override
     @Transactional(readOnly = true)
-    public Page<BookingResponseDTO> getAllBookingsByBusiness(UUID uuid, Pageable pageable) {
-        Business business = businessService.getBusinessByIdForInternal(uuid);
-        Page<Booking> bookings = bookingRepository.findAllByService_Business(business, pageable);
-        return bookings.map(this::toBookingResponseDTO);
+    public Page<BookingResponseDTO> getAllBookingsByBusiness(UUID uuid, String bookingNumber, String nameCustomer, String emailCustomer, BookingStatus bookingStatus,Pageable pageable) {
+        businessService.getBusinessByIdForInternal(uuid);
+        Specification<Booking> spec = BookingSpecification.getSpecificationByBusiness(uuid, bookingNumber, nameCustomer, emailCustomer, bookingStatus);
+
+        Page<Booking> bookings = bookingRepository.findAll(spec, pageable);
+        return bookings.map(BookingMapper::mapToResponse);
     }
 
     @Override
@@ -196,7 +217,7 @@ public class BookingServiceImpl implements BookingService {
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Booking not found"));
         booking.setStatus(BookingStatus.valueOf(status.toUpperCase()));
         bookingRepository.save(booking);
-        return toBookingResponseDTO(booking);
+        return BookingMapper.mapToResponse(booking);
     }
 
     @Override
@@ -216,6 +237,28 @@ public class BookingServiceImpl implements BookingService {
     }
 
     @Override
+    public BookingPriceCalculationResponseDTO calculateBookingPrice(UUID serviceId, Double latitude, Double longitude) {
+        com.enigmacamp.pawtner.entity.Service service = serviceRepository.findById(serviceId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Service not found"));
+
+        Point userLocation = geometryFactory.createPoint(new Coordinate(longitude, latitude));
+        userLocation.setSRID(4326); // Set SRID to 4326
+        Double distanceInMeters = businessRepository.calculateDistanceToBusiness(service.getBusiness().getId(), userLocation);
+        double deliveryFee = calculateDeliveryFee(distanceInMeters);
+        BigDecimal roundedDeliveryFee = BigDecimal.valueOf(deliveryFee).setScale(2, BigDecimal.ROUND_HALF_UP);
+
+        MathContext mc = new MathContext(18, RoundingMode.HALF_UP); // Use 18 integer digits for consistency
+        BigDecimal totalPrice = service.getBasePrice().add(roundedDeliveryFee, mc);
+
+        return BookingPriceCalculationResponseDTO.builder()
+                .serviceId(serviceId)
+                .basePrice(service.getBasePrice())
+                .deliveryFee(roundedDeliveryFee)
+                .totalPrice(totalPrice)
+                .build();
+    }
+
+    @Override
     public double calculateDeliveryFee(double distanceInMeters) {
         // Example: Base fee + cost per kilometer
         double baseFee = 10000; // Rp 10.000
@@ -230,102 +273,44 @@ public class BookingServiceImpl implements BookingService {
     @Override
     @Transactional
     public void handleWebhook(Map<String, Object> payload) {
-        try {
-            String bookingNumber = (String) payload.get("order_id");
-            JSONObject transactionResult = midtransCoreApi.checkTransaction(bookingNumber);
+        String bookingNumber = (String) payload.get("order_id");
+        String transactionStatus = (String) payload.get("transaction_status");
+        String fraudStatus = (String) payload.get("fraud_status");
 
-            String transactionStatus = (String) transactionResult.get("transaction_status");
-            String fraudStatus = (String) transactionResult.get("fraud_status");
+        Booking booking = bookingRepository.findByBookingNumber(bookingNumber)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Booking not found"));
 
-            Booking booking = bookingRepository.findByBookingNumber(bookingNumber)
-                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Booking not found"));
+        BookingStatus oldStatus = booking.getStatus();
+        BookingStatus newStatus = oldStatus;
 
-            BookingStatus oldStatus = booking.getStatus();
-            BookingStatus newStatus = oldStatus;
-
-            if (transactionStatus.equals("capture")) {
-                if (fraudStatus.equals("accept")) {
-                    newStatus = BookingStatus.CONFIRMED;
-                }
-            } else if (transactionStatus.equals("settlement")) {
-                newStatus = BookingStatus.CONFIRMED;
-            } else if (transactionStatus.equals("cancel") || transactionStatus.equals("deny") || transactionStatus.equals("expire")) {
-                newStatus = BookingStatus.CANCELLED;
-            } else if (transactionStatus.equals("pending")) {
-                newStatus = BookingStatus.PENDING_PAYMENT;
+        if (transactionStatus.equals("capture")) {
+            if (fraudStatus.equals("accept")) {
+                newStatus = BookingStatus.REQUESTED;
             }
-
-            if (oldStatus != newStatus) {
-                booking.setStatus(newStatus);
-                bookingRepository.save(booking);
-
-                // Update payment status
-                Payment payment = booking.getPayment();
-                if (payment != null) {
-                    if (newStatus == BookingStatus.CONFIRMED) {
-                        payment.setStatus(PaymentStatus.SUCCESS);
-                    } else if (newStatus == BookingStatus.CANCELLED) {
-                        payment.setStatus(PaymentStatus.FAILED);
-                    } else if (newStatus == BookingStatus.PENDING_PAYMENT) {
-                        payment.setStatus(PaymentStatus.PENDING);
-                    }
-                    paymentRepository.save(payment);
-                }
-
-                // Send notification to customer
-                notificationService.sendNotification(
-                        booking.getCustomer(),
-                        "Booking Status Updated",
-                        "Your booking " + booking.getBookingNumber() + " is now " + newStatus.name(),
-                        Collections.singletonMap("bookingId", booking.getId().toString())
-                );
-            }
-        } catch (MidtransError e) {
-            throw new RuntimeException(e.getMessage(), e);
+        } else if (transactionStatus.equals("settlement")) {
+            newStatus = BookingStatus.REQUESTED;
+        } else if (transactionStatus.equals("cancel") || transactionStatus.equals("deny") || transactionStatus.equals("expire")) {
+            newStatus = BookingStatus.CANCELLED;
+        } else if (transactionStatus.equals("pending")) {
+            newStatus = BookingStatus.PENDING_PAYMENT;
         }
-    }
 
-    private BookingResponseDTO toBookingResponseDTO(Booking booking) {
-        return BookingResponseDTO.builder()
-                .id(booking.getId())
-                .customer(mapToUserResponseDTO(booking.getCustomer()))
-                .pet(mapToPetResponseDTO(booking.getPet()))
-                .petName(booking.getPet().getName())
-                .serviceId(booking.getService().getId())
-                .serviceName(booking.getService().getName())
-                .businessId(booking.getService().getBusiness().getId())
-                .businessName(booking.getService().getBusiness().getName())
-                .bookingNumber(booking.getBookingNumber())
-                .startTime(booking.getStartTime())
-                .endTime(booking.getEndTime())
-                .totalPrice(booking.getTotalPrice().doubleValue())
-                .status(booking.getStatus().name())
-                .snapToken(booking.getSnapToken())
-                .createdAt(LocalDateTime.now())
-                .build();
-    }
+        if (oldStatus != newStatus) {
+            booking.setStatus(newStatus);
+            bookingRepository.save(booking);
 
-    private UserResponseDTO mapToUserResponseDTO(User user) {
-        return UserResponseDTO.builder()
-                .id(user.getId().toString())
-                .name(user.getName())
-                .email(user.getEmail())
-                .address(user.getAddress())
-                .phone(user.getPhoneNumber())
-                .imageUrl(user.getImageUrl())
-                .build();
-    }
-
-    private PetResponseDTO mapToPetResponseDTO(Pet pet) {
-        return PetResponseDTO.builder()
-                .id(pet.getId())
-                .name(pet.getName())
-                .species(pet.getSpecies())
-                .breed(pet.getBreed())
-                .age(pet.getAge())
-                .imageUrl(pet.getImageUrl())
-                .notes(pet.getNotes())
-                .ownerName(pet.getOwner().getName())
-                .build();
+            // Update payment status
+            Payment payment = booking.getPayment();
+            if (payment != null) {
+                if (newStatus == BookingStatus.CONFIRMED) {
+                    payment.setStatus(PaymentStatus.SUCCESS);
+                } else if (newStatus == BookingStatus.CANCELLED) {
+                    payment.setStatus(PaymentStatus.FAILED);
+                } else if (newStatus == BookingStatus.PENDING_PAYMENT) {
+                    payment.setStatus(PaymentStatus.PENDING);
+                }
+                paymentRepository.save(payment);
+            }
+        }
     }
 }

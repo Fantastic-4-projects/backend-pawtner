@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Pawtner Business Registration Status Update</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            color: #333;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        .header {
+            background-color: #f8f8f8;
+            padding: 20px;
+            text-align: center;
+        }
+        .header img {
+            height: 100px;
+        }
+        .content {
+            padding: 30px;
+            line-height: 1.6;
+        }
+        .status-box {
+            padding: 15px;
+            border-radius: 5px;
+            margin: 20px 0;
+            text-align: center;
+            font-size: 18px;
+            font-weight: bold;
+        }
+        .status-approved {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .status-rejected {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .status-pending {
+            background-color: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeeba;
+        }
+        .reason-box {
+            background-color: #f0f0f0;
+            padding: 15px;
+            border-radius: 5px;
+            border-left: 5px solid #ccc;
+            margin-top: 15px;
+        }
+        .footer {
+            padding: 20px;
+            background-color: #f8f8f8;
+            font-size: 12px;
+            color: #888;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="header">
+        <img src="https://res.cloudinary.com/dh8gmlzth/image/upload/v1750928559/Pawtner_aeaa0x.png" alt="Pawtner Logo">
+    </div>
+    <div class="content">
+        <h2 th:text="'Hello, ' + ${ownerName} + '!'">Hello, Pawtner!</h2>
+        <p>
+            There's an update regarding the registration status of your business,
+            <strong th:text="${businessName}">Your Business Name</strong>, on Pawtner.
+        </p>
+
+        <!-- APPROVED -->
+        <div th:if="${isApproved == true}">
+            <div class="status-box status-approved">
+                Congratulations! Your Business Registration Has Been Approved.
+            </div>
+            <p>
+                Your business is now active and visible to customers. You can start adding your products and services.
+            </p>
+        </div>
+
+        <!-- REJECTED -->
+        <div th:if="${isApproved == false}">
+            <div class="status-box status-rejected">
+                We're Sorry, Your Business Registration Has Been Rejected.
+            </div>
+            <p>
+                After reviewing your submission, we found some issues that need to be addressed. Please update your business information as per the notes below and resubmit your application.
+            </p>
+            <h4>Admin Notes:</h4>
+            <div class="reason-box">
+                <p th:text="${reason}">This is the reason provided by the admin.</p>
+            </div>
+        </div>
+
+        <!-- PENDING -->
+        <div th:if="${isApproved == null}">
+            <div class="status-box status-pending">
+                Your Business Registration is Still Under Review.
+            </div>
+            <p>
+                Our team is currently reviewing your business submission. We will notify you once a decision has been made.
+            </p>
+        </div>
+
+        <br>
+        <p>If you have any further questions, please don't hesitate to contact our support team.</p>
+    </div>
+    <div class="footer">
+        This email was automatically sent by the Pawtner system.
+    </div>
+</div>
+</body>
+</html>

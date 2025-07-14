@@ -1,17 +1,21 @@
 package com.enigmacamp.pawtner.service.impl;
 
+import com.enigmacamp.pawtner.constant.ServiceCategory;
 import com.enigmacamp.pawtner.dto.request.ServiceRequestDTO;
 import com.enigmacamp.pawtner.dto.response.ServiceResponseDTO;
 import com.enigmacamp.pawtner.entity.Business;
-import com.enigmacamp.pawtner.entity.Product;
 import com.enigmacamp.pawtner.entity.Service;
+import com.enigmacamp.pawtner.mapper.ServiceMapper;
 import com.enigmacamp.pawtner.repository.ServiceRepository;
 import com.enigmacamp.pawtner.service.BusinessService;
 import com.enigmacamp.pawtner.service.ImageUploadService;
 import com.enigmacamp.pawtner.service.ServiceService;
-import com.enigmacamp.pawtner.specification.ProductSpecification;
 import com.enigmacamp.pawtner.specification.ServiceSpecification;
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.locationtech.jts.geom.Coordinate;
+import org.locationtech.jts.geom.GeometryFactory;
+import org.locationtech.jts.geom.Point;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
@@ -24,6 +28,7 @@ import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.UUID;
 
+@Slf4j
 @Component
 @AllArgsConstructor
 public class ServiceServiceImpl implements ServiceService {
@@ -31,6 +36,7 @@ public class ServiceServiceImpl implements ServiceService {
     private final ServiceRepository serviceRepository;
     private final BusinessService businessService;
     private final ImageUploadService imageUploadService;
+    private final GeometryFactory geometryFactory = new GeometryFactory();
 
     @Override
     public ServiceResponseDTO createService(ServiceRequestDTO serviceRequestDTO) {
@@ -48,36 +54,47 @@ public class ServiceServiceImpl implements ServiceService {
                 .business(business)
                 .category(serviceRequestDTO.getCategory())
                 .name(serviceRequestDTO.getName())
+                .description(serviceRequestDTO.getDescription())
                 .basePrice(serviceRequestDTO.getBasePrice())
                 .capacityPerDay(serviceRequestDTO.getCapacityPerDay())
                 .imageUrl(imageUrl)
                 .isActive(true)
                 .build();
         serviceRepository.save(service);
-        return mapToResponseDTO(service);
-    }
-
-    @Override
-    public ServiceResponseDTO getServiceById(UUID id) {
-        Service service = serviceRepository.findById(id)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Service not found"));
-        return mapToResponseDTO(service);
-    }
-
-    @Override
-    public Page<ServiceResponseDTO> getAllServices(Pageable pageable, String name, BigDecimal minPrice, BigDecimal maxPrice) {
-        Specification<Service> spec = ServiceSpecification.getSpecification(name, minPrice, maxPrice);
-
-        Page<Service> services = serviceRepository.findAll(spec, pageable);
-        return services.map(this::mapToResponseDTO);
+        return ServiceMapper.mapToResponse(service);
     }
 
     @Override
     @Transactional(readOnly = true)
-    public Page<ServiceResponseDTO> getAllServicesByBusiness(UUID businessId, Pageable pageable) {
-        Business business = businessService.getBusinessByIdForInternal(businessId);
-        Page<Service> services = serviceRepository.findAllByBusiness(business, pageable);
-        return services.map(this::mapToResponseDTO);
+    public ServiceResponseDTO getServiceById(UUID id) {
+        Service service = serviceRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Service not found"));
+        return ServiceMapper.mapToResponse(service);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Page<ServiceResponseDTO> getAllServices(Pageable pageable, String name, BigDecimal minPrice, BigDecimal maxPrice, Double userLat, Double userLon, Double radiusKm, UUID businessId) {
+        Point userLocation = null;
+        Double radiusInMeters = null;
+
+        if (userLat != null && userLon != null) {
+            userLocation = geometryFactory.createPoint(new Coordinate(userLon, userLat));
+            radiusInMeters = (radiusKm != null ? radiusKm : 15.0) * 1000.0;
+        }
+        Specification<Service> spec = ServiceSpecification.getSpecification(name, minPrice, maxPrice, userLocation, radiusInMeters, businessId);
+
+        Page<Service> services = serviceRepository.findAll(spec, pageable);
+        return services.map(ServiceMapper::mapToResponse);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Page<ServiceResponseDTO> getAllServicesByBusiness(UUID businessId, String name, ServiceCategory serviceCategory, Pageable pageable) {
+        businessService.getBusinessByIdForInternal(businessId);
+        Specification<Service> spec = ServiceSpecification.getSpecificationByBusiness(businessId, name, serviceCategory);
+        Page<Service> services = serviceRepository.findAll(spec, pageable);
+        return services.map(ServiceMapper::mapToResponse);
     }
 
     @Override
@@ -96,12 +113,13 @@ public class ServiceServiceImpl implements ServiceService {
 
         existingService.setCategory(serviceRequestDTO.getCategory());
         existingService.setName(serviceRequestDTO.getName());
+        existingService.setDescription(serviceRequestDTO.getDescription());
         existingService.setBasePrice(serviceRequestDTO.getBasePrice());
         existingService.setCapacityPerDay(serviceRequestDTO.getCapacityPerDay());
         existingService.setImageUrl(imageUrl);
 
         serviceRepository.save(existingService);
-        return mapToResponseDTO(existingService);
+        return ServiceMapper.mapToResponse(existingService);
     }
 
     @Override
@@ -110,19 +128,6 @@ public class ServiceServiceImpl implements ServiceService {
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Service not found"));
         service.setIsActive(false);
         serviceRepository.save(service);
-    }
-
-    private ServiceResponseDTO mapToResponseDTO(Service service) {
-        return ServiceResponseDTO.builder()
-                .id(service.getId())
-                .businessId(service.getBusiness().getId())
-                .category(service.getCategory())
-                .name(service.getName())
-                .basePrice(service.getBasePrice())
-                .capacityPerDay(service.getCapacityPerDay())
-                .imageUrl(service.getImageUrl())
-                .isActive(service.getIsActive())
-                .build();
     }
 
     @Override

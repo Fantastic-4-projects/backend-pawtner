@@ -6,6 +6,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
 import java.util.UUID;
 
 @Data
@@ -22,4 +23,6 @@ public class PetResponseDTO {
     private String imageUrl;
     private String notes;
     private String ownerName;
+    private Boolean isActive;
+    private List<PrescriptionResponseDTO> prescriptions;
 }

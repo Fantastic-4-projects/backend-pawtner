@@ -1,6 +1,7 @@
 package com.enigmacamp.pawtner.service;
 
 import com.enigmacamp.pawtner.dto.request.ChangePasswordRequestDTO;
+import com.enigmacamp.pawtner.dto.request.UpdateUserStatusRequestDTO;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetailsService;
 
@@ -19,7 +20,8 @@ public interface UserService extends UserDetailsService {
     UserResponseDTO getUserById(String id);
     UserResponseDTO updateUser(UserRequestDTO userRequestDTO, MultipartFile profileImage);
     List<UserResponseDTO> getAllUser(Authentication authentication);
-    UserResponseDTO updateUserStatus(UUID id, String action, Boolean value);
+    List<User> getAllUsers();
+    UserResponseDTO updateUserStatus(UUID id, UpdateUserStatusRequestDTO requestDTO);
     void deleteUser(String id);
     void changePassword(ChangePasswordRequestDTO requestDTO, Authentication authentication);
 }

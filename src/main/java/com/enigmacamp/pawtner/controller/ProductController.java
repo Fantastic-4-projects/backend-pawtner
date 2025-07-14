@@ -1,5 +1,6 @@
 package com.enigmacamp.pawtner.controller;
 
+import com.enigmacamp.pawtner.constant.ProductCategory;
 import com.enigmacamp.pawtner.dto.request.ProductRequestDTO;
 import com.enigmacamp.pawtner.dto.response.CommonResponse;
 import com.enigmacamp.pawtner.dto.response.ProductResponseDTO;
@@ -47,11 +48,15 @@ public class ProductController {
             @RequestParam(name = "direction", defaultValue = "asc") String direction,
             @RequestParam(name = "name", required = false) String name,
             @RequestParam(name = "minPrice", required = false) BigDecimal minPrice,
-            @RequestParam(name = "maxPrice", required = false) BigDecimal maxPrice
+            @RequestParam(name = "maxPrice", required = false) BigDecimal maxPrice,
+            @RequestParam(name = "userLat", required = false) Double userLat,
+            @RequestParam(name = "userLon", required = false) Double userLon,
+            @RequestParam(name = "radiusKm", defaultValue = "15") Double radiusKm,
+            @RequestParam(name = "businessId", required = false) UUID businessId
     ) {
         Sort.Direction sortDirection = Sort.Direction.fromString(direction);
         Pageable pageable = PageRequest.of(page, size, Sort.by(sortDirection, sortBy));
-        Page<ProductResponseDTO> responseDTOPage = productService.getAllProducts(pageable, name, minPrice, maxPrice);
+        Page<ProductResponseDTO> responseDTOPage = productService.getAllProducts(pageable, name, minPrice, maxPrice, userLat, userLon, radiusKm, businessId);
 
         return ResponseUtil.createResponse(
                 HttpStatus.OK,
@@ -61,9 +66,20 @@ public class ProductController {
     }
 
     @GetMapping("/my-products/{businessId}")
-    public ResponseEntity<CommonResponse<Page<ProductResponseDTO>>> getProductsByBusinessId(@PathVariable UUID businessId, Pageable pageable) {
-        Page<ProductResponseDTO> responseDTOPage = productService.getProductsByBusiness(businessId, pageable);
-        return ResponseUtil.createResponse(HttpStatus.OK, "Successfully fetched all products", responseDTOPage);
+    public ResponseEntity<CommonResponse<Page<ProductResponseDTO>>> getProductsByBusinessId(
+            @PathVariable UUID businessId,
+            @RequestParam(name = "page", defaultValue = "0") int page,
+            @RequestParam(name = "size", defaultValue = "10") int size,
+            @RequestParam(name = "sortBy", defaultValue = "name") String sortBy,
+            @RequestParam(name = "direction", defaultValue = "asc") String direction,
+            @RequestParam(required = false) String name,
+            @RequestParam(required = false) ProductCategory category,
+            @RequestParam(required = false) Integer stock
+    ) {
+        Sort.Direction sortDirection = Sort.Direction.fromString(direction);
+        Pageable pageable = PageRequest.of(page, size, Sort.by(sortDirection, sortBy));
+        Page<ProductResponseDTO> responseDTOPage = productService.getProductsByBusiness(businessId, name, category, stock, pageable);
+        return ResponseUtil.createResponse(HttpStatus.OK, "Successfully fetched products for business", responseDTOPage);
     }
 
     @PutMapping("/{id}")

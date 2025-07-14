@@ -1,17 +1,19 @@
 package com.enigmacamp.pawtner.service.impl;
 
-import com.enigmacamp.pawtner.constant.PetGender;
 import com.enigmacamp.pawtner.dto.request.PetRequestDTO;
 import com.enigmacamp.pawtner.dto.response.PetResponseDTO;
 import com.enigmacamp.pawtner.entity.Pet;
 import com.enigmacamp.pawtner.entity.User;
+import com.enigmacamp.pawtner.mapper.PetMapper;
 import com.enigmacamp.pawtner.repository.PetRepository;
 import com.enigmacamp.pawtner.service.ImageUploadService;
 import com.enigmacamp.pawtner.service.PetService;
 import com.enigmacamp.pawtner.service.UserService;
+import com.enigmacamp.pawtner.specification.PetSpecification;
 import lombok.AllArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -53,13 +55,14 @@ public class PetServiceImpl implements PetService {
                 .notes(petRequestDTO.getNotes())
                 .build();
         petRepository.save(pet);
-        return mapToResponseDTO(pet);
+        return PetMapper.mapToResponse(pet);
     }
 
     @Override
+    @Transactional(readOnly = true)
     public PetResponseDTO getPetById(UUID id) {
         Pet pet = getPetEntityById(id);
-        return mapToResponseDTO(pet);
+        return PetMapper.mapToResponse(pet);
     }
 
     @Override
@@ -71,8 +74,9 @@ public class PetServiceImpl implements PetService {
     @Override
     public Page<PetResponseDTO> getAllPetsByOwner(String ownerEmail, Pageable pageable) {
         User owner = userService.getUserByEmailForInternal(ownerEmail);
-        Page<Pet> pets = petRepository.findByOwner(owner, pageable);
-        return pets.map(this::mapToResponseDTO);
+        Specification<Pet> spec = PetSpecification.getSpecification(owner, true);
+        Page<Pet> pets = petRepository.findAll(spec, pageable);
+        return pets.map(PetMapper::mapToResponse);
     }
 
     @Override
@@ -86,7 +90,9 @@ public class PetServiceImpl implements PetService {
         }
 
         String imageUrl = existingPet.getImageUrl();
-        if (petRequestDTO.getImage() != null && !petRequestDTO.getImage().isEmpty()) {
+        if (Boolean.TRUE.equals(petRequestDTO.getDeleteImage())) {
+            imageUrl = null;
+        } else if (petRequestDTO.getImage() != null && !petRequestDTO.getImage().isEmpty()) {
             try {
                 imageUrl = imageUploadService.upload(petRequestDTO.getImage());
             } catch (IOException e) {
@@ -103,7 +109,7 @@ public class PetServiceImpl implements PetService {
         existingPet.setNotes(petRequestDTO.getNotes());
 
         petRepository.save(existingPet);
-        return mapToResponseDTO(existingPet);
+        return PetMapper.mapToResponse(existingPet);
     }
 
     @Override
@@ -115,20 +121,7 @@ public class PetServiceImpl implements PetService {
         if (!pet.getOwner().getId().equals(owner.getId())) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Pet does not belong to the authenticated user");
         }
-        petRepository.delete(pet);
-    }
-
-    private PetResponseDTO mapToResponseDTO(Pet pet) {
-        return PetResponseDTO.builder()
-                .id(pet.getId())
-                .name(pet.getName())
-                .species(pet.getSpecies())
-                .breed(pet.getBreed())
-                .age(pet.getAge())
-                .gender(pet.getGender())
-                .imageUrl(pet.getImageUrl())
-                .notes(pet.getNotes())
-                .ownerName(pet.getOwner().getName())
-                .build();
+        pet.setIsActive(false);
+        petRepository.save(pet);
     }
 }

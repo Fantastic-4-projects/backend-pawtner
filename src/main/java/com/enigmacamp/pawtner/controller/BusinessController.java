@@ -1,11 +1,11 @@
 package com.enigmacamp.pawtner.controller;
 
+import com.enigmacamp.pawtner.dto.request.ApproveBusinessRequestDTO;
 import com.enigmacamp.pawtner.dto.request.BusinessRequestDTO;
 import com.enigmacamp.pawtner.dto.response.BusinessResponseDTO;
 import com.enigmacamp.pawtner.dto.response.CommonResponse;
 import com.enigmacamp.pawtner.service.BusinessService;
 import com.enigmacamp.pawtner.util.ResponseUtil;
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -14,7 +14,6 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 
 import org.springframework.web.multipart.MultipartFile;
@@ -33,11 +32,11 @@ public class BusinessController {
             @RequestPart(required = false, name = "businessImage") MultipartFile businessImage,
             @RequestPart(required = false, name = "certificateImage") MultipartFile certificateImage
     ) {
-        businessService.registerBusiness(businessRequestDTO, businessImage, certificateImage);
+        BusinessResponseDTO businessResponseDTO = businessService.registerBusiness(businessRequestDTO, businessImage, certificateImage);
         return ResponseUtil.createResponse(
                 HttpStatus.CREATED,
                 "Profil bisnis berhasil dibuat",
-                null
+                businessResponseDTO
         );
     }
 
@@ -67,12 +66,11 @@ public class BusinessController {
     @PatchMapping("/{id}")
     @PreAuthorize("hasAuthority('ADMIN')")
     public ResponseEntity<CommonResponse<BusinessResponseDTO>> approveBusiness(
-            @PathVariable UUID id, @RequestBody Map<String, Boolean> body
+            @PathVariable UUID id, @RequestBody ApproveBusinessRequestDTO approve
         ){
-        Boolean approve = body.get("approve");
         return ResponseUtil.createResponse(
                 HttpStatus.OK,
-                "Berhasil mengganti status bisnis.",
+                "Bisnis berhasil diubah",
                 businessService.approveBusiness(id, approve)
         );
     }
@@ -126,7 +124,20 @@ public class BusinessController {
         return ResponseUtil.createResponse(
                 HttpStatus.OK,
                 "Bisnis terdekat berhasil didapatkan",
-                businessService.findNearbyBusinesses(lat, lon, radiusKm)
+                businessService.findNearbyBusinesses(lat, lon, radiusKm, null, null)
+        );
+    }
+
+    @GetMapping("/nearby/emergency")
+    public ResponseEntity<CommonResponse<List<BusinessResponseDTO>>> getNearbyEmergencyBusinesses(
+            @RequestParam double lat,
+            @RequestParam double lon,
+            @RequestParam(defaultValue = "15") double radiusKm
+    ) {
+        return ResponseUtil.createResponse(
+                HttpStatus.OK,
+                "Bisnis darurat terdekat berhasil didapatkan",
+                businessService.findNearbyBusinesses(lat, lon, radiusKm, true, "ACCEPTING_PATIENTS")
         );
     }
 }

@@ -289,21 +289,8 @@ CREATE TABLE reviews (
 
 ### 5.3. Emergency Assistance Workflow
 1.  **User Action**: The user taps the "Emergency" button in the app.
-2.  **Backend Logic**: The app sends the user's current GPS coordinates to the backend. The backend executes a query to find the most suitable help:
-    ```sql
-    SELECT name, emergency_phone, address, latitude, longitude
-    FROM businesses
-    WHERE
-        business_type = 'VETERINARY_CLINIC' -- Must be a clinic
-        AND has_emergency_services = TRUE     -- Must be equipped for emergencies
-        AND is_verified = TRUE                -- Must be a trusted partner
-        AND status_realtime != 'Closed'       -- Must be currently open
-    ORDER BY
-        -- A function to calculate distance from user's location
-        distance(latitude, longitude, user_lat, user_lon) ASC
-    LIMIT 5;
-    ```
-3.  **Result**: The frontend receives a list of the 5 closest, open, and verified emergency clinics, allowing the user to make an informed call immediately.
+2.  **Backend Logic**: The app sends the user's current GPS coordinates to the backend. The backend executes a query to find the most suitable help by calling the `/api/business/nearby/emergency` endpoint.
+3.  **Result**: The frontend receives a list of the closest, open, and verified emergency clinics, allowing the user to make an informed call immediately.
 
 ## 6. Technical Specifications
 
@@ -318,7 +305,7 @@ CREATE TABLE reviews (
 
 ### 6.2. High-Level API Endpoint Design
 - `AuthController`: `/api/auth/register`, `/api/auth/login`
-- `BusinessController`: `GET /api/businesses`, `GET /api/businesses/emergency`
+- `BusinessController`: `GET /api/businesses`, `GET /api/businesses/nearby`, `GET /api/businesses/nearby/emergency`
 - `ProductController`: `GET /api/businesses/{id}/products`
 - `CartController`: `GET /api/cart`, `POST /api/cart/items`
 - `OrderController`: `POST /api/orders/checkout`

@@ -1,6 +1,8 @@
 package com.enigmacamp.pawtner.entity;
 
 import com.enigmacamp.pawtner.constant.BookingStatus;
+import com.enigmacamp.pawtner.constant.DeliveryLocationType;
+import com.enigmacamp.pawtner.constant.DeliveryType;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
 import lombok.AllArgsConstructor;
@@ -9,7 +11,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 import java.util.UUID;
 
 @Data
@@ -42,14 +44,14 @@ public class Booking {
     private String bookingNumber;
 
     @NotNull(message = "Start time is required")
-    private LocalDateTime startTime;
+    private ZonedDateTime startTime;
 
     @NotNull(message = "End time is required")
-    private LocalDateTime endTime;
+    private ZonedDateTime endTime;
 
     @NotNull(message = "Total price is required")
     @DecimalMin(value = "0.0", inclusive = false)
-    @Digits(integer = 10, fraction = 2)
+    @Digits(integer = 18, fraction = 2)
     private BigDecimal totalPrice;
 
     @Builder.Default
@@ -58,21 +60,34 @@ public class Booking {
     @Column(nullable = false)
     private BookingStatus status = BookingStatus.REQUESTED;
 
-    @Column(name = "snap_token")
-    private String snapToken;
-
     @OneToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "payment_id", referencedColumnName = "id")
     private Payment payment;
 
+    @Enumerated(EnumType.STRING)
+    private DeliveryType deliveryType;
+
+    @Enumerated(EnumType.STRING)
+    private DeliveryLocationType deliveryLocationType;
+
+    private Double deliveryLatitude;
+
+    private Double deliveryLongitude;
+
+    private String deliveryAddressDetail;
+
+    @ManyToOne
+    @JoinColumn(name = "pickup_business_id", columnDefinition = "uuid")
+    private Business pickupBusiness;
+
     @Builder.Default
     @Column(updatable = false)
-    private LocalDateTime createdAt = LocalDateTime.now();
+    private ZonedDateTime createdAt = ZonedDateTime.now();
 
     @PrePersist
     protected void onCreate() {
         if (createdAt == null) {
-            createdAt = LocalDateTime.now();
+            createdAt = ZonedDateTime.now();
         }
     }
 }

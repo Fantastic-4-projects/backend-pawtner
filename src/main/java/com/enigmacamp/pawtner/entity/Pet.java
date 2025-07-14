@@ -12,6 +12,7 @@ import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.UUID;
 
 @Data
@@ -29,6 +30,10 @@ public class Pet {
     @ManyToOne
     @JoinColumn(name = "owner_id", nullable = false)
     private User owner;
+
+    @OneToMany(mappedBy = "pet", fetch = FetchType.LAZY)
+    @OrderBy("issueDate DESC")
+    private List<Prescription> prescriptions;
 
     @NotBlank(message = "Name is required")
     @Size(max = 255)
@@ -54,6 +59,9 @@ public class Pet {
 
     @Size(max = 2000)
     private String notes;
+
+    @Builder.Default
+    private Boolean isActive = true;
 
     @Builder.Default
     @Column(updatable = false)

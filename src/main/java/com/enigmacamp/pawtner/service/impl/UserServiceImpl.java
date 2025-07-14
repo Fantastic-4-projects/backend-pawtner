@@ -1,10 +1,13 @@
 package com.enigmacamp.pawtner.service.impl;
 
 import com.enigmacamp.pawtner.dto.request.ChangePasswordRequestDTO;
+import com.enigmacamp.pawtner.dto.request.UpdateUserStatusRequestDTO;
 import com.enigmacamp.pawtner.dto.request.UserRequestDTO;
 import com.enigmacamp.pawtner.dto.response.UserResponseDTO;
 import com.enigmacamp.pawtner.entity.User;
+import com.enigmacamp.pawtner.mapper.UserMapper;
 import com.enigmacamp.pawtner.repository.UserRepository;
+import com.enigmacamp.pawtner.service.EmailService;
 import com.enigmacamp.pawtner.service.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -35,6 +38,7 @@ public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
     private final ImageUploadService imageUploadService;
     private final PasswordEncoder passwordEncoder;
+    private final EmailService emailService;
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
@@ -53,7 +57,7 @@ public class UserServiceImpl implements UserService {
     public UserResponseDTO getUserById(String id) {
         User user = userRepository.findById(UUID.fromString(id))
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
-        return mapToResponse(user);
+        return UserMapper.mapToResponse(user);
     }
 
     @Override
@@ -75,7 +79,7 @@ public class UserServiceImpl implements UserService {
         user.setPhoneNumber(userRequestDTO.getPhone());
         userRepository.save(user);
 
-        return mapToResponse(user);
+        return UserMapper.mapToResponse(user);
     }
 
     @Override
@@ -84,25 +88,44 @@ public class UserServiceImpl implements UserService {
 
         if (user.getRole().name().equals("ADMIN")) {
             List<User> users = userRepository.findAll();
-            return users.stream().map(this::mapToResponse).collect(Collectors.toList());
+            return users.stream().map(UserMapper::mapToResponse).collect(Collectors.toList());
         } else {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Access denied");
         }
     }
 
     @Override
-    public UserResponseDTO updateUserStatus(UUID id, String action, Boolean value) {
+    public List<User> getAllUsers() {
+        return userRepository.findAll();
+    }
+
+    @Override
+    public UserResponseDTO updateUserStatus(UUID id, UpdateUserStatusRequestDTO updateUserStatus) {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
 
-        switch (action.toLowerCase()) {
+        String action = updateUserStatus.getAction().toLowerCase();
+        Boolean value = updateUserStatus.getValue();
+
+        switch (action) {
             case "ban" -> user.setIsEnabled(value);
             case "suspend" -> user.setIsAccountNonLocked(value);
-            default -> throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid action");
+            default -> throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Aksi tidak valid: " + updateUserStatus.getAction());
         }
 
         userRepository.save(user);
-        return mapToResponse(user);
+
+        if (updateUserStatus.getIsSend()) {
+            emailService.sendUserStatusChangeEmail(
+                    user.getEmail(),
+                    user.getName(),
+                    action,
+                    value,
+                    updateUserStatus.getReason()
+            );
+        }
+
+        return UserMapper.mapToResponse(user);
     }
 
 
@@ -127,20 +150,5 @@ public class UserServiceImpl implements UserService {
         userRepository.save(currentUser);
 
         log.info("Password untuk pengguna {} telah berhasil diubah.", currentUser.getEmail());
-    }
-
-    private UserResponseDTO mapToResponse(User user) {
-        return UserResponseDTO.builder()
-                .id(user.getId().toString())
-                .email(user.getEmail())
-                .name(user.getName())
-                .address(user.getAddress())
-                .phone(user.getPhoneNumber())
-                .imageUrl(user.getImageUrl())
-                .isEnable(user.getIsEnabled())
-                .isNoLocked(user.getIsAccountNonLocked())
-                .createdAt(user.getCreatedAt())
-                .updatedAt(user.getCreatedAt())
-                .build();
     }
 }

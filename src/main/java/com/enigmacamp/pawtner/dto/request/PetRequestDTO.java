@@ -41,4 +41,6 @@ public class PetRequestDTO {
 
     @Size(max = 2000)
     private String notes;
+
+    private Boolean deleteImage;
 }

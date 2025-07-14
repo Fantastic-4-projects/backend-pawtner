@@ -68,7 +68,7 @@ public class Business {
     @Column(length = 2000)
     private String address;
 
-    @Column(name = "location", columnDefinition = "geometry(Point, 4326)")
+    @Column(name = "location", columnDefinition = "GEOMETRY(Point, 4326)")
     private Point location;
 
     @Convert(converter = OperationHoursConverter.class)

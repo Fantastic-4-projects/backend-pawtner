@@ -7,6 +7,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.Formula;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -38,9 +39,12 @@ public class Service {
     @Size(max = 255)
     private String name;
 
+    @Column(columnDefinition = "TEXT")
+    private String description;
+
     @NotNull(message = "Base price is required")
     @DecimalMin(value = "0.0", inclusive = false)
-    @Digits(integer = 10, fraction = 2)
+    @Digits(integer = 18, fraction = 2)
     private BigDecimal basePrice;
 
     @Min(0)
@@ -50,6 +54,12 @@ public class Service {
 
     @OneToMany(mappedBy = "service", fetch = FetchType.LAZY)
     private List<Review> reviews;
+
+    @Formula("(SELECT COALESCE(AVG(r.rating), 0.0) FROM reviews r WHERE r.service_id = id)")
+    private Double averageRating;
+
+    @Formula("(SELECT COUNT(r.id) FROM reviews r WHERE r.service_id = id)")
+    private Long reviewCount;
 
     @Builder.Default
     private Boolean isActive = true;

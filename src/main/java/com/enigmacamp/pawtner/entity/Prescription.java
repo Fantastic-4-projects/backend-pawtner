@@ -11,6 +11,7 @@ import org.hibernate.annotations.CreationTimestamp;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.UUID;
 
 @Data
 @AllArgsConstructor
@@ -21,7 +22,7 @@ import java.util.List;
 public class Prescription {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
-    private String id;
+    private UUID id;
 
     @ManyToOne
     @JoinColumn(name = "pet_id")
@@ -38,6 +39,10 @@ public class Prescription {
     @Column(name = "issue_date", nullable = false)
     @JsonFormat(pattern = "yyyy-MM-dd")
     private LocalDate issueDate;
+
+    @Column(name = "refill_date")
+    @JsonFormat(pattern = "yyyy-MM-dd")
+    private LocalDate refillDate;
 
     @Column(name = "notes", columnDefinition = "TEXT")
     private String notes;

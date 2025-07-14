@@ -18,13 +18,19 @@ import java.util.UUID;
 public class OrderResponseDTO {
     private UUID id;
     private String orderNumber;
-    private UUID customerId;
-    private String customerName;
+    private UserResponseDTO customer;
     private UUID businessId;
     private String businessName;
     private BigDecimal totalAmount;
+    private BigDecimal shippingFee;
     private OrderStatus status;
     private LocalDateTime createdAt;
     private List<OrderItemResponseDTO> items;
     private String snapToken;
+    private String redirectUrl;
+    private String deliveryType;
+    private String deliveryAddress;
+    private Double deliveryLatitude;
+    private Double deliveryLongitude;
+    private String businessAddress;
 }
