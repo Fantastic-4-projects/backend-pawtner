@@ -5,6 +5,8 @@ import com.enigmacamp.pawtner.dto.response.CommonResponse;
 import com.enigmacamp.pawtner.dto.response.PetResponseDTO;
 import com.enigmacamp.pawtner.service.PetService;
 import com.enigmacamp.pawtner.util.ResponseUtil;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -15,6 +17,8 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.server.ResponseStatusException;
+
 
 import java.util.UUID;
 
@@ -24,17 +28,24 @@ import java.util.UUID;
 public class PetController {
 
     private final PetService petService;
+    private final ObjectMapper objectMapper;
+
 
     @PostMapping(consumes = "multipart/form-data")
     @PreAuthorize("hasAuthority('CUSTOMER')")
     public ResponseEntity<CommonResponse<PetResponseDTO>> createPet(
-            @Valid @RequestPart("pet") PetRequestDTO petRequestDTO,
+            @RequestPart("pet") String petRequestJson,
             @RequestPart(name = "image", required = false) MultipartFile image,
             Authentication authentication
     ) {
-        petRequestDTO.setImage(image);
-        PetResponseDTO responseDTO = petService.createPet(petRequestDTO, authentication.getName());
-        return ResponseUtil.createResponse(HttpStatus.CREATED, "Successfully created pet", responseDTO);
+        try {
+            PetRequestDTO petRequestDTO = objectMapper.readValue(petRequestJson, PetRequestDTO.class);
+            petRequestDTO.setImage(image);
+            PetResponseDTO responseDTO = petService.createPet(petRequestDTO, authentication.getName());
+            return ResponseUtil.createResponse(HttpStatus.CREATED, "Successfully created pet", responseDTO);
+        } catch (JsonProcessingException e) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid JSON format for 'pet' part", e);
+        }
     }
 
     @GetMapping("/{id}")
@@ -55,14 +66,19 @@ public class PetController {
     @PreAuthorize("hasAuthority('CUSTOMER')")
     public ResponseEntity<CommonResponse<PetResponseDTO>> updatePet(
             @PathVariable UUID id,
-            @Valid @RequestPart("pet") PetRequestDTO petRequestDTO,
+            @RequestPart("pet") String petRequestJson,
             @RequestPart(name = "image", required = false) MultipartFile image,
             Authentication authentication
     ) {
-        petRequestDTO.setId(id);
-        petRequestDTO.setImage(image);
-        PetResponseDTO responseDTO = petService.updatePet(petRequestDTO, authentication.getName());
-        return ResponseUtil.createResponse(HttpStatus.OK, "Successfully updated pet", responseDTO);
+        try {
+            PetRequestDTO petRequestDTO = objectMapper.readValue(petRequestJson, PetRequestDTO.class);
+            petRequestDTO.setId(id);
+            petRequestDTO.setImage(image);
+            PetResponseDTO responseDTO = petService.updatePet(petRequestDTO, authentication.getName());
+            return ResponseUtil.createResponse(HttpStatus.OK, "Successfully updated pet", responseDTO);
+        } catch (JsonProcessingException e) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid JSON format for 'pet' part", e);
+        }
     }
 
     @DeleteMapping("/{id}")
