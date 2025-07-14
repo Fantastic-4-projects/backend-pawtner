@@ -16,7 +16,7 @@ import java.util.UUID;
 @Builder
 public class ServiceResponseDTO {
     private UUID id;
-    private BusinessResponseDTO business;
+    private UUID businessId;
     private ServiceCategory category;
     private String name;
     private String description;

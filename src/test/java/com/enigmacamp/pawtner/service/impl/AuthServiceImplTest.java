@@ -118,7 +118,6 @@ class AuthServiceImplTest {
         ReflectionTestUtils.setField(authService, "resetPasswordUrl", "http://localhost:8080/reset-password");
     }
 
-    // =================================== REGISTER TESTS ===================================
     @Test
     @DisplayName("should save user and send verification email when email is new")
     void register_shouldSaveUserAndSendEmail_whenEmailIsNew() {
@@ -155,7 +154,6 @@ class AuthServiceImplTest {
         verify(emailService, never()).sendVerificationCodeEmail(anyString(), anyString(), anyString());
     }
 
-    // =================================== SET ROLE USER TESTS ===================================
     @Test
     @DisplayName("should set user role successfully")
     void setRoleUser_shouldSucceed() {
@@ -191,7 +189,6 @@ class AuthServiceImplTest {
         verify(userRepository, never()).save(any(User.class));
     }
 
-    // =================================== LOGIN TESTS ===================================
     @Test
     @DisplayName("should return LoginResponseDTO on successful login")
     void login_shouldReturnLoginResponseDTO_onSuccess() {
@@ -222,7 +219,6 @@ class AuthServiceImplTest {
         verify(jwtService, never()).generateToken(any(User.class));
     }
 
-    // =================================== VERIFY TESTS ===================================
     @Test
     @DisplayName("should verify user successfully with correct code and not expired")
     void verify_shouldSucceed_whenCodeCorrectAndNotExpired() {
@@ -290,7 +286,6 @@ class AuthServiceImplTest {
         
     }
 
-    // =================================== RESEND VERIFICATION CODE TESTS ===================================
     @Test
     @DisplayName("should resend verification code successfully")
     void resendVerificationCode_shouldSucceed() {
@@ -335,7 +330,6 @@ class AuthServiceImplTest {
         verify(emailService, never()).sendVerificationCodeEmail(anyString(), anyString(), anyString());
     }
 
-    // =================================== FORGOT PASSWORD TESTS ===================================
     @Test
     @DisplayName("should send password reset email successfully")
     void forgotPassword_shouldSendEmail_onSuccess() {
@@ -366,7 +360,6 @@ class AuthServiceImplTest {
         verify(emailService, never()).sendPasswordResetEmail(anyString(), anyString(), anyString());
     }
 
-    // =================================== RESET PASSWORD TESTS ===================================
     @Test
     @DisplayName("should reset password successfully with valid token")
     void resetPassword_shouldSucceed_whenTokenValid() {
@@ -404,9 +397,9 @@ class AuthServiceImplTest {
     @DisplayName("should throw ResponseStatusException when token is expired for reset password")
     void resetPassword_shouldThrowException_whenTokenExpired() {
         testUser.setResetPasswordToken(resetPasswordRequestDTO.getToken());
-        testUser.setResetPasswordTokenExpire(LocalDateTime.now().minusHours(1)); // Set token as expired
+        testUser.setResetPasswordTokenExpire(LocalDateTime.now().minusHours(1));
         when(userRepository.findByResetPasswordToken(anyString())).thenReturn(Optional.of(testUser));
-        when(userRepository.save(any(User.class))).thenReturn(testUser); // Should save to clear token
+        when(userRepository.save(any(User.class))).thenReturn(testUser);
 
         assertThatThrownBy(() -> authService.resetPassword(resetPasswordRequestDTO))
                 .isInstanceOf(ResponseStatusException.class)

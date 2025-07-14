@@ -17,7 +17,7 @@ import java.util.UUID;
 @Builder
 public class ProductResponseDTO {
     private UUID id;
-    private BusinessResponseDTO business;
+    private UUID businessId;
     private String name;
     private ProductCategory category;
     private String description;

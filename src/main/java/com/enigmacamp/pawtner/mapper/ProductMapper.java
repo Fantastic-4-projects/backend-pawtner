@@ -15,7 +15,7 @@ public class ProductMapper {
 
         return ProductResponseDTO.builder()
                 .id(product.getId())
-                .business(BusinessMapper.mapToResponse(product.getBusiness()))
+                .businessId(product.getBusiness().getId())
                 .name(product.getName())
                 .category(product.getCategory())
                 .description(product.getDescription())

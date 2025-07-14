@@ -15,7 +15,7 @@ public class ServiceMapper {
 
         return ServiceResponseDTO.builder()
                 .id(service.getId())
-                .business(BusinessMapper.mapToResponse(service.getBusiness()))
+                .businessId(service.getBusiness().getId())
                 .category(service.getCategory())
                 .name(service.getName())
                 .description(service.getDescription())
