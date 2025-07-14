@@ -87,13 +87,9 @@ class PetServiceImplTest {
     }
 
     @Test
-    void createPet_Success_WithImage() {
+    void createPet_Success_WithImage() throws IOException {
         when(userService.getUserByEmailForInternal(anyString())).thenReturn(owner);
-        try {
-            when(imageUploadService.upload(any())).thenReturn("http://example.com/new-buddy.jpg");
-        } catch (IOException e) {
-            fail("IOException should not be thrown during mock setup: " + e.getMessage());
-        }
+        when(imageUploadService.upload(any())).thenReturn("http://example.com/new-buddy.jpg");
         when(petRepository.save(any(Pet.class))).thenReturn(pet);
 
         PetResponseDTO result = petService.createPet(petRequestDTO, owner.getEmail());
@@ -102,16 +98,12 @@ class PetServiceImplTest {
         assertEquals(pet.getName(), result.getName());
         assertEquals("http://example.com/new-buddy.jpg", result.getImageUrl());
         verify(userService, times(1)).getUserByEmailForInternal(owner.getEmail());
-        try {
-            verify(imageUploadService, times(1)).upload(petRequestDTO.getImage());
-        } catch (IOException e) {
-            fail("IOException should not be thrown during mock verification: " + e.getMessage());
-        }
+        verify(imageUploadService, times(1)).upload(petRequestDTO.getImage());
         verify(petRepository, times(1)).save(any(Pet.class));
     }
 
     @Test
-    void createPet_Success_WithoutImage() {
+    void createPet_Success_WithoutImage() throws IOException {
         petRequestDTO.setImage(null);
         when(userService.getUserByEmailForInternal(anyString())).thenReturn(owner);
         when(petRepository.save(any(Pet.class))).thenReturn(pet);
@@ -207,18 +199,14 @@ class PetServiceImplTest {
     }
 
     @Test
-    void updatePet_Success_WithNewImage() {
+    void updatePet_Success_WithNewImage() throws IOException {
         petRequestDTO.setId(pet.getId());
         petRequestDTO.setName("New Buddy Name");
         petRequestDTO.setImage(new MockMultipartFile("image", "new-image.jpg", "image/jpeg", "new-image-data".getBytes()));
 
         when(userService.getUserByEmailForInternal(anyString())).thenReturn(owner);
         when(petRepository.findById(any(UUID.class))).thenReturn(Optional.of(pet));
-        try {
-            when(imageUploadService.upload(any())).thenReturn("http://example.com/new-image.jpg");
-        } catch (IOException e) {
-            fail("IOException should not be thrown during mock setup: " + e.getMessage());
-        }
+        when(imageUploadService.upload(any())).thenReturn("http://example.com/new-image.jpg");
         when(petRepository.save(any(Pet.class))).thenReturn(pet);
 
         PetResponseDTO result = petService.updatePet(petRequestDTO, owner.getEmail());
@@ -228,16 +216,12 @@ class PetServiceImplTest {
         assertEquals("http://example.com/new-image.jpg", result.getImageUrl());
         verify(userService, times(1)).getUserByEmailForInternal(owner.getEmail());
         verify(petRepository, times(1)).findById(pet.getId());
-        try {
-            verify(imageUploadService, times(1)).upload(petRequestDTO.getImage());
-        } catch (IOException e) {
-            fail("IOException should not be thrown during mock verification: " + e.getMessage());
-        }
+        verify(imageUploadService, times(1)).upload(petRequestDTO.getImage());
         verify(petRepository, times(1)).save(any(Pet.class));
     }
 
     @Test
-    void updatePet_Success_WithoutNewImage_KeepOld() {
+    void updatePet_Success_WithoutNewImage_KeepOld() throws IOException {
         petRequestDTO.setId(pet.getId());
         petRequestDTO.setName("New Buddy Name");
         petRequestDTO.setImage(null); // No new image
@@ -258,7 +242,7 @@ class PetServiceImplTest {
     }
 
     @Test
-    void updatePet_Success_DeleteImage() {
+    void updatePet_Success_DeleteImage() throws IOException {
         petRequestDTO.setId(pet.getId());
         petRequestDTO.setName("New Buddy Name");
         petRequestDTO.setImage(null);
@@ -280,7 +264,7 @@ class PetServiceImplTest {
     }
 
     @Test
-    void updatePet_NotFound() {
+    void updatePet_NotFound() throws IOException {
         petRequestDTO.setId(UUID.randomUUID()); // Non-existent ID
         when(userService.getUserByEmailForInternal(anyString())).thenReturn(owner);
         when(petRepository.findById(any(UUID.class))).thenReturn(Optional.empty());
@@ -297,7 +281,7 @@ class PetServiceImplTest {
     }
 
     @Test
-    void updatePet_Forbidden_PetDoesNotBelongToUser() {
+    void updatePet_Forbidden_PetDoesNotBelongToUser() throws IOException {
         User anotherOwner = User.builder().id(UUID.randomUUID()).email("another@example.com").build();
         petRequestDTO.setId(pet.getId());
 
@@ -316,17 +300,13 @@ class PetServiceImplTest {
     }
 
     @Test
-    void updatePet_ImageUploadFails() {
+    void updatePet_ImageUploadFails() throws IOException {
         petRequestDTO.setId(pet.getId());
         petRequestDTO.setImage(new MockMultipartFile("image", "new-image.jpg", "image/jpeg", "new-image-data".getBytes()));
 
         when(userService.getUserByEmailForInternal(anyString())).thenReturn(owner);
         when(petRepository.findById(any(UUID.class))).thenReturn(Optional.of(pet));
-        try {
-            when(imageUploadService.upload(any())).thenThrow(new IOException("Upload failed"));
-        } catch (IOException e) {
-            fail("IOException should not be thrown during mock setup: " + e.getMessage());
-        }
+        when(imageUploadService.upload(any())).thenThrow(new IOException("Upload failed"));
 
         ResponseStatusException exception = assertThrows(ResponseStatusException.class, () ->
                 petService.updatePet(petRequestDTO, owner.getEmail()));
@@ -335,11 +315,7 @@ class PetServiceImplTest {
         assertEquals("Failed to upload image", exception.getReason());
         verify(userService, times(1)).getUserByEmailForInternal(owner.getEmail());
         verify(petRepository, times(1)).findById(pet.getId());
-        try {
-            verify(imageUploadService, times(1)).upload(petRequestDTO.getImage());
-        } catch (IOException e) {
-            fail("IOException should not be thrown during mock verification: " + e.getMessage());
-        }
+        verify(imageUploadService, times(1)).upload(petRequestDTO.getImage());
         verify(petRepository, never()).save(any(Pet.class));
     }
 
