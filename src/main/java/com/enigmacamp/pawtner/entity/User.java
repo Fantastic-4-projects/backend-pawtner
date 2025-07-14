@@ -101,9 +101,6 @@ public class User implements UserDetails {
     @Column(nullable = false)
     private Boolean isEnabled = true;
 
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<FcmToken> fcmTokens;
-
     @PrePersist
     protected void onCreate() {
         if (createdAt == null) {

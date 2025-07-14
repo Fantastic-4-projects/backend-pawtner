@@ -1,6 +1,5 @@
 package com.enigmacamp.pawtner.service.impl;
 
-import com.enigmacamp.pawtner.entity.FcmToken;
 import com.enigmacamp.pawtner.entity.User;
 import com.enigmacamp.pawtner.repository.FcmTokenRepository;
 import com.enigmacamp.pawtner.service.NotificationService;

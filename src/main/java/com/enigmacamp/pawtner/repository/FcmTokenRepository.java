@@ -1,6 +1,5 @@
 package com.enigmacamp.pawtner.repository;
 
-import com.enigmacamp.pawtner.entity.FcmToken;
 import com.enigmacamp.pawtner.entity.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;

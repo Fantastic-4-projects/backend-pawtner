@@ -11,8 +11,6 @@ import org.springframework.stereotype.Service;
 
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
-import java.util.HashMap;
-import java.util.Map;
 
 @Service
 public class JwtService {
@@ -57,22 +55,6 @@ public class JwtService {
             JWTVerifier verifier = JWT.require(algorithm).build();
             DecodedJWT decodedJWT = verifier.verify(token);
             return decodedJWT.getSubject();
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    public Map<String, String> getUserInfoByToken(String token) {
-        try {
-            Algorithm algorithm = Algorithm.HMAC256(jwtSecret.getBytes(StandardCharsets.UTF_8));
-            JWTVerifier verifier = JWT.require(algorithm).build();
-            DecodedJWT decodedJWT = verifier.verify(token);
-
-            Map<String, String> userInfo = new HashMap<>();
-            userInfo.put("userId", decodedJWT.getClaim("userId").asString());
-            userInfo.put("role", decodedJWT.getClaim("role").asString());
-
-            return userInfo;
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
