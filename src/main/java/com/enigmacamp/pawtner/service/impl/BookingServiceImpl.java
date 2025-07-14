@@ -302,7 +302,7 @@ public class BookingServiceImpl implements BookingService {
             // Update payment status
             Payment payment = booking.getPayment();
             if (payment != null) {
-                if (newStatus == BookingStatus.CONFIRMED) {
+                if (newStatus == BookingStatus.CONFIRMED || newStatus == BookingStatus.REQUESTED) {
                     payment.setStatus(PaymentStatus.SUCCESS);
                 } else if (newStatus == BookingStatus.CANCELLED) {
                     payment.setStatus(PaymentStatus.FAILED);
