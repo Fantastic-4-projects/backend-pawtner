@@ -37,6 +37,7 @@ public class SecurityConfig {
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
         configuration.addAllowedOriginPattern("http://localhost:*"); // For local development
+        configuration.addAllowedOriginPattern("https://pawtner-id.web.app"); // For local development
         configuration.addAllowedOriginPattern("http://10.10.102.128:*"); // For Expo Go on local network
         configuration.addAllowedOriginPattern("https://*.ngrok-free.app"); // For Ngrok free tier
         configuration.addAllowedOriginPattern("https://*.ngrok.io"); // For Ngrok older domains

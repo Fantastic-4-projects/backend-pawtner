@@ -110,12 +110,15 @@ public class BusinessServiceImpl implements BusinessService {
             business.setName(businessRequestDTO.getNameBusiness());
             business.setDescription(businessRequestDTO.getDescriptionBusiness());
             business.setBusinessType(businessRequestDTO.getBusinessType());
-            business.setHasEmergencyServices(business.getHasEmergencyServices());
+            business.setHasEmergencyServices(businessRequestDTO.getHasEmergencyServices());
             business.setBusinessEmail(businessRequestDTO.getBusinessEmail());
             business.setBusinessPhone(businessRequestDTO.getBusinessPhone());
             business.setEmergencyPhone(businessRequestDTO.getEmergencyPhone());
             business.setAddress(businessRequestDTO.getBusinessAddress());
             business.setStatusRealtime(businessRequestDTO.getBusinessStatus());
+
+            business.setOperationHours(businessRequestDTO.getOperationHours());
+
             Point updatedLocation = geometryFactory.createPoint(new Coordinate(businessRequestDTO.getLongitude().doubleValue(), businessRequestDTO.getLatitude().doubleValue()));
             updatedLocation.setSRID(4326);
             business.setLocation(updatedLocation);
