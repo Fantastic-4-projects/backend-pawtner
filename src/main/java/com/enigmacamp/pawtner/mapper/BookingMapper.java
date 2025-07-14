@@ -22,7 +22,6 @@ public class BookingMapper {
                 .endTime(booking.getEndTime())
                 .totalPrice(booking.getTotalPrice())
                 .status(booking.getStatus().name())
-                .snapToken(booking.getSnapToken())
                 .redirectUrl(booking.getPayment() != null ? booking.getPayment().getRedirectUrl() : null)
                 .deliveryType(booking.getDeliveryType() != null ? booking.getDeliveryType().name() : null)
                 .deliveryAddress(booking.getDeliveryType() == DeliveryType.DELIVERY ? booking.getDeliveryAddressDetail() : null)

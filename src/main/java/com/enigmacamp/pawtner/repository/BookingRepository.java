@@ -2,7 +2,6 @@ package com.enigmacamp.pawtner.repository;
 
 import com.enigmacamp.pawtner.constant.BookingStatus;
 import com.enigmacamp.pawtner.entity.Booking;
-import com.enigmacamp.pawtner.entity.Business;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import com.enigmacamp.pawtner.entity.Service;
@@ -30,12 +29,4 @@ public interface BookingRepository extends JpaRepository<Booking, UUID>, JpaSpec
     Optional<Booking> findByBookingNumber(String bookingNumber);
     Page<Booking> findByCustomer(User customer, Pageable pageable);
     Page<Booking> findByServiceIn(List<Service> services, Pageable pageable);
-    Page<Booking> findAllByService_Business(Business business, Pageable pageable);
-
-    @Query("SELECT b FROM Booking b WHERE b.status = :status AND b.startTime BETWEEN :startTimeStart AND :startTimeEnd")
-    List<Booking> findAllByStatusAndStartTimeBetween(
-            @Param("status") BookingStatus status,
-            @Param("startTimeStart") ZonedDateTime startTimeStart,
-            @Param("startTimeEnd") ZonedDateTime startTimeEnd
-    );
 }

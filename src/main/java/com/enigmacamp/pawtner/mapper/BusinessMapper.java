@@ -11,7 +11,7 @@ public class BusinessMapper {
         BigDecimal longitude = null;
 
         if (business == null) {
-            return null; // atau lempar exception custom kalau wajib ada
+            return null;
         }
 
         if (business.getLocation() != null) {

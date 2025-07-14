@@ -2,7 +2,6 @@ package com.enigmacamp.pawtner.specification;
 
 import com.enigmacamp.pawtner.constant.ServiceCategory;
 import com.enigmacamp.pawtner.entity.Business;
-import com.enigmacamp.pawtner.entity.Product;
 import com.enigmacamp.pawtner.entity.Service;
 import jakarta.persistence.criteria.Expression;
 import jakarta.persistence.criteria.Join;

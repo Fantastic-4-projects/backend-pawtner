@@ -18,7 +18,6 @@ import com.enigmacamp.pawtner.repository.UserRepository;
 import com.enigmacamp.pawtner.repository.BusinessRepository;
 import com.enigmacamp.pawtner.repository.PaymentRepository;
 import com.enigmacamp.pawtner.service.BookingService;
-import com.enigmacamp.pawtner.service.NotificationService;
 import com.enigmacamp.pawtner.service.PaymentService;
 import com.enigmacamp.pawtner.service.BusinessService;
 import com.enigmacamp.pawtner.specification.BookingSpecification;
@@ -38,7 +37,6 @@ import org.locationtech.jts.geom.Coordinate;
 import java.math.BigDecimal;
 import java.math.MathContext;
 import java.math.RoundingMode;
-import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -55,8 +53,6 @@ public class BookingServiceImpl implements BookingService {
     private final BusinessRepository businessRepository;
     private final PaymentService paymentService;
     private final PaymentRepository paymentRepository;
-
-    private final NotificationService notificationService;
     private final GeometryFactory geometryFactory = new GeometryFactory();
 
     @Override
@@ -97,7 +93,7 @@ public class BookingServiceImpl implements BookingService {
                 .customer(customer)
                 .pet(pet)
                 .service(service)
-                .bookingNumber("BOOK-" + UUID.randomUUID().toString())
+                .bookingNumber("BOOK-" + UUID.randomUUID())
                 .startTime(requestDTO.getStartTime())
                 .endTime(requestDTO.getEndTime())
                 .status(BookingStatus.AWAITING_PAYMENT)
@@ -141,7 +137,6 @@ public class BookingServiceImpl implements BookingService {
         Booking booking = bookingBuilder.build();
         bookingRepository.save(booking);
 
-        // Create payment
         Payment payment = Payment.builder()
                 .booking(booking)
                 .amount(booking.getTotalPrice())
@@ -149,7 +144,6 @@ public class BookingServiceImpl implements BookingService {
                 .build();
         payment = paymentService.createPayment(payment);
 
-        booking.setSnapToken(payment.getSnapToken());
         booking.setPayment(payment);
         bookingRepository.save(booking);
 
@@ -316,27 +310,6 @@ public class BookingServiceImpl implements BookingService {
                     payment.setStatus(PaymentStatus.PENDING);
                 }
                 paymentRepository.save(payment);
-            }
-
-            // Send notification to customer
-            if (newStatus == BookingStatus.CONFIRMED) {
-                String title = "Pemesanan Anda Dikonfirmasi!";
-                String body = String.format("Pemesanan grooming untuk %s pada %s pukul %s %s telah dikonfirmasi.",
-                        booking.getPet().getName(),
-                        booking.getStartTime().toLocalDate(),
-                        booking.getStartTime().toLocalTime(),
-                        booking.getStartTime().getZone().getDisplayName(java.time.format.TextStyle.SHORT, java.util.Locale.getDefault()));
-                Map<String, String> data = new HashMap<>();
-                data.put("type", "BOOKING_CONFIRMATION");
-                data.put("id", booking.getId().toString());
-                notificationService.sendNotification(booking.getCustomer(), title, body, data);
-            } else {
-                notificationService.sendNotification(
-                        booking.getCustomer(),
-                        "Booking Status Updated",
-                        "Your booking " + booking.getBookingNumber() + " is now " + newStatus.name(),
-                        Collections.singletonMap("bookingId", booking.getId().toString())
-                );
             }
         }
     }

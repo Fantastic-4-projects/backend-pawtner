@@ -13,14 +13,7 @@ import java.util.List;
 
 public interface BusinessRepository extends JpaRepository<Business, UUID> {
     List<Business> findAllByOwner_Id(UUID id);
-    Optional<Business> findBusinessById(UUID id);
     Optional<Business> findByOwner(User owner);
-
-    @Query(value = "SELECT * FROM businesses b WHERE ST_DWithin(b.location, ST_SetSRID(:userLocation, 4326), :distanceInMeters)", nativeQuery = true)
-    List<Business> findNearbyBusinesses(
-        @Param("userLocation") Point userLocation,
-        @Param("distanceInMeters") double distanceInMeters
-    );
 
     @Query(value = "SELECT ST_Distance(b.location, ST_SetSRID(:userLocation, 4326)) FROM businesses b WHERE b.id = :businessId", nativeQuery = true)
     Double calculateDistanceToBusiness(@Param("businessId") UUID businessId, @Param("userLocation") Point userLocation);
