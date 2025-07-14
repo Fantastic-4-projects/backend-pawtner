@@ -4,15 +4,12 @@ import com.enigmacamp.pawtner.constant.UserRole;
 import com.enigmacamp.pawtner.dto.request.*;
 import com.enigmacamp.pawtner.dto.response.LoginResponseDTO;
 import com.enigmacamp.pawtner.dto.response.RegisterResponseDTO;
-import com.enigmacamp.pawtner.entity.FcmToken;
 import com.enigmacamp.pawtner.entity.User;
-import com.enigmacamp.pawtner.repository.FcmTokenRepository;
 import com.enigmacamp.pawtner.repository.UserRepository;
 import com.enigmacamp.pawtner.service.AuthService;
 import com.enigmacamp.pawtner.config.JwtService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -20,14 +17,12 @@ import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.security.SecureRandom;
 import java.time.LocalDateTime;
-import java.util.Random;
 import java.util.UUID;
 
 @RequiredArgsConstructor
@@ -38,7 +33,6 @@ public class AuthServiceImpl implements AuthService {
     private final AuthenticationManager authenticationManager;
     private final JwtService jwtService;
     private final EmailServiceImpl emailService;
-    private final FcmTokenRepository fcmTokenRepository;
 
     @Value("${app.pawtner.reset-password-url}")
     private String resetPasswordUrl;
@@ -61,7 +55,7 @@ public class AuthServiceImpl implements AuthService {
                 .address(registerRequestDTO.getAddress())
                 .role(userRole)
                 .codeExpire(LocalDateTime.now().plusMinutes(3))
-                .codeVerification(generateRandomCode(6))
+                .codeVerification(generateRandomCode())
                 .isEnabled(true)
                 .isCredentialsNonExpired(true)
                 .isAccountNonLocked(true)
@@ -99,13 +93,6 @@ public class AuthServiceImpl implements AuthService {
 
         if (!user.getIsVerified()){
             throw new BadCredentialsException("Email belum terverifikasi.");
-        }
-
-        if (loginRequestDTO.getFcmToken() != null && !loginRequestDTO.getFcmToken().isEmpty()) {
-            FcmToken fcmToken = new FcmToken();
-            fcmToken.setUser(user);
-            fcmToken.setToken(loginRequestDTO.getFcmToken());
-            fcmTokenRepository.save(fcmToken);
         }
 
         String token = jwtService.generateToken(user);
@@ -150,7 +137,7 @@ public class AuthServiceImpl implements AuthService {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Account already verified");
         }
 
-        String code = generateRandomCode(6);
+        String code = generateRandomCode();
         user.setCodeVerification(code);
         user.setCodeExpire(LocalDateTime.now().plusMinutes(3));
         userRepository.save(user);
@@ -195,10 +182,10 @@ public class AuthServiceImpl implements AuthService {
         userRepository.save(user);
     }
 
-    private String generateRandomCode(int length) {
+    private String generateRandomCode() {
         SecureRandom random = new SecureRandom();
         StringBuilder code = new StringBuilder();
-        for (int i = 0; i < length; i++) {
+        for (int i = 0; i < 6; i++) {
             code.append(random.nextInt(10));
         }
         return code.toString();

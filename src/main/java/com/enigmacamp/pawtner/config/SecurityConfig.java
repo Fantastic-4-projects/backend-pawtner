@@ -5,14 +5,11 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
@@ -26,7 +23,8 @@ public class SecurityConfig {
 
     private final AuthTokenFilter authTokenFilter;
     private final OAuth2SuccessHandler oAuth2SuccessHandler;
-    private final CustomAuthenticationEntryPoint customAuthenticationEntryPoint; // Inject the custom entry point
+    private final OAuth2FailureHandler oAuth2FailureHandler;
+    private final CustomAuthenticationEntryPoint customAuthenticationEntryPoint;
 
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration) throws Exception {
@@ -36,12 +34,13 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.addAllowedOriginPattern("http://localhost:*"); // For local development
-        configuration.addAllowedOriginPattern("https://pawtner-id.web.app"); // For local development
-        configuration.addAllowedOriginPattern("http://10.10.102.128:*"); // For Expo Go on local network
-        configuration.addAllowedOriginPattern("https://*.ngrok-free.app"); // For Ngrok free tier
-        configuration.addAllowedOriginPattern("https://*.ngrok.io"); // For Ngrok older domains
+        configuration.addAllowedOriginPattern("http://localhost:*");
+        configuration.addAllowedOriginPattern("https://pawtner-id.web.app");
+        configuration.addAllowedOriginPattern("http://10.10.102.128:*");
+        configuration.addAllowedOriginPattern("https://*.ngrok-free.app");
+        configuration.addAllowedOriginPattern("https://*.ngrok.io");
         configuration.addAllowedOriginPattern("http://10.10.102.68:5173/");
+        configuration.addAllowedOrigin("https://measured-lively-hippo.ngrok-free.app");
         configuration.addAllowedHeader("*");
         configuration.addAllowedMethod("*");
         configuration.setAllowCredentials(true);
@@ -59,38 +58,34 @@ public class SecurityConfig {
                 .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .exceptionHandling(exception -> exception.authenticationEntryPoint(customAuthenticationEntryPoint)) // Use custom entry point
                 .authorizeHttpRequests(auth -> auth
-                        // Public endpoints
                         .requestMatchers("/api/auth/**", "/oauth2/**", "/login/oauth2/code/**", "/api/payments/**", "/api/ai/**").permitAll()
                         .requestMatchers(
-                                "/api/products", // GET all products
-                                "/api/products/{id}", // GET product by ID
-                                "/api/services", // GET all services
-                                "/api/services/{id}", // GET service by ID
-                                "/api/business", // GET all businesses
-                                "/api/business/{id}" // GET business by ID
-                        ).permitAll() // Publicly accessible GET endpoints
+                                "/api/products",
+                                "/api/products/{id}",
+                                "/api/services",
+                                "/api/services/{id}",
+                                "/api/business",
+                                "/api/business/{id}"
+                        ).permitAll()
 
-                        // Endpoints requiring authentication (any role)
-                              .requestMatchers(
-                                "/api/reviews", // GET all reviews
-                                "/api/reviews/{id}", // GET review by ID
-                                "/api/users", // PUT update user
-                                "/api/users/{id}", // GET user by ID
+                        .requestMatchers(
+                                "/api/reviews",
+                                "/api/reviews/{id}",
+                                "/api/users",
+                                "/api/users/{id}",
                                 "/api/users/change-password"
                         ).authenticated()
 
-                        // Endpoints for BUSINESS_OWNER
                         .requestMatchers(
-                                "/api/products", // POST create product
-                                "/api/products/{id}", // PUT update product, DELETE delete product
-                                "/api/services", // POST create service
-                                "/api/services/{id}", // PUT update service, DELETE delete service
-                                "/api/business/register", // POST register business
-                                "/api/business/my-business", // GET my business
+                                "/api/products",
+                                "/api/products/{id}",
+                                "/api/services",
+                                "/api/services/{id}",
+                                "/api/business/register",
+                                "/api/business/my-business",
                                 "/api/orders/business"
                         ).hasAuthority(UserRole.BUSINESS_OWNER.name())
 
-                        // Endpoints for CUSTOMER
                         .requestMatchers(
                                 "/api/cart/**",
                                 "/api/orders/checkout",
@@ -100,7 +95,6 @@ public class SecurityConfig {
                                 "/api/reviews"
                         ).hasAuthority(UserRole.CUSTOMER.name())
 
-                        // Endpoints for ADMIN
                         .requestMatchers(
                                 "/api/users",
                                 "/api/users/{id}",
@@ -118,7 +112,7 @@ public class SecurityConfig {
                 )
                 .addFilterBefore(authTokenFilter, UsernamePasswordAuthenticationFilter.class)
                 .oauth2Login(oauth2 ->
-                        oauth2.successHandler(oAuth2SuccessHandler)
+                        oauth2.successHandler(oAuth2SuccessHandler).failureHandler(oAuth2FailureHandler)
                 )
                 .build();
     }

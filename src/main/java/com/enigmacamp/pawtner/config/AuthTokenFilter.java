@@ -1,6 +1,5 @@
 package com.enigmacamp.pawtner.config;
 
-import com.enigmacamp.pawtner.repository.UserRepository;
 import com.enigmacamp.pawtner.service.UserService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -61,7 +60,7 @@ public class AuthTokenFilter extends OncePerRequestFilter {
                 }
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            log.error(e.getMessage(), e);
         }
 
         filterChain.doFilter(request, response);

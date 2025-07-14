@@ -1,6 +1,5 @@
 package com.enigmacamp.pawtner.repository;
 
-import com.enigmacamp.pawtner.entity.Business;
 import com.enigmacamp.pawtner.entity.Order;
 import com.enigmacamp.pawtner.entity.User;
 import org.springframework.data.domain.Page;

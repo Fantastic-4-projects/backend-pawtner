@@ -2,7 +2,6 @@ package com.enigmacamp.pawtner.mapper;
 
 import com.enigmacamp.pawtner.dto.response.*;
 import com.enigmacamp.pawtner.entity.Prescription;
-import com.enigmacamp.pawtner.entity.PrescriptionItem;
 
 import java.util.List;
 import java.util.stream.Collectors;

@@ -26,7 +26,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -48,7 +47,6 @@ public class OrderServiceImpl implements OrderService {
     private final UserService userService;
     private final ProductService productService;
     private final PaymentService paymentService;
-    private final NotificationService notificationService;
     private final PaymentRepository paymentRepository;
     private final BusinessService businessService;
     private final BusinessRepository businessRepository;
@@ -76,7 +74,7 @@ public class OrderServiceImpl implements OrderService {
                 .status(OrderStatus.PENDING_PAYMENT);
 
         BigDecimal shippingFee = BigDecimal.ZERO;
-        Business pickupBusiness = null;
+        Business pickupBusiness;
 
         if (orderRequestDTO.getDeliveryType() == com.enigmacamp.pawtner.constant.DeliveryType.DELIVERY) {
             Point userLocation = geometryFactory.createPoint(new Coordinate(orderRequestDTO.getDeliveryLongitude(), orderRequestDTO.getDeliveryLatitude()));
@@ -135,13 +133,6 @@ public class OrderServiceImpl implements OrderService {
 
         shoppingCartService.clearShoppingCart(customerEmail);
 
-        notificationService.sendNotification(
-                customer,
-                "Order Successful!",
-                "Your order " + order.getOrderNumber() + " has been placed.",
-                Collections.singletonMap("orderId", order.getId().toString())
-        );
-
         OrderResponseDTO responseDTO = OrderMapper.mapToResponse(order, orderItems, paymentRepository, shippingFee);
         responseDTO.setSnapToken(payment.getSnapToken());
         responseDTO.setRedirectUrl(payment.getRedirectUrl());
@@ -189,13 +180,6 @@ public class OrderServiceImpl implements OrderService {
             payment.setStatus(PaymentStatus.valueOf(transactionStatus.toUpperCase()));
             paymentRepository.save(payment);
 
-            // Send notification to customer
-            notificationService.sendNotification(
-                    order.getCustomer(),
-                    "Order Status Updated",
-                    "Your order " + order.getOrderNumber() + " is now " + newStatus.name(),
-                    Collections.singletonMap("orderId", order.getId().toString())
-            );
         }
     }
 
@@ -232,14 +216,6 @@ public class OrderServiceImpl implements OrderService {
             OrderStatus status = OrderStatus.valueOf(newStatus.toUpperCase());
             order.setStatus(status);
             orderRepository.save(order);
-
-            // Send notification to customer about order status update
-            notificationService.sendNotification(
-                    order.getCustomer(),
-                    "Order Status Updated",
-                    "Your order " + order.getOrderNumber() + " is now " + status.name(),
-                    Collections.singletonMap("orderId", order.getId().toString())
-            );
 
             return OrderMapper.mapToResponse(order, orderItemRepository.findByOrder(order), paymentRepository, order.getShippingFee());
         } catch (IllegalArgumentException e) {
