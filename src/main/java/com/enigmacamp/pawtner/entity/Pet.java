@@ -61,6 +61,9 @@ public class Pet {
     private String notes;
 
     @Builder.Default
+    private Boolean isActive = true;
+
+    @Builder.Default
     @Column(updatable = false)
     private LocalDateTime createdAt = LocalDateTime.now();
 

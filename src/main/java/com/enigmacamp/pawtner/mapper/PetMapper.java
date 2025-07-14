@@ -10,6 +10,10 @@ import java.util.stream.Collectors;
 
 public class PetMapper {
     public static PetResponseDTO mapToResponse(Pet pet){
+        if (pet == null) {
+            return null;
+        }
+
         List<PrescriptionResponseDTO> prescriptionDTOs;
         if (pet.getPrescriptions() != null) {
             prescriptionDTOs = pet.getPrescriptions().stream()
@@ -29,6 +33,7 @@ public class PetMapper {
                 .imageUrl(pet.getImageUrl())
                 .notes(pet.getNotes())
                 .ownerName(pet.getOwner().getName())
+                .isActive(pet.getIsActive())
                 .prescriptions(prescriptionDTOs)
                 .build();
     }

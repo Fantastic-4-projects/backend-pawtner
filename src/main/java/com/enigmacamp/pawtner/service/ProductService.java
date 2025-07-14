@@ -13,7 +13,7 @@ import java.util.UUID;
 public interface ProductService {
     ProductResponseDTO createProduct(ProductRequestDTO productRequestDTO);
     ProductResponseDTO getProductById(UUID id);
-    Page<ProductResponseDTO> getAllProducts(Pageable pageable, String name, BigDecimal minPrice, BigDecimal maxPrice, Double userLat, Double userLon, Double radiusKm);
+    Page<ProductResponseDTO> getAllProducts(Pageable pageable, String name, BigDecimal minPrice, BigDecimal maxPrice, Double userLat, Double userLon, Double radiusKm, UUID businessId);
     Page<ProductResponseDTO> getProductsByBusiness(UUID businessId, String name, ProductCategory category, Integer stock, Pageable pageable);
     ProductResponseDTO updateProduct(ProductRequestDTO productRequestDTO);
     void deleteProduct(UUID id);

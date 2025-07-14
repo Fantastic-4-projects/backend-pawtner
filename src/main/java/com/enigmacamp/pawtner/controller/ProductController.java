@@ -51,11 +51,12 @@ public class ProductController {
             @RequestParam(name = "maxPrice", required = false) BigDecimal maxPrice,
             @RequestParam(name = "userLat", required = false) Double userLat,
             @RequestParam(name = "userLon", required = false) Double userLon,
-            @RequestParam(name = "radiusKm", defaultValue = "15") Double radiusKm
+            @RequestParam(name = "radiusKm", defaultValue = "15") Double radiusKm,
+            @RequestParam(name = "businessId", required = false) UUID businessId
     ) {
         Sort.Direction sortDirection = Sort.Direction.fromString(direction);
         Pageable pageable = PageRequest.of(page, size, Sort.by(sortDirection, sortBy));
-        Page<ProductResponseDTO> responseDTOPage = productService.getAllProducts(pageable, name, minPrice, maxPrice, userLat, userLon, radiusKm);
+        Page<ProductResponseDTO> responseDTOPage = productService.getAllProducts(pageable, name, minPrice, maxPrice, userLat, userLon, radiusKm, businessId);
 
         return ResponseUtil.createResponse(
                 HttpStatus.OK,
